@@ -1,0 +1,72 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    restart: unless-stopped
+    expose:
+      - "5678"
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_RUNNERS_ENABLED=${N8N_RUNNERS_ENABLED}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=${N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS}
+      - N8N_TRUST_PROXY=${N8N_TRUST_PROXY}
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=${N8N_PORT}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - N8N_LISTEN_ADDRESS=${N8N_LISTEN_ADDRESS}
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_BINARY_DATA_STORAGE_PATH=/home/node/.n8n/binaryData
+      - DB_TYPE=${DB_TYPE}
+      - DB_POSTGRESDB_HOST=${DB_POSTGRESDB_HOST}
+      - DB_POSTGRESDB_PORT=${DB_POSTGRESDB_PORT}
+      - DB_POSTGRESDB_DATABASE=${DB_POSTGRESDB_DATABASE}
+      - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
+      - WEBHOOK_URL=${WEBHOOK_TUNNEL_URL}
+      - EXECUTIONS_TIMEOUT=0
+      - EXECUTIONS_DATA_SAVE_ON_ERROR=all
+      - EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
+      - NODE_ENV=production
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+      - ./n8n_files:/n8n_files
+  fastapi:
+    build: ./api
+    restart: unless-stopped
+    expose:
+      - "9374"
+    volumes:
+      - ./tts_cache:/tts_cache
+      - ./n8n_files:/n8n_files
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - n8n
+      - fastapi
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    depends_on:
+      - nginx
+  processes:
+    build: ./processes
+    restart: always
+    depends_on:
+      - n8n
+    environment:
+      - CHECK_INTERVAL=10
+      - TARGET_CONTAINER=n8n-deploy-n8n-1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

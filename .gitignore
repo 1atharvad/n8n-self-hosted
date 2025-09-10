@@ -1,0 +1,14 @@
+node_modules
+dist
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+__pycache__
+**/**.pyc
+.env*
+n8n_files
+n8n-data
+credentials.json
+tts_cache
+SadTalker

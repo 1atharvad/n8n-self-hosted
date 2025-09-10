@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"target": "es2019",
+		"lib": ["es2019", "es2020", "es2022"],
+		"removeComments": true,
+		"useUnknownInCatchVariables": false,
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"strictNullChecks": true,
+		"preserveConstEnums": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"declaration": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+    "rootDir": "./custom-n8n-nodes",
+		"outDir": "./n8n-data/custom",
+	},
+	"include": [
+		"custom-n8n-nodes/**/*",
+	],
+  "exclude": [
+    "custom-n8n-nodes/**/*.test.ts",
+  ]
+}

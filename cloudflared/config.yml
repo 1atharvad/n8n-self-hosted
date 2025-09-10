@@ -1,0 +1,7 @@
+tunnel: n8n-tunnel
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: n8n.atharvadevasthali.tech
+    service: http://nginx:80
+  - service: http_status:404

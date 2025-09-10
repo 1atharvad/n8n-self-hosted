@@ -1,0 +1,1 @@
+process.env.N8N_TEST = 'true';

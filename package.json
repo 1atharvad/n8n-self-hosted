@@ -1,0 +1,31 @@
+{
+  "name": "n8n-deploy",
+  "version": "1.0.0",
+  "description": "Self deployment for n8n for AD",
+  "keywords": [
+    "n8n",
+    "workflows"
+  ],
+  "license": "ISC",
+  "author": "Atharva Devasthali",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --passWithNoTests",
+    "build-n8n-nodes": "npx rimraf ./n8n-data/custom && tsc && gulp",
+    "pip-install": "pip3.11 install -r requirements.txt",
+    "add-pkg": "sh -c 'pip3.11 install \"$0\" && echo \"$(pip3.11 freeze | grep ^$0==)\" >> requirements.txt'",
+    "docker-up": "npm run build-n8n-nodes && docker-compose up --build -d",
+    "docker-down": "docker-compose down"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "gulp": "^5.0.0",
+    "jest": "^30.1.1",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
