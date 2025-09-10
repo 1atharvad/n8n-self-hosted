@@ -1,99 +1,140 @@
-# N8N Self-Hosted Instance
+# 🚀 N8N Self-Hosted Instance
+> A powerful automation platform with custom media processing APIs, seamless integrations, and secure web access.
 
-Self-hosted n8n automation platform with custom media processing APIs and secure web access.
+[![Website](https://img.shields.io/badge/Website-Live-brightgreen?style=for-the-badge&logo=render)](https://n8n.atharvadevasthali.tech)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=for-the-badge&logo=docker)](https://docker.com)
 
-## Overview
+## 🌐 Live Access
+**[N8N Platform](https://n8n.atharvadevasthali.tech/)**  
+**[API Documentation](https://n8n.atharvadevasthali.tech/api/docs)**
 
-- **Domain**: n8n.atharvadevasthali.tech
-- **Services**: N8N + FastAPI + Nginx + Cloudflare Tunnel
-- **Database**: Supabase PostgreSQL
-- **Storage**: Local filesystem for binary data
+## 🛠️ Tech Stack
 
-## Components
+### Core Platform
+![N8N](https://img.shields.io/badge/N8N-EA4B71?style=flat-square&logo=n8n&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
 
-### Core Services
-- **N8N**: Main automation platform
-- **FastAPI**: Custom API services for video generation, text-to-audio, media combining
-- **Nginx**: Reverse proxy handling routing
-- **Cloudflare Tunnel**: Secure web access without port forwarding
+### Backend & APIs
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
 
-### Custom Features
-- Custom TypeScript nodes for n8n
-- Video generation API
-- Text-to-speech conversion
-- Image + audio to video processing
-- Video combining functionality
+### Infrastructure & Security
+![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 
-### Infrastructure
-- Docker containerization
-- Supabase for database storage
-- Local filesystem for media files
-- SSL/HTTPS through Cloudflare
+## ✨ Key Features
 
-## Quick Start
+🎯 **Automation Excellence**
+- Visual workflow builder with drag-and-drop interface
+- 300+ pre-built integrations and custom nodes
+- Background job processing for heavy tasks
 
-1. Clone repository and copy environment file
-2. Configure `.env` with database credentials and API keys
-3. Set up Cloudflare tunnel token
-4. Run `docker-compose up -d`
-5. Access n8n at your domain
+🎨 **Media Processing Suite**
+- Text-to-speech conversion with multiple voices
+- PowerPoint generation from templates
+- Image extraction and video processing
+- MP4 combining with streaming support
 
-## File Structure
+🏗️ **Enterprise Architecture**
+- Docker containerization for scalability
+- Nginx reverse proxy for optimal routing  
+- Supabase PostgreSQL for reliable data storage
+- Secure tunnel access via Cloudflare
 
-- `docker-compose.yml` - Main service configuration
-- `nginx/` - Reverse proxy configuration
-- `n8n/custom-nodes/` - Custom TypeScript nodes
-- `fastapi/app/` - API service code
-- `storage/` - Binary data storage (videos, audio, images)
-- `.env` - Environment variables
-- `credentials.json` - Cloudflare credentials
+## 🚀 Quick Start
 
-## API Endpoints
+```bash
+# Clone and setup
+git clone https://github.com/1atharvad/n8n-self-hosted.git
+cd n8n-self-hosted
 
-- `/api/video/generate` - Video generation
-- `/api/audio/text-to-speech` - TTS conversion
-- `/api/media/image-audio-to-video` - Combine image and audio
-- `/api/combine/videos` - Video merging
+# Install dependencies
+npm run pip-install
 
-## Development
+# Build and deploy
+npm run docker-up
+```
 
-### Custom Nodes
-Develop TypeScript nodes in `custom-n8n-nodes/` directory. Use `npm run build-n8n-nodes` to compile and deploy changes.
+## 📁 Project Structure
 
-### API Services
-FastAPI services handle media processing with background job management and file streaming capabilities.
+```
+├── docker-compose.yml              # Service orchestration
+├── nginx.conf                      # Reverse proxy config
+├── custom-n8n-nodes/               # TypeScript custom nodes
+├── fastapi/app/                    # API services
+├── n8n-data/                       # Binary data storage
+├── n8n-files/                      # Data storage for Fastapu
+├── cloudflare/credentials.json     # Cloudflare credentials
+└── .env                            # Environment variables
+```
+
+## 🔌 API Endpoints
+
+### 🎵 Text-to-Speech
+- `POST /api/vtt-generate-audio-bytes` - Generate TTS audio
+- `GET /api/vtt-status/{job_id}` - Check TTS job status
+- `GET /api/vtt-result/{job_id}` - Download audio file
+
+### 📊 PowerPoint Processing
+- `POST /api/ppt-generator` - Generate PPT from template
+- `POST /api/extract-slides` - Extract slides as images
+- `GET /api/ppt/{file_name}` - Download PPT file
+
+### 🎬 Video Operations
+- `POST /api/convert-to-mp4` - Image + audio to MP4
+- `POST /api/combine-videos` - Combine multiple videos
+- `GET /api/get-video/{video_id}` - Stream with range support
+
+## 💻 Development
 
 ### Available Scripts
-- `npm run build-n8n-nodes` - Build and deploy custom nodes
-- `npm run pip-install` - Install Python dependencies
-- `npm run add-pkg` - Add new Python package and update requirements
-- `npm run docker-up` - Build nodes and start all services
-- `npm run docker-down` - Stop all services
+```bash
+npm run build-n8n-nodes    # Build and deploy custom nodes
+npm run pip-install        # Install Python dependencies  
+npm run add-pkg            # Add new Python package
+npm run docker-up          # Build nodes and start services
+npm run docker-down        # Stop all services
+```
 
-## Configuration
+### Custom Node Development
+Develop TypeScript nodes in `custom-n8n-nodes/` directory with full IntelliSense support and hot reloading.
 
-### Environment Variables
-Set up database connection, API keys, domain settings, and Cloudflare tunnel token in `.env`.
+## 🏛️ Infrastructure
 
-### Database
-Supabase PostgreSQL handles n8n data storage. N8N creates necessary tables automatically.
+### Database Configuration
+- **Supabase PostgreSQL** for workflow storage
+- **Local filesystem** for binary data management
+- **Automatic migrations** on service startup
 
-### Storage
-Local filesystem organized into folders for different media types with proper permissions.
+### Security & Access
+- **Cloudflare Tunnel** for secure web access
+- **SSL/HTTPS** termination at edge
+- **Environment-based** configuration management
 
-## Monitoring
+## 📊 Performance Metrics
 
-- View logs: `docker-compose logs -f [service-name]`
-- Health checks available at `/healthz` and `/api/health`
-- Access FastAPI docs at `/api/docs`
+- **Background Processing**: Async job handling for media tasks
+- **Streaming Support**: HTTP range requests for large files
+- **Container Optimized**: Multi-stage Docker builds
+- **Auto-scaling**: Docker Compose orchestration
 
-## Security Notes
+## 💡 Use Cases
 
-- Environment files not committed to version control
-- Proper file permissions on storage directories
-- SSL handled by Cloudflare
-- Database connections use SSL
+This platform excels at automating complex workflows involving:
+- **Content Creation**: Generate presentations and convert to videos
+- **Media Processing**: Batch audio/video operations
+- **Data Integration**: Connect multiple services seamlessly
+- **Custom Automation**: Build workflows with TypeScript nodes
 
-## Troubleshooting
+---
 
-Common issues involve database connections, file permissions, tunnel configuration, and custom node compilation. Check logs and verify environment variables for most problems.
+<div align="center">
+
+**Built with ❤️ by Atharva Devasthali**
+
+*Automation Engineer | Full-Stack Developer | DevOps Enthusiast*
+
+</div>
