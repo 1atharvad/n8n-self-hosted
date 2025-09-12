@@ -2,7 +2,7 @@
 FROM n8nio/n8n:latest AS n8n-base
 
 # Stage 2: FastAPI build
-FROM python:3.12-slime AS fastapi-builder
+FROM python:3.12-slim AS fastapi-builder
 WORKDIR /app/api
 RUN apt-get update && apt-get install -y \
     build-essential \
