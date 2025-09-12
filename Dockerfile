@@ -2,11 +2,18 @@
 FROM n8nio/n8n:latest AS n8n-base
 
 # Stage 2: FastAPI build
-FROM python:3.11-alpine AS fastapi-builder
+FROM python:3.12-slime AS fastapi-builder
 WORKDIR /app/api
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    ffmpeg \
+    libreoffice \
+    poppler-utils \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 COPY api/requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-COPY api/ ./
 
 # Stage 3: Runtime wrapper image
 FROM alpine:latest
