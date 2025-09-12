@@ -25,15 +25,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 4. Install npm dependencies (only if you have local n8n nodes)
+      # 4. Install npm dependencies (only if package.json exists)
       - name: Install npm dependencies
-        if: file-exists('package.json')
-        run: npm ci
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json found, skipping npm install"
+          fi
 
       # 5. Build n8n nodes (optional)
       - name: Build n8n nodes
-        if: file-exists('package.json')
-        run: npm run build-n8n-nodes
+        run: |
+          if [ -f package.json ]; then
+            npm run build-n8n-nodes
+          else
+            echo "No package.json found, skipping n8n node build"
+          fi
 
       # 6. Build the wrapper Docker image
       - name: Build Docker image
