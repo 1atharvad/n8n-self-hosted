@@ -22,7 +22,6 @@ COPY --from=n8n-base /usr/local/bin/n8n /usr/local/bin/n8n
 # Copy n8n local data
 COPY n8n-data/ /app/n8n-data
 COPY n8n_files/ /app/n8n_files
-COPY tts_cache/ /app/tts_cache
 
 # Copy FastAPI app
 COPY --from=fastapi-builder /app/api /app/api
