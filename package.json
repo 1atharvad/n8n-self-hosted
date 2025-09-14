@@ -16,7 +16,8 @@
     "pip-install": "pip3.11 install -r requirements.txt",
     "add-pkg": "sh -c 'pip3.11 install \"$0\" && echo \"$(pip3.11 freeze | grep ^$0==)\" >> requirements.txt'",
     "docker-up": "npm run build-n8n-nodes && docker-compose up --build -d",
-    "docker-down": "docker-compose down"
+    "docker-down": "docker-compose down",
+    "docker-rm-cache": "docker container prune -f && docker image prune -a -f && docker volume prune -f && docker builder prune -a -f"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
