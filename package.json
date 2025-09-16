@@ -15,7 +15,9 @@
     "build-n8n-nodes": "npx rimraf ./n8n-data/custom && tsc && gulp",
     "pip-install": "pip3.11 install -r requirements.txt",
     "add-pkg": "sh -c 'pip3.11 install \"$0\" && echo \"$(pip3.11 freeze | grep ^$0==)\" >> requirements.txt'",
-    "docker-up": "npm run build-n8n-nodes && docker-compose up --build -d",
+    "docker-build": "npm run build-n8n-nodes && docker build -t ghcr.io/1atharvad/n8n-custom-api:latest .",
+    "docker-push-build": "docker push ghcr.io/1atharvad/n8n-custom-api:latest ",
+    "docker-up": "docker-compose up --build -d",
     "docker-down": "docker-compose down",
     "docker-rm-cache": "docker container prune -f && docker image prune -a -f && docker volume prune -f && docker builder prune -a -f"
   },
