@@ -262,7 +262,7 @@ async def convert_to_mp4(req: dict, background_tasks: BackgroundTasks):
     """
     image_file = req["image_file"]
     job_id, job = video.set_job_status(
-        f'{image_file.split('.')[0]}-img',
+        f'{image_file.split(".")[0]}-img',
         status='pending'
     )
     background_tasks.add_task(

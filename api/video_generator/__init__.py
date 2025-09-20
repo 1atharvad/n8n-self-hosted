@@ -75,7 +75,7 @@ class VideoGenerator:
             - Updates job_store with job status, errors, and output details.
         """
         try:
-            video_file = f'{image_file.split('.')[0]}.mp4'
+            video_file = f'{image_file.split(".")[0]}.mp4'
 
             img_path = Path(IMG_FILES_DIR, image_file)
             audio_path = Path(AUDIO_FILES_DIR, audio_file)

@@ -3,5 +3,5 @@ credentials-file: /etc/cloudflared/credentials.json
 
 ingress:
   - hostname: n8n.atharvadevasthali.tech
-    service: http://n8n-custom-api:8080
+    service: http://nginx:8080
   - service: http_status:404

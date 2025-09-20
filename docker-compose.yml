@@ -1,9 +1,9 @@
 services:
-  n8n-custom-api:
-    image: ghcr.io/1atharvad/n8n-custom-api:latest
+  n8n:
+    image: n8nio/n8n:latest
     restart: unless-stopped
     expose:
-      - "8080"
+      - "5678"
     environment:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
       - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
@@ -25,11 +25,28 @@ services:
       - EXECUTIONS_TIMEOUT=0
       - EXECUTIONS_DATA_SAVE_ON_ERROR=all
       - EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
-      - NODE_ENV=production npm run build
+      - NODE_ENV=production
     volumes:
       - ./n8n-data:/home/node/.n8n
       - ./n8n_files:/n8n_files
+  fastapi:
+    image: ghcr.io/1atharvad/mediasynth:latest
+    restart: unless-stopped
+    expose:
+      - "9374"
+    volumes:
       - ./tts_cache:/tts_cache
+      - ./n8n_files:/n8n_files
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+    depends_on:
+      - n8n
+      - fastapi
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: always
@@ -37,14 +54,14 @@ services:
     volumes:
       - ./cloudflared:/etc/cloudflared
     depends_on:
-      - n8n-custom-api
+      - nginx
   processes:
     build: ./processes
     restart: always
     depends_on:
-      - n8n-custom-api
+      - n8n
     environment:
       - CHECK_INTERVAL=10
-      - TARGET_CONTAINER=n8n-deploy-n8n-custom-api-1
+      - TARGET_CONTAINER=n8n-deploy-n8n-1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
