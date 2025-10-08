@@ -55,7 +55,7 @@ fi
 
 # Build the image
 echo -e "${GREEN}Building image: $IMAGE_NAME${NC}"
-if docker build $BUILD_ARGS -t "$IMAGE_NAME" .; then
+if docker build $BUILD_ARGS --platform linux/amd64,linux/arm64 -t "$IMAGE_NAME" .; then
     echo -e "${GREEN}✓ Build successful!${NC}"
 else
     echo -e "${RED}✗ Build failed!${NC}"
