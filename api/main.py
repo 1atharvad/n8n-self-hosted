@@ -1,8 +1,8 @@
 from fastapi import FastAPI, BackgroundTasks, Request, HTTPException
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
-from video_generator import VideoGenerator, PPTGenerator, ImageExtractor
-from text_to_voice import TextToVoice
+from video_generator import VideoGenerator, PPTGenerator, ImageExtractor, TextToVoice
+from admin.admin_app import init_admin
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,6 +33,8 @@ templates = Jinja2Templates(directory="templates")
 ttv = TextToVoice()
 img_ext = ImageExtractor()
 video = VideoGenerator()
+
+init_admin(app)
 
 def respond_job_status(job_id, job):
     """
@@ -195,14 +197,16 @@ async def extract_slides(req: dict, background_tasks: BackgroundTasks):
         Job status with 'pending', 'completed', or 'failed'.
     """
     file_name = req["file_name"]
+    start_slide = int(req["start_slide"])
+    end_slide = int(req["end_slide"])
     total_slides = int(req["total_slides"])
-    batch_size = req.get("batch_size", -1)
     _, job = img_ext.set_job_status(file_name, status='pending')
     background_tasks.add_task(
         img_ext.extract_slides,
         file_name,
-        total_slides,
-        batch_size
+        start_slide,
+        end_slide,
+        total_slides
     )
 
     return JSONResponse(respond_job_status(file_name, job))

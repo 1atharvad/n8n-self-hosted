@@ -11,4 +11,4 @@ n8n_files
 n8n-data
 credentials.json
 tts_cache
-SadTalker
+postgres-data

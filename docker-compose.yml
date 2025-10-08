@@ -1,6 +1,7 @@
 services:
   n8n:
     image: n8nio/n8n:latest
+    container_name: n8n
     restart: unless-stopped
     expose:
       - "5678"
@@ -29,16 +30,47 @@ services:
     volumes:
       - ./n8n-data:/home/node/.n8n
       - ./n8n_files:/n8n_files
+      - ./sh_files:/sh_files
+    networks:
+      - n8n-network
+
   fastapi:
     image: ghcr.io/1atharvad/mediasynth:latest
+    container_name: mediasynth
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: 5432
     expose:
       - "9374"
     volumes:
       - ./tts_cache:/tts_cache
       - ./n8n_files:/n8n_files
+    depends_on:
+      - postgres
+    networks:
+      - n8n-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    expose:
+      - "5432"
+    networks:
+      - n8n-network
+
   nginx:
     image: nginx:alpine
+    container_name: nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -47,21 +79,35 @@ services:
     depends_on:
       - n8n
       - fastapi
+    networks:
+      - n8n-network
+
   cloudflared:
     image: cloudflare/cloudflared:latest
+    container_name: cloudflare
     restart: always
     command: tunnel --config /etc/cloudflared/config.yml run
     volumes:
       - ./cloudflared:/etc/cloudflared
     depends_on:
       - nginx
+    networks:
+      - n8n-network
+
   processes:
     build: ./processes
+    container_name: processes
     restart: always
     depends_on:
       - n8n
     environment:
       - CHECK_INTERVAL=10
-      - TARGET_CONTAINER=n8n-deploy-n8n-1
+      - TARGET_CONTAINER=n8n
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - n8n-network
+
+networks:
+  n8n-network:
+    driver: bridge

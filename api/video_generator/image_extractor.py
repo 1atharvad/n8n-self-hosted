@@ -58,29 +58,35 @@ class ImageExtractor:
         self.job_store[job_id]["status"] = status
         return job_id, self.job_store.get(job_id)
 
-    def extract_slides(self, file_name, total_slides, batch_size=-1):
+    def extract_slides(self, file_name, start_slide, end_slide, total_slides):
         """
-        Extract slides from a PowerPoint presentation and store them as PNG
-        images. Uses LibreOffice to convert PPTX to PDF, then extracts slides
-        using pdftoppm.
+        Extract a range of slides from a PowerPoint presentation and save them
+        as PNG images.
+
+        This method converts a `.pptx` file to PDF using LibreOffice, then
+        extracts slide images using `pdftoppm`. The resulting PNGs are stored
+        in `SLIDE_IMG_FILES_DIR`. It supports extracting a specific slide range
+        or the entire presentation.
 
         Args:
-            file_name (str): The base name of the PowerPoint file (without
+            file_name (str): Base name of the PowerPoint file (without
                 extension).
-            total_slides (int): The total number of slides in the presentation.
-            batch_size (int, optional): The number of slides to extract per
-                batch. Defaults to -1 (all slides).
+            start_slide (int): Starting slide number (1-based, inclusive).
+            end_slide (int): Ending slide number (1-based, inclusive).
+                If `end_slide - start_slide <= 0`, all slides are extracted.
+            total_slides (int): Total number of slides in the presentation.
 
         Side Effects:
-            - Generates slide images and stores them in SLIDE_IMG_FILES_DIR.
-            - Updates job_store with job status and slide list.
-            - Deletes intermediate PPTX and PDF files after processing.
+            - Creates/clears `SLIDE_IMG_FILES_DIR` and `PDF_FILES_DIR`.
+            - Generates slide images and saves them as `slide-<num>.png`.
+            - Deletes the original PPTX and intermediate PDF after processing.
+            - Updates `self.job_store[file_name]` with the extraction status.
 
         Job Store Updates:
             On success:
                 {
                     "status": "completed",
-                    "slides": [list of slide image file names]
+                    "slides": [list of generated slide image filenames]
                 }
             On failure:
                 {
@@ -103,7 +109,7 @@ class ImageExtractor:
                 str(ppt_path)
             ], check=True)
 
-            if batch_size == -1:
+            if end_slide - start_slide < 0:
                 subprocess.run([
                     "pdftoppm", str(pdf_path),
                     str(SLIDE_IMG_FILES_DIR / "slide"), "-png"
@@ -111,11 +117,6 @@ class ImageExtractor:
 
                 slides = [file_path.name for file_path in sorted(SLIDE_IMG_FILES_DIR.glob("*.png"))]
             else:
-                mp4_files = list(Path(IMG_VIDEO_FILES_DIR).glob("slide*.mp4"))
-                start_slide = len(mp4_files) + 1
-                end_slide = len(mp4_files) + batch_size
-                end_slide = total_slides if end_slide > total_slides else end_slide
-
                 if (start_slide <= total_slides):
                     subprocess.run([
                         "pdftoppm", str(pdf_path),
@@ -152,5 +153,5 @@ class ImageExtractor:
             }
 
 if __name__ == '__main__':
-    img_extractor = ImageExtractor('0cdd9e6c-4982-4ff2-87b1-15a7684af373')
-    print(img_extractor.extract_slides())
+    img_extractor = ImageExtractor()
+    img_extractor.extract_slides('19f6607a-f71f-4752-89d1-66dfc08b29b8', 1, 5, 10)

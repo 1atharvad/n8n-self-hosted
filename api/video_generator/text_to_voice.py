@@ -8,7 +8,7 @@ import subprocess
 from kokoro_onnx import Kokoro
 import soundfile as sf
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 FILES_DIR = Path(BASE_DIR, "n8n_files", "audio_files")
 
 model_path = Path(BASE_DIR, "tts_cache", "kokoro-v1.0.onnx")

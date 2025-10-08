@@ -1,8 +1,9 @@
-from fastapi.responses import FileResponse
 from pathlib import Path
 import subprocess
 from .ppt_generator import PPTGenerator
 from .image_extractor import ImageExtractor
+from .text_to_voice import TextToVoice
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 AUDIO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'audio_files')
@@ -98,6 +99,7 @@ class VideoGenerator:
 
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
+                os.chown(str(out_path), 1000, 1000)
                 self.job_store[job_id] = {
                     "status": "failed",
                     "error": "ffmpeg failed",
@@ -179,7 +181,7 @@ class VideoGenerator:
             - Updates job_store with job status and output details.
         """
         try:
-            list_file = Path(BASE_DIR, "videos.txt")
+            list_file = Path(BASE_DIR, "n8n_files", "videos.txt")
             video_path = Path(VIDEO_FILES_DIR, f"{video_file_name}.mp4")
 
             if not video_files or len(video_files) < 2:
@@ -187,7 +189,21 @@ class VideoGenerator:
 
             with open(list_file, "w+") as f:
                 for file_name in video_files:
-                    f.write(f"file '{str(Path(IMG_VIDEO_FILES_DIR, file_name))}'\n")
+                    file_path = Path(IMG_VIDEO_FILES_DIR, file_name)
+                    if file_path.exists():
+                        f.write(f"file '{str(file_path)}'\n")
+                    else:
+                        relative_path = file_path.relative_to(BASE_DIR)
+
+                        if relative_path.exists():
+                            f.write(f"file '{str(relative_path)}'\n")
+                        else:
+                            print('error')
+                            self.job_store[video_file_name] = {
+                                "status": "failed",
+                                "error": "ffmpeg failed",
+                                "stderr": f"Video file {file_name} not found at {video_path}"
+                            }
 
             cmd = [
                 "ffmpeg", "-f", "concat", "-safe", "0", "-i", str(list_file),
@@ -224,4 +240,4 @@ class VideoGenerator:
                 "error": str(e)
             }
 
-__all__ = ['VideoGenerator', 'PPTGenerator', 'ImageExtractor']
+__all__ = ['VideoGenerator', 'PPTGenerator', 'ImageExtractor', 'TextToVoice']

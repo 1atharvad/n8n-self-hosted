@@ -5,7 +5,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=for-the-badge&logo=docker)](https://docker.com)
 
 ## 🌐 Live Access
-**[N8N Platform](https://n8n.atharvadevasthali.tech/)**  
+**[N8N Platform](https://n8n.atharvadevasthali.tech/)**
 **[API Documentation](https://n8n.atharvadevasthali.tech/api/docs)**
 
 ## 🛠️ Tech Stack
@@ -40,7 +40,7 @@
 
 🏗️ **Enterprise Architecture**
 - Docker containerization for scalability
-- Nginx reverse proxy for optimal routing  
+- Nginx reverse proxy for optimal routing
 - Supabase PostgreSQL for reliable data storage
 - Secure tunnel access via Cloudflare
 
@@ -51,22 +51,48 @@
 git clone https://github.com/1atharvad/n8n-self-hosted.git
 cd n8n-self-hosted
 
-# Install dependencies
-npm run pip-install
+# Install node
+sudo apt install nodejs npm -y
 
-# Build and deploy
+# Install Docker Engine
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io -y
+
+# Install required npm packages
+npm install
+
+# Environment file
+nano .env
+
+# Setup files for n8n, installing custom nodes, adding required assets
+sh sh_files/setup_n8n_files.sh --clear-init
+
+# Starting Docker
 npm run docker-up
+
+# Stopping Docker
+npm run docker-down
+
+# Exporting Workflows from a n8n instance
+npm run pull-workflow
+
+# Importing Workflows from a n8n instance
+npm run push-workflow
+
+# Updating docker images
+npm run docker-update
 ```
 
 ## 📁 Project Structure
 
 ```
 ├── docker-compose.yml              # Service orchestration
-├── nginx.conf                      # Reverse proxy config
+├── nginx/nginx.conf                # Reverse proxy config
 ├── custom-n8n-nodes/               # TypeScript custom nodes
-├── fastapi/app/                    # API services
+├── api/                            # API services
 ├── n8n-data/                       # Binary data storage
-├── n8n-files/                      # Data storage for Fastapu
+├── n8n_files/                      # Data storage for Fastapi
+├── sh_files/                       # Shell scripts for running commands
 ├── cloudflare/credentials.json     # Cloudflare credentials
 └── .env                            # Environment variables
 ```
@@ -93,7 +119,7 @@ npm run docker-up
 ### Available Scripts
 ```bash
 npm run build-n8n-nodes    # Build and deploy custom nodes
-npm run pip-install        # Install Python dependencies  
+npm run pip-install        # Install Python dependencies
 npm run add-pkg            # Add new Python package
 npm run docker-up          # Build nodes and start services
 npm run docker-down        # Stop all services

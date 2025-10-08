@@ -15,11 +15,15 @@
     "build-n8n-nodes": "npx rimraf ./n8n-data/custom && tsc && gulp",
     "pip-install": "pip3.11 install -r requirements.txt",
     "add-pkg": "sh -c 'pip3.11 install \"$0\" && echo \"$(pip3.11 freeze | grep ^$0==)\" >> requirements.txt'",
-    "docker-build": "npm run build-n8n-nodes && docker build -t ghcr.io/1atharvad/n8n-custom-api:latest .",
-    "docker-push-build": "docker push ghcr.io/1atharvad/n8n-custom-api:latest ",
+    "docker-build": "sh api/build.sh",
+    "docker-push-build": "sh api/build.sh --push",
     "docker-up": "docker-compose up --build -d",
     "docker-down": "docker-compose down",
-    "docker-rm-cache": "docker container prune -f && docker image prune -a -f && docker volume prune -f && docker builder prune -a -f"
+    "docker-rm-cache": "docker container prune -f && docker image prune -a -f && docker volume prune -f && docker builder prune -a -f",
+    "docker-update-images": "docker pull n8nio/n8n && docker pull ghcr.io/1atharvad/mediasynth && npm run docker-down && npm run docker-up",
+    "push-workflows": "sh sh_files/backup_n8n_workflows.sh ./n8n-workflow",
+    "push-workflows-backup": "sh sh_files/git_n8n_workflows.sh",
+    "pull-workflows-backup": "sh sh_files/upload_n8n_workflows.sh"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
