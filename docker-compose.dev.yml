@@ -73,7 +73,7 @@ services:
     container_name: nginx
     restart: unless-stopped
     ports:
-      - "6060:6060"
+      - "8080:8080"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
     depends_on:
@@ -82,17 +82,17 @@ services:
     networks:
       - n8n-network
 
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   container_name: cloudflare
-  #   restart: always
-  #   command: tunnel --config /etc/cloudflared/config.yml run
-  #   volumes:
-  #     - ./cloudflared:/etc/cloudflared
-  #   depends_on:
-  #     - nginx
-  #   networks:
-  #     - n8n-network
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare
+    restart: always
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    depends_on:
+      - nginx
+    networks:
+      - n8n-network
 
   processes:
     build: ./processes

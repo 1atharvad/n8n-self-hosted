@@ -1,0 +1,87 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    expose:
+      - "5678"
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_RUNNERS_ENABLED=${N8N_RUNNERS_ENABLED}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=${N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS}
+      - N8N_TRUST_PROXY=${N8N_TRUST_PROXY}
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=${N8N_PORT}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - N8N_LISTEN_ADDRESS=${N8N_LISTEN_ADDRESS}
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_BINARY_DATA_STORAGE_PATH=/home/node/.n8n/binaryData
+      - DB_TYPE=${DB_TYPE}
+      - WEBHOOK_URL=${WEBHOOK_TUNNEL_URL}
+      - EXECUTIONS_TIMEOUT=0
+      - EXECUTIONS_DATA_SAVE_ON_ERROR=all
+      - EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
+      - NODE_ENV=production
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+      - ./n8n_files:/n8n_files
+      - ./sh_files:/sh_files
+    networks:
+      - n8n-network
+
+  fastapi:
+    image: ghcr.io/1atharvad/mediasynth:latest
+    container_name: mediasynth
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: 5432
+    expose:
+      - "9374"
+    volumes:
+      - ./tts_cache:/tts_cache
+      - ./n8n_files:/n8n_files
+    depends_on:
+      - postgres
+    networks:
+      - n8n-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    expose:
+      - "5432"
+    networks:
+      - n8n-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+    depends_on:
+      - n8n
+      - fastapi
+    networks:
+      - n8n-network
+
+networks:
+  n8n-network:
+    driver: bridge

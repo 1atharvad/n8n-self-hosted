@@ -51,6 +51,12 @@
 git clone https://github.com/1atharvad/n8n-self-hosted.git
 cd n8n-self-hosted
 
+# Clone and setup in current directory
+git clone https://github.com/1atharvad/n8n-self-hosted.git .
+
+# To switch from root to user for the folders, and its sub folders
+chown -R 1000:1000 .
+
 # Install node
 sudo apt install nodejs npm -y
 
@@ -68,7 +74,7 @@ nano .env
 sh sh_files/setup_n8n_files.sh --clear-init
 
 # Starting Docker
-npm run docker-up
+npm run docker-up:prod
 
 # Stopping Docker
 npm run docker-down

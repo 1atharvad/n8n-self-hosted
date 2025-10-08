@@ -31,7 +31,6 @@ mkdir -p ./n8n_files/{audio_files,img_video_files,pdf_files,ppt_files,ppt_images
 
 # Make all folders user-writable
 chmod -R 775 ./n8n_files
-chown -R 1000:1000 ./n8n_files
 
 echo "Folders created and permissions updated!"
 
