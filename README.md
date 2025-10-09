@@ -55,7 +55,8 @@ cd n8n-self-hosted
 git clone https://github.com/1atharvad/n8n-self-hosted.git .
 
 # To switch from root to user for the folders, and its sub folders
-chown -R 1000:1000 .
+find . -type f ! -name "*.ini" -exec chown 1000:1000 {} + 2>/dev/null
+find . -type d -exec chown 1000:1000 {} + 2>/dev/null
 
 # Install node
 sudo apt install nodejs npm -y

@@ -62,7 +62,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
     expose:
       - "5432"
     networks:
