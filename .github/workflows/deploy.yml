@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   DEPLOY_PATH: /www/wwwroot/n8n.atharvadevasthali.com
