@@ -19,7 +19,7 @@ jobs:
 
       - name: Generate base64-safe .env file
         run: |
-          echo "${{ toJSON(secrets) }}" | jq -r 'to_entries | map(select(.key) | "\(.key)=\(.value|@base64)") | .[]' > .env.b64
+          echo "${{ toJSON(secrets) }}" | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' > .env.b64
           echo "${{ toJSON(env) }}" | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' >> .env.b64
 
       - name: Setup SSH
@@ -76,6 +76,7 @@ jobs:
             npm install --silent
 
             echo '--- Running production build ---'
+            # npm run docker:prod --silent
 
             echo '✅ Deployment complete!'
           "
