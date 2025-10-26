@@ -8,6 +8,8 @@ on:
 
 env:
   DEPLOY_PATH: /www/wwwroot/n8n.atharvadevasthali.com
+  SECRETS_JSON: ${{ toJSON(secrets) }}
+  VARS_JSON: ${{ toJSON(vars) }}
 
 jobs:
   deploy:
@@ -21,8 +23,8 @@ jobs:
       - name: Generate base64-safe .env file
         run: |
           rm -f .env.b64
-          echo ${{ toJSON(secrets) }} | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' > .env.b64
-          echo ${{ toJSON(vars) }} | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' >> .env.b64
+          echo "$SECRETS_JSON" | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' > .env.b64
+          echo "$VARS_JSON" | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' >> .env.b64
 
       - name: Setup SSH
         run: |
