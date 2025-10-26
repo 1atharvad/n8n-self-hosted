@@ -22,14 +22,16 @@ jobs:
         run: |
           echo ${{ toJSON(secrets) }} \
             | jq -r 'to_entries
-                    | map(select(.key | test("^[A-Z0-9_]+$") and (.value | type=="string" and test("\n") | not)))
-                    | map("\(.key)=\(.value|@base64)")
+                    | map(select(.key | test("^[A-Z0-9_]+$")
+                          and ((.value|tostring|test("\n")|not))))
+                    | map("\(.key)=\(.value|tostring|@base64)")
                     | .[]' > .env.b64
 
-          echo ${{ toJSON(vars) }} \
+          echo ${{ toJSON(env) }} \
             | jq -r 'to_entries
-                    | map(select(.key | test("^[A-Z0-9_]+$") and (.value | type=="string" and test("\n") | not)))
-                    | map("\(.key)=\(.value|@base64)")
+                    | map(select(.key | test("^[A-Z0-9_]+$")
+                          and ((.value|tostring|test("\n")|not))))
+                    | map("\(.key)=\(.value|tostring|@base64)")
                     | .[]' >> .env.b64
 
       - name: Setup SSH
