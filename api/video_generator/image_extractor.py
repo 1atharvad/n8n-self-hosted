@@ -1,12 +1,13 @@
-from pathlib import Path
-import subprocess
 import shutil
+import subprocess
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PPT_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_files')
 PDF_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'pdf_files')
 SLIDE_IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
 IMG_VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'img_video_files')
+
 
 class ImageExtractor:
     """
@@ -26,7 +27,7 @@ class ImageExtractor:
             A singleton instance of the class.
         """
         if not cls._instance:
-            cls._instance = super(ImageExtractor, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super().__new__(cls, *args, **kwargs)
             cls._instance.connection = "Image Extractor"
         return cls._instance
 
@@ -103,32 +104,62 @@ class ImageExtractor:
             ppt_path = Path(PPT_FILES_DIR, f"{file_name}.pptx")
             pdf_path = Path(PDF_FILES_DIR, f"{file_name}.pdf")
 
-            subprocess.run([
-                "libreoffice", "--headless", "--convert-to", "pdf",
-                "--outdir", str(PDF_FILES_DIR),
-                str(ppt_path)
-            ], check=True)
+            subprocess.run(
+                [
+                    "libreoffice",
+                    "--headless",
+                    "--convert-to",
+                    "pdf",
+                    "--outdir",
+                    str(PDF_FILES_DIR),
+                    str(ppt_path),
+                ],
+                check=True,
+            )
 
             if end_slide - start_slide < 0:
-                subprocess.run([
-                    "pdftoppm", str(pdf_path),
-                    str(SLIDE_IMG_FILES_DIR / "slide"), "-png"
-                ], check=True)
+                subprocess.run(
+                    [
+                        "pdftoppm",
+                        str(pdf_path),
+                        str(SLIDE_IMG_FILES_DIR / "slide"),
+                        "-png",
+                    ],
+                    check=True,
+                )
 
-                slides = [file_path.name for file_path in sorted(SLIDE_IMG_FILES_DIR.glob("*.png"))]
+                slides = [
+                    file_path.name
+                    for file_path in sorted(SLIDE_IMG_FILES_DIR.glob("*.png"))
+                ]
             else:
-                if (start_slide <= total_slides):
-                    subprocess.run([
-                        "pdftoppm", str(pdf_path),
-                        str(SLIDE_IMG_FILES_DIR / "slide"), "-png",
-                        "-f", f"{start_slide}",
-                        "-l", f"{end_slide}"
-                    ], check=True)
+                if start_slide <= total_slides:
+                    subprocess.run(
+                        [
+                            "pdftoppm",
+                            str(pdf_path),
+                            str(SLIDE_IMG_FILES_DIR / "slide"),
+                            "-png",
+                            "-f",
+                            f"{start_slide}",
+                            "-l",
+                            f"{end_slide}",
+                        ],
+                        check=True,
+                    )
 
-                    slides = [file_path.name for file_path in sorted(SLIDE_IMG_FILES_DIR.glob("*.png"))]
+                    slides = [
+                        file_path.name
+                        for file_path in sorted(
+                            SLIDE_IMG_FILES_DIR.glob("*.png")
+                        )
+                    ]
                 else:
                     pad_width = len(str(total_slides))
-                    slides = [f"slide-{str(index).zfill(pad_width)}.png" for index in range(1, total_slides + 1)]
+                    slides = [
+                        f"slide-{str(index).zfill(pad_width)}.png"
+                        for index in range(1, total_slides + 1)
+                    ]
 
             if ppt_path.exists():
                 ppt_path.unlink()
@@ -138,20 +169,20 @@ class ImageExtractor:
 
             self.job_store[file_name] = {
                 "status": "completed",
-                "slides": slides
+                "slides": slides,
             }
 
         except subprocess.CalledProcessError as e:
             self.job_store[file_name] = {
                 "status": "failed",
-                "error": f"Conversion failed: {e}"
+                "error": f"Conversion failed: {e}",
             }
         except Exception as e:
-            self.job_store[file_name] = {
-                "status": "failed",
-                "error": str(e)
-            }
+            self.job_store[file_name] = {"status": "failed", "error": str(e)}
+
 
 if __name__ == '__main__':
     img_extractor = ImageExtractor()
-    img_extractor.extract_slides('19f6607a-f71f-4752-89d1-66dfc08b29b8', 1, 5, 10)
+    img_extractor.extract_slides(
+        '19f6607a-f71f-4752-89d1-66dfc08b29b8', 1, 5, 10
+    )

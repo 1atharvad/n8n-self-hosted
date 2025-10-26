@@ -1,14 +1,25 @@
-from fastapi import FastAPI, BackgroundTasks, Request, HTTPException
-from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
-from fastapi.templating import Jinja2Templates
-from video_generator import VideoGenerator, PPTGenerator, ImageExtractor, TextToVoice
-from admin.admin_app import init_admin
+import hashlib
 from pathlib import Path
 
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from admin.admin_app import init_admin
+from obs_controller.routes import router as obs_router
+from video_generator import (
+    ImageExtractor,
+    PPTGenerator,
+    TextToVoice,
+    VideoGenerator,
+)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-PPT_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_files')
-VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
-CHUNK_SIZE = 1024 * 1024 # 1MB
+ASSET_FILES_DIR = Path(BASE_DIR, 'n8n_files')
+PPT_FILES_DIR = Path(ASSET_FILES_DIR, 'ppt_files')
+VIDEO_FILES_DIR = Path(ASSET_FILES_DIR, 'video_files')
+CHUNK_SIZE = 1024 * 1024  # 1MB
 
 """
 FastAPI Application for TTS, PPT, Image Extraction, and Video Generation.
@@ -34,7 +45,26 @@ ttv = TextToVoice()
 img_ext = ImageExtractor()
 video = VideoGenerator()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 init_admin(app)
+app.include_router(obs_router, prefix="/obs")
+
+
+def cache_hash(file_path: str) -> str:
+    """Return /static/file?cache=<6-char-hash> automatically."""
+    path = Path(f"static/{file_path.lstrip('/')}")
+    if not path.exists():
+        return f"/static/{file_path}"  # fallback if file missing
+    with open(path, "rb") as f:
+        content = f.read()
+    hash6 = hashlib.md5(content).hexdigest()[:6]
+    return f"/api/static/{file_path}?cache={hash6}"
+
+
+# Register the filter
+templates.env.filters["static"] = cache_hash
+
 
 def respond_job_status(job_id, job):
     """
@@ -50,10 +80,7 @@ def respond_job_status(job_id, job):
     """
     if not job:
         return {'error': 'Job not found', 'status': 'failed'}
-    response_data = {
-        'job_id': job_id,
-        'status': job.get('status', 'pending')
-    }
+    response_data = {'job_id': job_id, 'status': job.get('status', 'pending')}
 
     if 'error' in job:
         response_data['error'] = job['error']
@@ -85,6 +112,7 @@ def iter_file(file_path: Path, start: int, end: int):
             yield data
             remaining -= len(data)
 
+
 @app.post('/vtt-generate-audio-bytes')
 async def generate_tts_bytes(req: dict, background_tasks: BackgroundTasks):
     """
@@ -102,8 +130,9 @@ async def generate_tts_bytes(req: dict, background_tasks: BackgroundTasks):
 
     return JSONResponse(respond_job_status(job_id, job))
 
+
 @app.get('/vtt-status/{job_id}')
-async def check_status(job_id: str):
+async def check_vtt_status(job_id: str):
     """
     Checks the current status of a TTS job.
 
@@ -116,8 +145,9 @@ async def check_status(job_id: str):
     job = ttv.get_job(job_id)
     return JSONResponse(respond_job_status(job_id, job))
 
+
 @app.get('/vtt-result/{job_id}')
-async def get_result(job_id: str):
+async def get_vtt_result(job_id: str):
     """
     Retrieve the resulting TTS audio file if the job is completed.
 
@@ -134,9 +164,10 @@ async def get_result(job_id: str):
         return FileResponse(
             path=str(job['file_path']),
             media_type='audio/wav',
-            filename=f'{job_id}.wav'
+            filename=f'{job_id}.wav',
         )
     return JSONResponse(job_response)
+
 
 @app.post('/ppt-generator')
 async def ppt_generator(req: dict):
@@ -156,14 +187,17 @@ async def ppt_generator(req: dict):
     ppt.old_text = req['old_text']
     file_path = ppt.create_slide(req['jobs'])
 
-    return JSONResponse({
-        'file_name': file_path.name,
-        'file_path': str(file_path),
-        'total_slides': str(len(req['jobs']))
-    })
+    return JSONResponse(
+        {
+            'file_name': file_path.name,
+            'file_path': str(file_path),
+            'total_slides': str(len(req['jobs'])),
+        }
+    )
+
 
 @app.get('/ppt/{file_name}')
-async def ppt_generator(file_name: str):
+async def get_ppt_file(file_name: str):
     """
     Downloads a generated PowerPoint file by name.
 
@@ -180,8 +214,9 @@ async def ppt_generator(file_name: str):
     return FileResponse(
         path=str(file_path),
         media_type='application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        filename=file_path.name
+        filename=file_path.name,
     )
+
 
 @app.post("/extract-slides")
 async def extract_slides(req: dict, background_tasks: BackgroundTasks):
@@ -202,17 +237,14 @@ async def extract_slides(req: dict, background_tasks: BackgroundTasks):
     total_slides = int(req["total_slides"])
     _, job = img_ext.set_job_status(file_name, status='pending')
     background_tasks.add_task(
-        img_ext.extract_slides,
-        file_name,
-        start_slide,
-        end_slide,
-        total_slides
+        img_ext.extract_slides, file_name, start_slide, end_slide, total_slides
     )
 
     return JSONResponse(respond_job_status(file_name, job))
 
+
 @app.get('/img-ext-status/{job_id}')
-async def check_status(job_id: str):
+async def check_img_status(job_id: str):
     """
     Checks the current status of an image extraction job from a PowerPoint file.
 
@@ -222,15 +254,17 @@ async def check_status(job_id: str):
     Returns:
         A JSON object containing:
             - job_id (str): The ID of the job
-            - status (str): Current job status ('pending', 'completed', 'failed')
+            - status (str): Current job status ('pending', 'completed',
+                'failed')
             - error (str, optional): Error message if the job failed
             - stderr (str, optional): Additional error details if available
     """
     job = img_ext.get_job(job_id)
     return JSONResponse(respond_job_status(job_id, job))
 
+
 @app.get('/img-ext-result/{job_id}')
-async def get_result(job_id: str):
+async def get_img_result(job_id: str):
     """
     Retrieves the result of a completed image extraction job.
 
@@ -239,18 +273,18 @@ async def get_result(job_id: str):
 
     Returns:
         JSONResponse:
-            - If completed: JSON object containing 'slides' list along with job status.
-            - If not completed or failed: JSON object containing current job status and error details.
+            - If completed: JSON object containing 'slides' list along with job
+                status.
+            - If not completed or failed: JSON object containing current job
+                status and error details.
     """
     job = img_ext.get_job(job_id)
     job_response = respond_job_status(job_id, job)
 
     if job_response.get('status') == 'completed':
-        return JSONResponse({
-            **job_response,
-            'slides': job.get('slides')
-        })
+        return JSONResponse({**job_response, 'slides': job.get('slides')})
     return JSONResponse(job_response)
+
 
 @app.post("/convert-to-mp4")
 async def convert_to_mp4(req: dict, background_tasks: BackgroundTasks):
@@ -266,20 +300,17 @@ async def convert_to_mp4(req: dict, background_tasks: BackgroundTasks):
     """
     image_file = req["image_file"]
     job_id, job = video.set_job_status(
-        f'{image_file.split(".")[0]}-img',
-        status='pending'
+        f'{image_file.split(".")[0]}-img', status='pending'
     )
     background_tasks.add_task(
-        video.convert_to_mp4,
-        job_id,
-        image_file,
-        req["audio_file"]
+        video.convert_to_mp4, job_id, image_file, req["audio_file"]
     )
 
     return JSONResponse(respond_job_status(job_id, job))
 
+
 @app.get('/convert-to-mp4-status/{job_id}')
-async def check_status(job_id: str):
+async def check_mp4_status(job_id: str):
     """
     Check the current status of an image-to-MP4 video conversion job.
 
@@ -301,15 +332,18 @@ async def check_status(job_id: str):
     job_response = respond_job_status(job_id, job)
 
     if job_response.get('status') == 'completed':
-        return JSONResponse({
-            'status': 'completed',
-            'file_path': str(job['video_file']),
-            'filename': job['filename']
-        })
+        return JSONResponse(
+            {
+                'status': 'completed',
+                'file_path': str(job['video_file']),
+                'filename': job['filename'],
+            }
+        )
     return JSONResponse(job_response)
 
+
 @app.post("/convert-mp4-to-mp4")
-async def convert_to_mp4(req: dict):
+async def convert_mp4_to_mp4(req: dict):
     """
     Convert an existing MP4 video to a standardized MP4 format using ffmpeg.
 
@@ -329,6 +363,7 @@ async def convert_to_mp4(req: dict):
         return JSONResponse(content=result, status_code=500)
     return JSONResponse(content=result, status_code=200)
 
+
 @app.post("/combine-videos")
 async def combine_videos(req: dict, background_tasks: BackgroundTasks):
     """
@@ -344,15 +379,14 @@ async def combine_videos(req: dict, background_tasks: BackgroundTasks):
     file_name = req["video_file_name"]
     job_id, job = video.set_job_status(file_name, status='pending')
     background_tasks.add_task(
-        video.combine_videos,
-        file_name,
-        req["video_files"]
+        video.combine_videos, file_name, req["video_files"]
     )
 
     return JSONResponse(respond_job_status(job_id, job))
 
+
 @app.get('/combine-videos-status/{job_id}')
-async def check_status(job_id: str):
+async def check_video_status(job_id: str):
     """
     Checks the current status of a video combining job.
 
@@ -371,8 +405,9 @@ async def check_status(job_id: str):
     job = video.get_job(job_id)
     return JSONResponse(respond_job_status(job_id, job))
 
+
 @app.get('/combine-videos-result/{job_id}')
-async def get_result(job_id: str):
+async def get_video_result(job_id: str):
     """
     Retrieves the result of a completed video combining job.
 
@@ -390,11 +425,11 @@ async def get_result(job_id: str):
     job_response = respond_job_status(job_id, job)
 
     if job_response.get('status') == 'completed':
-        return JSONResponse({
-            'file_path': str(job['file_path']),
-            'filename': job['filename']
-        })
+        return JSONResponse(
+            {'file_path': str(job['file_path']), 'filename': job['filename']}
+        )
     return JSONResponse(job_response)
+
 
 @app.get("/video/{video_id}")
 async def video_page(request: Request, video_id: str):
@@ -413,9 +448,9 @@ async def video_page(request: Request, video_id: str):
     if not video_path.exists():
         raise HTTPException(status_code=404, detail="Video not found")
     return templates.TemplateResponse(
-        "video.jinja",
-        {"request": request, "video_id": video_id}
+        "video.jinja", {"request": request, "video_id": video_id}
     )
+
 
 @app.get("/get-video/{video_id}")
 async def video_endpoint(request: Request, video_id: str):
@@ -430,7 +465,11 @@ async def video_endpoint(request: Request, video_id: str):
         StreamingResponse: Video content stream supporting partial content
             delivery.
     """
-    video_path = Path(VIDEO_FILES_DIR, f"{video_id}.mp4")
+    video_path = (
+        Path(ASSET_FILES_DIR, f"{video_id}.mp4")
+        if video_id in ['intro', 'outro']
+        else Path(VIDEO_FILES_DIR, f"{video_id}.mp4")
+    )
 
     if not video_path.exists():
         raise HTTPException(status_code=404, detail="Video not found")

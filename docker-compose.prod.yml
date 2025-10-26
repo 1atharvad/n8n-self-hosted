@@ -39,10 +39,17 @@ services:
     container_name: mediasynth
     restart: unless-stopped
     environment:
+      API_KEY: ${API_KEY}
+      API_URL: ${API_URL}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      OBS_HOST: ${OBS_HOST}
+      OBS_PORT: ${OBS_PORT}
+      OBS_PASSWORD: ${OBS_PASSWORD}
+      SHOW_SCHEDULING_API_URL: ${SHOW_SCHEDULING_API_URL}
+      SHOW_SCHEDULING_API_KEY: ${SHOW_SCHEDULING_API_KEY}
     expose:
       - "9374"
     volumes:
@@ -74,7 +81,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/nginx.conf:ro
     depends_on:
       - n8n
       - fastapi

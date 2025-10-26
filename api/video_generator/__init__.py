@@ -1,15 +1,17 @@
-from pathlib import Path
-import subprocess
-from .ppt_generator import PPTGenerator
-from .image_extractor import ImageExtractor
-from .text_to_voice import TextToVoice
 import os
+import subprocess
+from pathlib import Path
+
+from .image_extractor import ImageExtractor
+from .ppt_generator import PPTGenerator
+from .text_to_voice import TextToVoice
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 AUDIO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'audio_files')
 IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
 IMG_VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'img_video_files')
 VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
+
 
 class VideoGenerator:
     """
@@ -29,7 +31,7 @@ class VideoGenerator:
             Singleton instance of the class.
         """
         if not cls._instance:
-            cls._instance = super(VideoGenerator, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super().__new__(cls, *args, **kwargs)
             cls._instance.connection = "Video Generator"
         return cls._instance
 
@@ -84,17 +86,37 @@ class VideoGenerator:
             IMG_VIDEO_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
             cmd = [
-                "ffmpeg", "-loop", "1",
-                "-i", str(img_path),
-                "-i", str(audio_path),
-                "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
-                "-c:v", "libx264", "-tune", "stillimage",
-                "-c:a", "aac", "-b:a", "192k",
-                "-ac", "2", "-ar", "44100",
-                "-crf", "23", "-r", "30",
-                "-pix_fmt", "yuv420p",
-                "-movflags", "+faststart",
-                "-shortest", str(out_path)
+                "ffmpeg",
+                "-loop",
+                "1",
+                "-i",
+                str(img_path),
+                "-i",
+                str(audio_path),
+                "-vf",
+                "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+                "-c:v",
+                "libx264",
+                "-tune",
+                "stillimage",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                "-ac",
+                "2",
+                "-ar",
+                "44100",
+                "-crf",
+                "23",
+                "-r",
+                "30",
+                "-pix_fmt",
+                "yuv420p",
+                "-movflags",
+                "+faststart",
+                "-shortest",
+                str(out_path),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -103,7 +125,7 @@ class VideoGenerator:
                 self.job_store[job_id] = {
                     "status": "failed",
                     "error": "ffmpeg failed",
-                    "stderr": result.stderr
+                    "stderr": result.stderr,
                 }
 
             if img_path.exists():
@@ -112,13 +134,10 @@ class VideoGenerator:
             self.job_store[job_id] = {
                 "status": "completed",
                 "video_file": str(out_path),
-                "filename": video_file
+                "filename": video_file,
             }
         except Exception as e:
-            self.job_store[job_id] = {
-                "status": "failed",
-                "error": str(e)
-            }
+            self.job_store[job_id] = {"status": "failed", "error": str(e)}
 
     @staticmethod
     def convert_mp4_to_mp4(video_file: str):
@@ -138,17 +157,29 @@ class VideoGenerator:
 
             cmd = [
                 "ffmpeg",
-                "-i", str(input_path),
-                "-c:v", "libx264",
-                "-crf", "23",
-                "-preset", "fast",
-                "-c:a", "aac",
-                "-b:a", "192k",
-                "-ac", "2", "-ar", "44100",
-                "-r", "30",
-                "-pix_fmt", "yuv420p",
-                "-movflags", "+faststart",
-                str(output_path)
+                "-i",
+                str(input_path),
+                "-c:v",
+                "libx264",
+                "-crf",
+                "23",
+                "-preset",
+                "fast",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                "-ac",
+                "2",
+                "-ar",
+                "44100",
+                "-r",
+                "30",
+                "-pix_fmt",
+                "yuv420p",
+                "-movflags",
+                "+faststart",
+                str(output_path),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -156,10 +187,7 @@ class VideoGenerator:
                 return {"error": "ffmpeg failed", "stderr": result.stderr}
 
             output_path.rename(input_path)
-            return {
-                "video_file": str(input_path),
-                "filename": video_file
-            }
+            return {"video_file": str(input_path), "filename": video_file}
         except Exception as e:
             return {"error": str(e)}
 
@@ -202,18 +230,38 @@ class VideoGenerator:
                             self.job_store[video_file_name] = {
                                 "status": "failed",
                                 "error": "ffmpeg failed",
-                                "stderr": f"Video file {file_name} not found at {video_path}"
+                                "stderr": f"Video file {file_name} not found at {video_path}",
                             }
 
             cmd = [
-                "ffmpeg", "-f", "concat", "-safe", "0", "-i", str(list_file),
-                "-c:v", "libx264", "-crf", "23", "-preset", "fast",
-                "-c:a", "aac", "-b:a", "192k",
-                "-ac", "2", "-ar", "44100",
-                "-r", "30",
-                "-pix_fmt", "yuv420p",
-                "-movflags", "+faststart",
-                str(video_path)
+                "ffmpeg",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(list_file),
+                "-c:v",
+                "libx264",
+                "-crf",
+                "23",
+                "-preset",
+                "fast",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                "-ac",
+                "2",
+                "-ar",
+                "44100",
+                "-r",
+                "30",
+                "-pix_fmt",
+                "yuv420p",
+                "-movflags",
+                "+faststart",
+                str(video_path),
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
 
@@ -221,7 +269,7 @@ class VideoGenerator:
                 self.job_store[video_file_name] = {
                     "status": "failed",
                     "error": "ffmpeg failed",
-                    "stderr": result.stderr
+                    "stderr": result.stderr,
                 }
             else:
                 for file_name in video_files:
@@ -232,12 +280,13 @@ class VideoGenerator:
                 self.job_store[video_file_name] = {
                     "status": "completed",
                     "file_path": str(video_path),
-                    "filename": f"{video_file_name}.mp4"
+                    "filename": f"{video_file_name}.mp4",
                 }
         except Exception as e:
             self.job_store[video_file_name] = {
                 "status": "failed",
-                "error": str(e)
+                "error": str(e),
             }
+
 
 __all__ = ['VideoGenerator', 'PPTGenerator', 'ImageExtractor', 'TextToVoice']

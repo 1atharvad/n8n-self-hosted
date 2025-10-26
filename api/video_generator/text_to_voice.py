@@ -1,18 +1,20 @@
-from pydantic import BaseModel
-from pathlib import Path
-import numpy as np
-import uuid
 import re
-from tqdm import tqdm
 import subprocess
-from kokoro_onnx import Kokoro
+import uuid
+from pathlib import Path
+
+import numpy as np
 import soundfile as sf
+from kokoro_onnx import Kokoro
+from pydantic import BaseModel
+from tqdm import tqdm
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 FILES_DIR = Path(BASE_DIR, "n8n_files", "audio_files")
 
 model_path = Path(BASE_DIR, "tts_cache", "kokoro-v1.0.onnx")
 voices_path = Path(BASE_DIR, "tts_cache", "voices-v1.0.bin")
+
 
 class TTSRequest(BaseModel):
     """
@@ -21,7 +23,9 @@ class TTSRequest(BaseModel):
     Attributes:
         text (str): The input text to be converted into speech.
     """
+
     text: str
+
 
 class TextToVoice:
     """
@@ -44,10 +48,12 @@ class TextToVoice:
             Singleton instance of the class.
         """
         if not cls._instance:
-            cls._instance = super(TextToVoice, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super().__new__(cls, *args, **kwargs)
             cls._instance.connection = "Text To Voice"
             cls._instance.download_required_files()
-            cls._instance.kokoro_tts = Kokoro(model_path=str(model_path), voices_path=str(voices_path))
+            cls._instance.kokoro_tts = Kokoro(
+                model_path=str(model_path), voices_path=str(voices_path)
+            )
         return cls._instance
 
     @staticmethod
@@ -79,8 +85,11 @@ class TextToVoice:
             dir_path.mkdir(parents=True, exist_ok=True)
 
         cmd = [
-            "wget", "--progress=bar:force:noscroll", "-O",
-            destination_path, url
+            "wget",
+            "--progress=bar:force:noscroll",
+            "-O",
+            destination_path,
+            url,
         ]
 
         try:
@@ -89,13 +98,13 @@ class TextToVoice:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1
+                bufsize=1,
             ) as process:
                 progress_pattern = re.compile(r'\s*(\d+)%\s*')
                 progress_bar = tqdm(
                     total=100,
                     unit='%',
-                    desc=f'Downloading {destination_path.name}'
+                    desc=f'Downloading {destination_path.name}',
                 )
 
                 for line in process.stdout:
@@ -109,7 +118,9 @@ class TextToVoice:
                 process.wait()
             print(f"✅ Download complete: {destination_path}\n")
         except FileNotFoundError:
-            print("Error: `wget` command not found. Please ensure it is installed.")
+            print(
+                "Error: `wget` command not found. Please ensure it is installed."
+            )
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -143,8 +154,8 @@ class TextToVoice:
             {
                 'file_name': 'voices-v1.0.bin',
                 'file_path': Path(BASE_DIR, "tts_cache", "voices-v1.0.bin"),
-                'download_url': "https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/voices-v1.0.bin"
-            }
+                'download_url': "https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/voices-v1.0.bin",
+            },
         ]
 
         missing_files = []
@@ -159,8 +170,7 @@ class TextToVoice:
             print('')
             for _file in missing_files:
                 self.download_with_progress(
-                    _file.get('download_url'),
-                    _file.get('file_path')
+                    _file.get('download_url'), _file.get('file_path')
                 )
 
     def get_job(self, job_id: str):
@@ -261,19 +271,19 @@ class TextToVoice:
 
             self.job_store[job_id] = {
                 "status": "completed",
-                "file_path": str(file_path)
+                "file_path": str(file_path),
             }
 
         except Exception as e:
-            self.job_store[job_id] = {
-                "status": "failed",
-                "error": str(e)
-            }
+            self.job_store[job_id] = {"status": "failed", "error": str(e)}
 
 
 if __name__ == '__main__':
     tts_service = TextToVoice()
 
     job_id, _ = tts_service.set_job_status('kokoro_test')
-    tts_service.generate_tts_job(job_id, "Hello, this is Kokoro speaking. I am an AI agent, how can I help you Atharva?")
+    tts_service.generate_tts_job(
+        job_id,
+        "Hello, this is Kokoro speaking. I am an AI agent, how can I help you Atharva?",
+    )
     print("Kokoro job:", tts_service.get_job(job_id))

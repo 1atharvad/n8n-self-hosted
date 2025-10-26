@@ -1,12 +1,14 @@
-from copy import deepcopy
-from pptx import Presentation
-from pathlib import Path
 import uuid
+from copy import deepcopy
+from pathlib import Path
+
+from pptx import Presentation
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 TEMPLATE_PATH = Path(BASE_DIR, "n8n_files", "job_news_template.pptx")
 FILES_DIR = Path(BASE_DIR, "n8n_files", "ppt_files")
 AUDIO_DIR = Path(BASE_DIR, "n8n_files", "audio_files")
+
 
 class PPTGenerator:
     def __init__(self):
@@ -53,7 +55,9 @@ class PPTGenerator:
                 will be inserted.
         """
         new_slide = self.copy_slide(prs, template_slide)
-        replacements = {value: job[key] for key, value in self.old_text.items()}
+        replacements = {
+            value: job[key] for key, value in self.old_text.items()
+        }
 
         for shape in new_slide.shapes:
             if shape.has_text_frame:
@@ -95,7 +99,9 @@ class PPTGenerator:
         template_slide = prs.slides[self.template_slide]
 
         for index, job in enumerate(jobs):
-            self.insert_slide(prs, template_slide, job, index + 1 + self.template_slide)
+            self.insert_slide(
+                prs, template_slide, job, index + 1 + self.template_slide
+            )
 
         self.remove_slide(prs, template_slide)
 
@@ -103,6 +109,7 @@ class PPTGenerator:
         file_path = Path(self.files_dir, f"{job_id}.pptx")
         prs.save(file_path)
         return file_path
+
 
 if __name__ == '__main__':
     ppt = PPTGenerator()
@@ -114,7 +121,7 @@ if __name__ == '__main__':
         'experience': "{{EXPERIENCE}}",
         'skills': "{{SKILLS}}",
         'job_type': "{{JOB_TYPE}}",
-        'link': "{{LINK}}"
+        'link': "{{LINK}}",
     }
     ppt.create_slide(
         [
@@ -126,7 +133,7 @@ if __name__ == '__main__':
                 'skills': "PeopleSoft development, Oracle PeopleSoft",
                 'job_type': "Full-time, Remote",
                 "link": "https://www.linkedin.com/jobs/view/junior-peoplesoft-developer-remote-at-avesta-computer-services-4285538881",
-                "audio_file": "9278e699-02d4-466c-a196-96851711a8be.wav"
+                "audio_file": "9278e699-02d4-466c-a196-96851711a8be.wav",
             },
             {
                 "company_name": "Hireshire",
@@ -136,7 +143,7 @@ if __name__ == '__main__':
                 'skills': 'Basic knowledge of machine learning and programming',
                 'job_type': 'Internship',
                 "link": "https://www.linkedin.com/jobs/view/machine-learning-intern-at-hireshire-4285519746",
-                "audio_file": "9300b75b-cd61-4bdc-bec2-08892c8db469.wav"
-            }
+                "audio_file": "9300b75b-cd61-4bdc-bec2-08892c8db469.wav",
+            },
         ]
     )

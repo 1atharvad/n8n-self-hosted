@@ -1,0 +1,42 @@
+[tool.ruff]
+# Target Python version
+target-version = "py311"
+
+# Automatically fix issues where possible
+fix = true
+
+# Linting rules go under lint section
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "B", "UP"]
+
+# Ignore rules (optional)
+ignore = [
+    "E501",  # line too long (handled by formatting)
+]
+
+# Exclude unnecessary folders
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "migrations",
+    "node_modules"
+]
+
+# Per-file ignores for FastAPI routes (optional)
+per-file-ignores = { "main.py" = ["UP"] }
+
+# -----------------------------
+[tool.black]
+line-length = 79
+target-version = ["py311"]
+skip-string-normalization = true
+
+# -----------------------------
+[tool.isort]
+profile = "black"
+line_length = 79
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true

@@ -1,8 +1,11 @@
+from contextlib import asynccontextmanager
+
 from sqladmin import Admin, ModelView
 from sqlalchemy import text
-from contextlib import asynccontextmanager
+
+from .database import async_engine, sync_engine
 from .models import Base, JobLink, Mp4List
-from .database import sync_engine, async_engine
+
 
 def init_admin(app):
     """
@@ -37,7 +40,11 @@ def init_admin(app):
             JobLink.audio_added,
             JobLink.video_created,
         ]
-        column_searchable_list = [JobLink.company_name, JobLink.position, JobLink.location]
+        column_searchable_list = [
+            JobLink.company_name,
+            JobLink.position,
+            JobLink.location,
+        ]
         column_sortable_list = [JobLink.date, JobLink.id]
 
     # Mp4List admin

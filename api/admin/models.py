@@ -1,5 +1,12 @@
 from sqlalchemy import (
-    Column, Integer, String, Date, Boolean, BigInteger, Text, Time
+    BigInteger,
+    Boolean,
+    Column,
+    Date,
+    Integer,
+    String,
+    Text,
+    Time,
 )
 from sqlalchemy.orm import declarative_base
 

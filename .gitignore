@@ -7,6 +7,8 @@ dist
 __pycache__
 **/**.pyc
 .env*
+.ruff_cache
+venv
 n8n_files
 n8n-data
 credentials.json
