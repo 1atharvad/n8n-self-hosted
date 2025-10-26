@@ -83,7 +83,7 @@ jobs:
             npm install --silent
 
             echo '--- Running production build ---'
-            # npm run docker:prod --silent
+            npm run docker:prod --silent
 
             echo '✅ Deployment complete!'
           "
