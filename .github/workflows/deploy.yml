@@ -20,23 +20,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate base64-safe .env file
+      - name: Generate .env file
         run: |
-          rm -f .env.b64
+          rm -f .env
 
           echo "$SECRETS_JSON" | jq -r '
             to_entries
             | map(select(.key != "github_token" and .key != "CONTABO_SSH_KEY" and .key != "CONTABO_IP" and (.value | type == "string")))
-            | map("\(.key)=\(.value | @base64)")
+            | map("\(.key)=\(.value)")
             | .[]
-          ' > .env.b64
+          ' > .env
 
           echo "$VARS_JSON" | jq -r '
             to_entries
             | map(select(.value | type == "string"))
-            | map("\(.key)=\(.value | @base64)")
+            | map("\(.key)=\(.value)")
             | .[]
-          ' >> .env.b64
+          ' >> .env
 
       - name: Setup SSH
         run: |
@@ -45,19 +45,9 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.CONTABO_IP }} >> ~/.ssh/known_hosts
 
-      - name: Send and decode .env file on Contabo
+      - name: Transfer .env file to Contabo
         run: |
-          scp -i ~/.ssh/id_ed25519 .env.b64 root@${{ secrets.CONTABO_IP }}:/tmp/.env.b64
-          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.CONTABO_IP }} "
-            cd $DEPLOY_PATH &&
-            rm -f .env &&
-            while IFS='=' read -r key val; do
-              [ -z \"\$key\" ] && continue
-              decoded=\$(echo \"\$val\" | base64 --decode 2>/dev/null || echo \"\$val\")
-              echo \"\$key=\$decoded\" >> .env
-            done < /tmp/.env.b64
-            rm /tmp/.env.b64
-          "
+          scp -i ~/.ssh/id_ed25519 .env root@${{ secrets.CONTABO_IP }}:${{ env.DEPLOY_PATH }}/.env
 
       - name: Deploy app on Contabo
         run: |
@@ -93,7 +83,7 @@ jobs:
             npm install --silent
 
             echo '--- Running production build ---'
-            npm run docker:prod --silent
+            # npm run docker:prod --silent
 
             echo '✅ Deployment complete!'
           "
