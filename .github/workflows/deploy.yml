@@ -20,13 +20,13 @@ jobs:
 
       - name: Generate base64-safe .env file
         run: |
-          jq -n "${{ toJSON(secrets) }}" \
+          echo "${{ toJSON(secrets) }}" \
             | jq -r 'to_entries
                     | map(select(.key | test("^[A-Z0-9_]+$") and (.value | type=="string" and test("\n") | not)))
                     | map("\(.key)=\(.value|@base64)")
                     | .[]' > .env.b64
 
-          jq -n "${{ toJSON(vars) }}" \
+          echo "${{ toJSON(vars) }}" \
             | jq -r 'to_entries
                     | map(select(.key | test("^[A-Z0-9_]+$") and (.value | type=="string" and test("\n") | not)))
                     | map("\(.key)=\(.value|@base64)")
@@ -86,7 +86,7 @@ jobs:
             npm install --silent
 
             echo '--- Running production build ---'
-            npm run docker:prod --silent
+            # npm run docker:prod --silent
 
             echo '✅ Deployment complete!'
           "
