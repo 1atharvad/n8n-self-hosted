@@ -41,7 +41,8 @@ jobs:
             rm -f .env &&
             while IFS='=' read -r key val; do
               [ -z \"\$key\" ] && continue
-              echo \"\$key=\$(echo \"\$val\" | base64 --decode)\" >> .env
+              decoded=\$(echo \"\$val\" | base64 --decode 2>/dev/null || echo \"\$val\")
+              echo \"\$key=\$decoded\" >> .env
             done < /tmp/.env.b64
             rm /tmp/.env.b64
           "
