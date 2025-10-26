@@ -23,8 +23,20 @@ jobs:
       - name: Generate base64-safe .env file
         run: |
           rm -f .env.b64
-          echo "$SECRETS_JSON" | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' > .env.b64
-          echo "$VARS_JSON" | jq -r 'to_entries | map("\(.key)=\(.value|@base64)") | .[]' >> .env.b64
+
+          echo "$SECRETS_JSON" | jq -r '
+            to_entries
+            | map(select(.key != "github_token" and .key != "CONTABO_SSH_KEY" and .key != "CONTABO_IP" and (.value | type == "string")))
+            | map("\(.key)=\(.value | @base64)")
+            | .[]
+          ' > .env.b64
+
+          echo "$VARS_JSON" | jq -r '
+            to_entries
+            | map(select(.value | type == "string"))
+            | map("\(.key)=\(.value | @base64)")
+            | .[]
+          ' >> .env.b64
 
       - name: Setup SSH
         run: |
