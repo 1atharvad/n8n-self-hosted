@@ -136,12 +136,6 @@ class ShowApiHandler:
                 'sub_link': '/actionbar/assessment/',
                 'text_type': 'assessment_test_link',
             }
-        elif key == '5':
-            return {
-                'asset_key': 'assessment_qrcode_filename',
-                'sub_link': '/actionbar/assessment/',
-                'text_type': 'assessment_test_link',
-            }
         elif key == '6':
             return {
                 'asset_key': 'interview_qr_code',

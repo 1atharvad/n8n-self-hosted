@@ -1,12 +1,12 @@
 # 🚀 N8N Self-Hosted Instance
 > A powerful automation platform with custom media processing APIs, seamless integrations, and secure web access.
 
-[![Website](https://img.shields.io/badge/Website-Live-brightgreen?style=for-the-badge&logo=render)](https://n8n.atharvadevasthali.tech)
+[![Website](https://img.shields.io/badge/Website-Live-brightgreen?style=for-the-badge&logo=render)](https://n8n.atharvadevasthali.com)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-blue?style=for-the-badge&logo=docker)](https://docker.com)
 
 ## 🌐 Live Access
-**[N8N Platform](https://n8n.atharvadevasthali.tech/)**
-**[API Documentation](https://n8n.atharvadevasthali.tech/api/docs)**
+**[N8N Platform](https://n8n.atharvadevasthali.com/)**
+**[API Documentation](https://n8n.atharvadevasthali.com/api/docs)**
 
 ## 🛠️ Tech Stack
 

@@ -56,7 +56,7 @@ class QueueingLoop:
         - Provides peek, clear, and empty checks for queue management.
     """
 
-    def __init__(self, max_size: int = 20):
+    def __init__(self, max_size: int = 20, replay_queue_on: int = 20):
         """
         Initialize the video queue system.
 
@@ -64,6 +64,12 @@ class QueueingLoop:
             max_size (int, optional): Maximum queue size. 0 indicates
                 unlimited capacity.
         """
+        if max_size != 0 and replay_queue_on > max_size:
+            raise ValueError(
+                "'replay_queue_on' cannot be greater than the max size of the queue"
+            )
+
+        self.replay_queue_on = replay_queue_on
         self.video_playlist = PriorityQueue(maxsize=max_size)
         self.lock = threading.Lock()
         self.counter = 0
@@ -167,8 +173,14 @@ class QueueingLoop:
             str: Video file path, or None if queue is empty
         """
         priority, _ = self.peek()
+        queue_len = len(self.video_playlist)
 
-        if priority is None or priority >= 3:
+        if (
+            priority is None or priority >= 3
+        ) and queue_len < self.replay_queue_on:
+            logger.debug(
+                f"Skipping replay (priority={priority}, queue_len={queue_len})"
+            )
             return None
 
         video_file = self.dequeue()

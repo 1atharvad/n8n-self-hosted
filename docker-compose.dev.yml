@@ -39,17 +39,20 @@ services:
     container_name: mediasynth
     restart: unless-stopped
     environment:
-      API_KEY: ${API_KEY}
-      API_URL: ${API_URL}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      OBS_HOST: ${OBS_HOST}
-      OBS_PORT: ${OBS_PORT}
-      OBS_PASSWORD: ${OBS_PASSWORD}
-      SHOW_SCHEDULING_API_URL: ${SHOW_SCHEDULING_API_URL}
-      SHOW_SCHEDULING_API_KEY: ${SHOW_SCHEDULING_API_KEY}
+      - API_KEY=${API_KEY}
+      - API_URL=${API_URL}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=mydb
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - OBS_HOST=${OBS_HOST}
+      - OBS_PORT=${OBS_PORT}
+      - OBS_PASSWORD=${OBS_PASSWORD}
+      - OBS_SERVER_USERNAME=${OBS_SERVER_USERNAME}
+      - OBS_SERVER_PASSWORD=${OBS_SERVER_PASSWORD}
+      - OBS_REMOTE_PATH=${OBS_REMOTE_PATH}
+      - SHOW_SCHEDULING_API_URL=${SHOW_SCHEDULING_API_URL}
+      - SHOW_SCHEDULING_API_KEY=${SHOW_SCHEDULING_API_KEY}
     expose:
       - "9374"
     volumes:
@@ -60,13 +63,45 @@ services:
     networks:
       - n8n-network
 
+  # temporal:
+  #   image: temporalio/auto-setup:latest
+  #   container_name: temporal
+  #   ports:
+  #     - "7233:7233"
+  #   environment:
+  #     - DB=postgres12
+  #     - DB_PORT=${POSTGRES_PORT}
+  #     - POSTGRES_SEEDS=postgres
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PWD=${POSTGRES_PASSWORD}
+  #     - POSTGRES_DB=temporal
+  #     - VISIBILITY_DBNAME=temporal_visibility
+  #     - TEMPORAL_ADDRESS=temporal:7233
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - n8n-network
+
+  # temporal-ui:
+  #   image: temporalio/ui:latest
+  #   container_name: temporal-ui
+  #   depends_on:
+  #     - temporal
+  #   environment:
+  #     - TEMPORAL_ADDRESS=temporal:7233
+  #     - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+  #   ports:
+  #     - "8233:8080"
+  #   networks:
+  #     - n8n-network
+
   postgres:
     image: postgres:15
     container_name: postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     expose:

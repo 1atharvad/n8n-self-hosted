@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .image_extractor import ImageExtractor
 from .ppt_generator import PPTGenerator
+from .server_file_management import ServerFileManagement
 from .text_to_voice import TextToVoice
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -289,4 +290,10 @@ class VideoGenerator:
             }
 
 
-__all__ = ['VideoGenerator', 'PPTGenerator', 'ImageExtractor', 'TextToVoice']
+__all__ = [
+    'VideoGenerator',
+    'PPTGenerator',
+    'ImageExtractor',
+    'TextToVoice',
+    'ServerFileManagement',
+]

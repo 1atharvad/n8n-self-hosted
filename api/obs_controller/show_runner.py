@@ -67,7 +67,7 @@ class ShowRunner:
                 self.obs.play_videos(self.video_queue), name="video_playback"
             ),
             asyncio.create_task(
-                self.obs.monitor_stream_status(max_duration),
+                self.obs.start_event_listener(max_duration),
                 name="stream_monitor",
             ),
         ]

@@ -6,11 +6,12 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from admin.admin_app import init_admin
+from admin.admin_app import init_admin #, init_temporal_db
 from obs_controller.routes import router as obs_router
 from video_generator import (
     ImageExtractor,
     PPTGenerator,
+    ServerFileManagement,
     TextToVoice,
     VideoGenerator,
 )
@@ -39,16 +40,20 @@ Modules Used:
         processing
 """
 
-app = FastAPI(root_path='/api')
+app = FastAPI(root_path='/api/core')
 templates = Jinja2Templates(directory="templates")
 ttv = TextToVoice()
 img_ext = ImageExtractor()
 video = VideoGenerator()
+sfm = ServerFileManagement()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 init_admin(app)
-app.include_router(obs_router, prefix="/obs")
+# for db_name in ['temporal', 'temporal_visibility']:
+#     init_temporal_db(app, db_name)
+
+app.include_router(obs_router, prefix="/obs", tags=["OBS"])
 
 
 def cache_hash(file_path: str) -> str:
@@ -429,6 +434,45 @@ async def get_video_result(job_id: str):
             {'file_path': str(job['file_path']), 'filename': job['filename']}
         )
     return JSONResponse(job_response)
+
+
+@app.post("/obs/upload-file-to-obs-server", tags=["OBS"])
+async def send_file_to_obs_server(
+    req: dict, background_tasks: BackgroundTasks
+):
+    file_name = req.get("video_file_name")
+    job_id, job = sfm.set_job_status(file_name, status='pending')
+    background_tasks.add_task(
+        sfm.upload_video_via_ssh, 'video_files', file_name
+    )
+
+    return JSONResponse(respond_job_status(job_id, job))
+
+
+@app.get("/obs/upload-file-to-obs-server-status/{job_id}", tags=["OBS"])
+async def send_file_to_obs_server_status(job_id: str):
+    job = sfm.get_job(job_id)
+    return JSONResponse(respond_job_status(job_id, job))
+
+
+@app.post("/obs/delete-file-from-obs-server", tags=["OBS"])
+async def delete_file_from_obs_server(
+    req: dict, background_tasks: BackgroundTasks
+):
+    file_name = req.get("file_name")
+    job_id = file_name.split('.')[0]
+    _, job = sfm.set_job_status(file_name, status='pending')
+    background_tasks.add_task(
+        sfm.delete_remote_file, job_id, 'video_files', file_name
+    )
+
+    return JSONResponse(respond_job_status(job_id, job))
+
+
+@app.get("/obs/delete-file-from-obs-server-status/{job_id}", tags=["OBS"])
+async def delete_file_from_obs_server_status(job_id: str):
+    job = sfm.get_job(job_id)
+    return JSONResponse(respond_job_status(job_id, job))
 
 
 @app.get("/video/{video_id}")

@@ -2,7 +2,7 @@ import asyncio
 import os
 from pathlib import Path
 
-from obsws_python import ReqClient
+from obsws_python import EventClient, ReqClient
 
 from .api_fetcher import ShowApiHandler
 from .logger_config import get_shared_logger
@@ -15,6 +15,7 @@ API_URL = os.getenv("API_URL")
 OBS_HOST = os.getenv("OBS_HOST", "localhost")
 OBS_PORT = int(os.getenv("OBS_PORT", 4455))
 OBS_PASSWORD = os.getenv("OBS_PASSWORD", "")
+OBS_REMOTE_PATH = os.getenv("OBS_REMOTE_PATH")
 DEFAULT_AD_WIDTH = 600
 
 logger = get_shared_logger("OBS_Show_Runner")
@@ -46,6 +47,9 @@ class OBSController(OBSHelperFunc):
             - Parent class initialization with the same client connection.
         """
         self.client = ReqClient(
+            host=OBS_HOST, port=OBS_PORT, password=OBS_PASSWORD
+        )
+        self.ev_client = EventClient(
             host=OBS_HOST, port=OBS_PORT, password=OBS_PASSWORD
         )
         super().__init__(self.client)
@@ -124,8 +128,10 @@ class OBSController(OBSHelperFunc):
         self.client.set_input_settings(
             "IntroSource",
             {
-                "input": f"{API_URL}/get-video/intro",
-                "is_local_file": False,
+                # "input": f"{API_URL}/get-video/intro",
+                # "is_local_file": False,
+                "input": f"{OBS_REMOTE_PATH}/intro.mp4",
+                "is_local_file": True,
                 "restart_on_activate": True,
                 "close_when_inactive": False,
             },
@@ -154,8 +160,10 @@ class OBSController(OBSHelperFunc):
         self.client.set_input_settings(
             "OutroSource",
             {
-                "input": f"{API_URL}/get-video/outro",
-                "is_local_file": False,
+                # "input": f"{API_URL}/get-video/outro",
+                # "is_local_file": False,
+                "input": f"{OBS_REMOTE_PATH}/outro.mp4",
+                "is_local_file": True,
                 "restart_on_activate": True,
                 "close_when_inactive": False,
             },
@@ -202,8 +210,10 @@ class OBSController(OBSHelperFunc):
                         self.client.set_input_settings(
                             "MainVideo",
                             {
-                                "input": f"{API_URL}/get-video/{video_path.name.replace('.mp4', '')}",
-                                "is_local_file": False,
+                                # "input": f"{API_URL}/get-video/{video_path.name.replace('.mp4', '')}",
+                                # "is_local_file": False,
+                                "input": f"{OBS_REMOTE_PATH}/{video_path.name}",
+                                "is_local_file": True,
                                 "restart_on_activate": True,
                                 "close_when_inactive": False,
                             },
@@ -325,66 +335,66 @@ class OBSController(OBSHelperFunc):
             await asyncio.sleep(1)
         self.client.set_current_program_scene(scene_name)
 
-    async def monitor_recording_status(self, max_duration):
+    async def start_event_listener(self, max_duration: int):
         """
-        Continuously monitor OBS recording status until it stops or a time
-        limit is reached.
+        Continuously monitor OBS streaming via event listener until stopped or
+        maximum duration is reached.
 
         Args:
-            max_duration (int): The maximum duration (in seconds) to
-                monitor recording.
+            max_duration (int): The maximum duration (in seconds) to allow the
+                stream to run.
 
         Behavior:
-            - Periodically checks recording activity.
-            - Stops when recording is manually ended or exceeds max
-                duration.
+            - Uses OBS EventClient to react to stream start/stop events in
+                real-time.
+            - When the stream starts, schedules an automatic stop after
+                `max_duration`.
+            - Cancels the auto-stop timer if the stream is manually stopped
+                before the duration ends.
+            - Logs all relevant events: stream started, manually stopped, or
+                auto-stopped.
+            - Designed to run asynchronously alongside other tasks (ad
+                rotation, video playback, etc.).
         """
-        timer = 0
 
-        while True:
-            recording_status = self.client.get_record_status()
-            timer += 1
-            logger.warning(
-                f"{recording_status.output_active}, {timer}, {max_duration}"
+        async def stop_stream():
+            logger.info(
+                f"⏰ Auto-stopping stream after {max_duration} seconds"
             )
+            try:
+                self.client.stop_stream()
+                logger.info("🛑 Stream stopped by timer.")
+            except Exception as e:
+                logger.error(f"Failed to stop stream: {e}")
 
-            if timer >= int(max_duration):
-                logger.info(
-                    f"🔴 Recording stopped (Max duration: {max_duration} sec)"
+        async def stop_stream_after_delay():
+            await asyncio.sleep(max_duration)
+            await stop_stream()
+
+        def on_stream_state_changed(event):
+            if event.outputActive:
+                logger.info("🎥 Stream started — scheduling auto-stop timer.")
+
+                if (
+                    self.stream_timer_task
+                    and not self.stream_timer_task.done()
+                ):
+                    self.stream_timer_task.cancel()
+                self.stream_timer_task = asyncio.create_task(
+                    stop_stream_after_delay()
                 )
-                break
+            else:
+                logger.info("⏹️ Stream stopped manually.")
 
-            if not recording_status.output_active:
-                logger.info("🔴 Recording stopped manually or disconnected")
-                break
-            await asyncio.sleep(1)
+                if (
+                    self.stream_timer_task
+                    and not self.stream_timer_task.done()
+                ):
+                    self.stream_timer_task.cancel()
 
-    async def monitor_stream_status(self, max_duration):
-        """
-        Continuously monitor OBS streaming status until stopped or time
-        limit reached.
+        self.ev_client.callback.on_stream_state_changed = (
+            on_stream_state_changed
+        )
 
-        Args:
-            max_duration (int): The maximum duration (in seconds) to
-                monitor the stream.
-
-        Behavior:
-            - Periodically checks streaming activity.
-            - Stops when stream is manually ended or exceeds max duration.
-        """
-        timer = 0
-
-        while True:
-            stream_status = self.client.get_stream_status()
-            timer += 1
-
-            if timer >= int(max_duration):
-                logger.info(
-                    f"🔴 Stream stopped (Max duration: {max_duration} sec)"
-                )
-                break
-
-            if not stream_status.output_active:
-                logger.info("🔴 Stream stopped manually or disconnected")
-                break
-            await asyncio.sleep(1)
+        logger.info("✅ Listening for OBS stream events...")
+        await self.ev_client.run_forever()

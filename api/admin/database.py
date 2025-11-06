@@ -14,7 +14,8 @@ POSTGRES_DB = os.getenv("POSTGRES_DB")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 POSTGRES_PASSWORD_ENCODED = urllib.parse.quote_plus(POSTGRES_PASSWORD)
 
-ASYNC_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD_ENCODED}@postgres:{POSTGRES_PORT}/{POSTGRES_DB}"
+db_url = f"{POSTGRES_USER}:{POSTGRES_PASSWORD_ENCODED}@postgres:{POSTGRES_PORT}/{POSTGRES_DB}"
+ASYNC_DATABASE_URL = f"postgresql+asyncpg://{db_url}"
 async_engine = create_async_engine(ASYNC_DATABASE_URL, echo=True)
 
 async_session = sessionmaker(
@@ -22,5 +23,5 @@ async_session = sessionmaker(
 )
 
 # Sync engine for SQLAdmin
-SYNC_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD_ENCODED}@postgres:{POSTGRES_PORT}/{POSTGRES_DB}"
+SYNC_DATABASE_URL = f"postgresql+psycopg2://{db_url}"
 sync_engine = create_engine(SYNC_DATABASE_URL, echo=True)
