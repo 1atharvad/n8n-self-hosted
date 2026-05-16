@@ -2,6 +2,7 @@
 set -e
 
 CLEAR_INIT=false
+OWNER="www:www"
 
 # Parse arguments
 for arg in "$@"; do
@@ -19,24 +20,30 @@ done
 
 # Delete only if flag is set
 if [ "$CLEAR_INIT" = true ]; then
-  echo "⚠️  Clearing n8n_files..."
+  echo "  Clearing n8n_files..."
   rm -rf n8n_files
-  echo "✅ n8n_files cleared."
+  echo "  n8n_files cleared."
 else
-  echo "ℹ️  Skipping n8n_files deletion (no --clear-init flag)."
+  echo "  Skipping n8n_files deletion (no --clear-init flag)."
 fi
 
-# Create main folders
+# Create all required directories
 mkdir -p ./n8n_files/{audio_files,img_video_files,pdf_files,ppt_files,ppt_images,video_files}
+mkdir -p ./n8n-data
+mkdir -p ./n8n-workflows/workflows
 
-# Make all folders user-writable
-chmod -R 775 ./n8n_files
+# Set ownership and permissions
+echo "Setting ownership to $OWNER and permissions to 775..."
+# chown -R "$OWNER" ./n8n_files ./n8n-data ./n8n-workflows ./sh_files
+chmod -R 775     ./n8n_files ./n8n-data ./n8n-workflows ./sh_files
 
 echo "Folders created and permissions updated!"
 
 # Copy assets into n8n_files
 if [ -d ./assets ]; then
     cp -r ./assets/* ./n8n_files/
+    # chown -R "$OWNER" ./n8n_files
+    chmod -R 775 ./n8n_files
     echo "Assets copied to ./n8n_files"
 else
     echo "Warning: ./assets folder does not exist!"

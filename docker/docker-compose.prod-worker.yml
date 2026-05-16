@@ -1,0 +1,92 @@
+name: n8n-automation
+
+services:
+  n8n-worker:
+    image: n8nio/n8n:latest
+    entrypoint: ["/bin/sh", "/sh_files/start-n8n-worker.sh"]
+    restart: unless-stopped
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=${N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS}
+      - N8N_RESTRICT_FILE_ACCESS_TO=
+      - N8N_ALLOWED_READ_PATHS=/home/node/.n8n:/home/node/n8n_files:/sh_files:/tmp
+      - N8N_ALLOWED_WRITE_PATHS=/home/node/.n8n:/home/node/n8n_files:/sh_files:/tmp
+      - NODES_EXCLUDE=[]
+      - N8N_COMMUNITY_PACKAGES=${N8N_COMMUNITY_PACKAGES}
+      - DB_TYPE=${DB_TYPE}
+      - DB_POSTGRESDB_HOST=${DB_POSTGRESDB_HOST}
+      - DB_POSTGRESDB_PORT=${POSTGRES_PORT}
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
+      - QUEUE_BULL_REDIS_PORT=6379
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
+      - NODE_ENV=production
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
+    volumes:
+      - ../n8n-data:/home/node/.n8n
+      - ../n8n_files:/home/node/n8n_files
+      - ../sh_files:/sh_files
+    depends_on:
+      - fastapi
+    networks:
+      - baota_net
+
+  fastapi:
+    build: ../api
+    container_name: media-api
+    restart: unless-stopped
+    environment:
+      API_URL: ${API_URL}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: ${DB_POSTGRESDB_HOST}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+    expose:
+      - "9374"
+    volumes:
+      - ../tts_cache:/tts_cache
+      - ../n8n_files:/n8n_files
+    networks:
+      - baota_net
+
+  worker-autoscaler:
+    build:
+      context: ../processes
+      dockerfile: Dockerfile.autoscaler
+    container_name: worker-autoscaler
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=6379
+      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-n8n-automation}
+      - COMPOSE_FILE=/app/docker/docker-compose.prod-worker.yml
+      - WORKER_COMPOSE_FILE=
+      - HOST_PROJECT_DIR=${PWD}
+      - MIN_WORKERS=${AUTOSCALER_MIN_WORKERS:-1}
+      - MAX_WORKERS=${AUTOSCALER_MAX_WORKERS:-4}
+      - CPU_SCALE_UP_MAX=${AUTOSCALER_CPU_SCALE_UP_MAX:-65}
+      - CPU_SCALE_DOWN_EMERGENCY=${AUTOSCALER_CPU_SCALE_DOWN_EMERGENCY:-88}
+      - IDLE_BEFORE_SCALEDOWN_SEC=${AUTOSCALER_IDLE_BEFORE_SCALEDOWN_SEC:-120}
+      - POLL_INTERVAL_SEC=${AUTOSCALER_POLL_INTERVAL_SEC:-30}
+      - COOLDOWN_SEC=${AUTOSCALER_COOLDOWN_SEC:-90}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/host/proc:ro
+      - ..:/app:ro
+    depends_on:
+      - n8n-worker
+    networks:
+      - baota_net
+
+networks:
+  baota_net:

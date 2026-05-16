@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-raleway text-[13px] leading-relaxed min-h-screen;
+  }
+
+  #root {
+    @apply flex flex-col h-screen;
+  }
+
+  // Custom scrollbar
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-card;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    @apply rounded;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(215 10% 35%);
+  }
+}

@@ -19,7 +19,6 @@
 ### Backend & APIs
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
 
 ### Infrastructure & Security
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)
@@ -41,7 +40,6 @@
 🏗️ **Enterprise Architecture**
 - Docker containerization for scalability
 - Nginx reverse proxy for optimal routing
-- Supabase PostgreSQL for reliable data storage
 - Secure tunnel access via Cloudflare
 
 ## 🚀 Quick Start
@@ -78,7 +76,7 @@ sh sh_files/setup_n8n_files.sh --clear-init
 npm run docker-up:prod
 
 # Stopping Docker
-npm run docker-down
+npm run docker-down:prod
 
 # Exporting Workflows from a n8n instance
 npm run pull-workflow
@@ -100,7 +98,6 @@ npm run docker-update
 ├── n8n-data/                       # Binary data storage
 ├── n8n_files/                      # Data storage for Fastapi
 ├── sh_files/                       # Shell scripts for running commands
-├── cloudflare/credentials.json     # Cloudflare credentials
 └── .env                            # Environment variables
 ```
 
@@ -128,8 +125,8 @@ npm run docker-update
 npm run build-n8n-nodes    # Build and deploy custom nodes
 npm run pip-install        # Install Python dependencies
 npm run add-pkg            # Add new Python package
-npm run docker-up          # Build nodes and start services
-npm run docker-down        # Stop all services
+npm run docker-up:prod     # Build nodes and start services
+npm run docker-down:prod   # Stop all services
 ```
 
 ### Custom Node Development
@@ -138,7 +135,6 @@ Develop TypeScript nodes in `custom-n8n-nodes/` directory with full IntelliSense
 ## 🏛️ Infrastructure
 
 ### Database Configuration
-- **Supabase PostgreSQL** for workflow storage
 - **Local filesystem** for binary data management
 - **Automatic migrations** on service startup
 
@@ -153,6 +149,45 @@ Develop TypeScript nodes in `custom-n8n-nodes/` directory with full IntelliSense
 - **Streaming Support**: HTTP range requests for large files
 - **Container Optimized**: Multi-stage Docker builds
 - **Auto-scaling**: Docker Compose orchestration
+
+## ⚙️ Worker Autoscaler
+
+The `worker-autoscaler` container dynamically scales `n8n-worker` replicas based on host CPU and Redis queue depth.
+
+### Algorithm: Asymmetric EWMA
+
+CPU smoothing uses an Exponentially Weighted Moving Average with different rates for rising vs falling CPU:
+
+```
+if cpu_raw > cpu_ema:
+    cpu_ema = α_up   × cpu_raw + (1 − α_up)   × cpu_ema   # reacts fast to spikes
+else:
+    cpu_ema = α_down × cpu_raw + (1 − α_down) × cpu_ema   # decays slowly after spike
+```
+
+Defaults: `α_up = 0.5`, `α_down = 0.1`. This prevents a brief CPU drop (e.g. job finishing) from immediately making the EMA appear safe for scale-up.
+
+### Scaling Rules
+
+| Condition                                     | Action                         |
+| --------------------------------------------- | ------------------------------ |
+| `waiting > 0` and `ema < 65%` and `raw < 65%` | Scale up +1 worker             |
+| `max(ema, raw) > 88%` and `workers > min`     | Emergency scale down −1 worker |
+| Queue idle for 120s and `workers > min`       | Scale down −1 worker           |
+
+### Configuration (env vars)
+
+| Variable                    | Default | Description                             |
+| --------------------------- | ------- | --------------------------------------- |
+| `MIN_WORKERS`               | 1       | Minimum workers always running          |
+| `MAX_WORKERS`               | 4       | Maximum workers allowed                 |
+| `CPU_SCALE_UP_MAX`          | 65      | Scale up only if CPU below this %       |
+| `CPU_SCALE_DOWN_EMERGENCY`  | 88      | Force remove worker if CPU above this % |
+| `IDLE_BEFORE_SCALEDOWN_SEC` | 120     | Seconds idle before scaling down        |
+| `POLL_INTERVAL_SEC`         | 30      | Seconds between checks                  |
+| `COOLDOWN_SEC`              | 90      | Minimum gap between scale actions       |
+| `EWMA_ALPHA_UP`             | 0.5     | EMA weight when CPU is rising           |
+| `EWMA_ALPHA_DOWN`           | 0.1     | EMA weight when CPU is falling          |
 
 ## 💡 Use Cases
 

@@ -54,12 +54,10 @@ class ImageExtractor:
         Returns:
             Job ID and its metadata dictionary.
         """
-        if job_id not in self.job_store:
-            self.job_store[job_id] = {}
-        self.job_store[job_id]["status"] = status
+        self.job_store[job_id] = {"status": status}
         return job_id, self.job_store.get(job_id)
 
-    def extract_slides(self, file_name, start_slide, end_slide, total_slides):
+    def extract_slides(self, file_name, start_slide, end_slide, total_slides, epoch: int | None = None, video_type: str | None = None):
         """
         Extract a range of slides from a PowerPoint presentation and save them
         as PNG images.
@@ -96,9 +94,11 @@ class ImageExtractor:
                 }
         """
         try:
-            if SLIDE_IMG_FILES_DIR.exists():
-                shutil.rmtree(SLIDE_IMG_FILES_DIR)
-            SLIDE_IMG_FILES_DIR.mkdir(parents=True, exist_ok=True)
+            epoch_folder = f"{video_type}-epoch_{epoch}" if video_type else f"epoch_{epoch}"
+            slide_dir = Path(SLIDE_IMG_FILES_DIR, epoch_folder) if epoch else SLIDE_IMG_FILES_DIR
+            if slide_dir.exists():
+                shutil.rmtree(slide_dir)
+            slide_dir.mkdir(parents=True, exist_ok=True)
             PDF_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
             ppt_path = Path(PPT_FILES_DIR, f"{file_name}.pptx")
@@ -122,7 +122,7 @@ class ImageExtractor:
                     [
                         "pdftoppm",
                         str(pdf_path),
-                        str(SLIDE_IMG_FILES_DIR / "slide"),
+                        str(slide_dir / "slide"),
                         "-png",
                     ],
                     check=True,
@@ -130,7 +130,7 @@ class ImageExtractor:
 
                 slides = [
                     file_path.name
-                    for file_path in sorted(SLIDE_IMG_FILES_DIR.glob("*.png"))
+                    for file_path in sorted(slide_dir.glob("*.png"))
                 ]
             else:
                 if start_slide <= total_slides:
@@ -138,7 +138,7 @@ class ImageExtractor:
                         [
                             "pdftoppm",
                             str(pdf_path),
-                            str(SLIDE_IMG_FILES_DIR / "slide"),
+                            str(slide_dir / "slide"),
                             "-png",
                             "-f",
                             f"{start_slide}",
@@ -150,9 +150,7 @@ class ImageExtractor:
 
                     slides = [
                         file_path.name
-                        for file_path in sorted(
-                            SLIDE_IMG_FILES_DIR.glob("*.png")
-                        )
+                        for file_path in sorted(slide_dir.glob("*.png"))
                     ]
                 else:
                     pad_width = len(str(total_slides))

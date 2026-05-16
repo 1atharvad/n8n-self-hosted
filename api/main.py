@@ -1,17 +1,26 @@
-import hashlib
+import os
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi import BackgroundTasks, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, JSONResponse
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from admin.admin_app import init_admin #, init_temporal_db
-from obs_controller.routes import router as obs_router
+import httpx
+
+from admin.admin_app import init_admin
+from audio_manager import SpeechToText, TextToVoice as AudioTTS
+from audio_manager.speech_to_text import VADStream
+from schemas import (
+    CombineVideosRequest,
+    ConvertMp4Request,
+    ConvertToMp4Request,
+    ExtractSlidesRequest,
+    PPTRequest,
+    TTSRequest,
+)
 from video_generator import (
     ImageExtractor,
     PPTGenerator,
-    ServerFileManagement,
     TextToVoice,
     VideoGenerator,
 )
@@ -20,7 +29,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ASSET_FILES_DIR = Path(BASE_DIR, 'n8n_files')
 PPT_FILES_DIR = Path(ASSET_FILES_DIR, 'ppt_files')
 VIDEO_FILES_DIR = Path(ASSET_FILES_DIR, 'video_files')
-CHUNK_SIZE = 1024 * 1024  # 1MB
 
 """
 FastAPI Application for TTS, PPT, Image Extraction, and Video Generation.
@@ -41,34 +49,16 @@ Modules Used:
 """
 
 app = FastAPI(root_path='/api/core')
-templates = Jinja2Templates(directory="templates")
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 ttv = TextToVoice()
 img_ext = ImageExtractor()
 video = VideoGenerator()
-sfm = ServerFileManagement()
+stt = SpeechToText()
+audio_tts = AudioTTS()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 init_admin(app)
-# for db_name in ['temporal', 'temporal_visibility']:
-#     init_temporal_db(app, db_name)
 
-app.include_router(obs_router, prefix="/obs", tags=["OBS"])
-
-
-def cache_hash(file_path: str) -> str:
-    """Return /static/file?cache=<6-char-hash> automatically."""
-    path = Path(f"static/{file_path.lstrip('/')}")
-    if not path.exists():
-        return f"/static/{file_path}"  # fallback if file missing
-    with open(path, "rb") as f:
-        content = f.read()
-    hash6 = hashlib.md5(content).hexdigest()[:6]
-    return f"/api/static/{file_path}?cache={hash6}"
-
-
-# Register the filter
-templates.env.filters["static"] = cache_hash
 
 
 def respond_job_status(job_id, job):
@@ -94,49 +84,26 @@ def respond_job_status(job_id, job):
     return response_data
 
 
-def iter_file(file_path: Path, start: int, end: int):
-    """
-    Generator function to stream a file in chunks for range requests.
 
-    Args:
-        file_path (Path): Path of the file to stream.
-        start (int): Starting byte position.
-        end (int): Ending byte position.
-
-    Yields:
-        bytes: A chunk of the file of up to CHUNK_SIZE.
-    """
-    with file_path.open("rb") as f:
-        f.seek(start)
-        remaining = end - start + 1
-        while remaining > 0:
-            chunk_size = min(CHUNK_SIZE, remaining)
-            data = f.read(chunk_size)
-            if not data:
-                break
-            yield data
-            remaining -= len(data)
-
-
-@app.post('/vtt-generate-audio-bytes')
-async def generate_tts_bytes(req: dict, background_tasks: BackgroundTasks):
+@app.post('/vtt-generate-audio-bytes', tags=["Text to Audio"])
+async def generate_tts_bytes(req: TTSRequest, background_tasks: BackgroundTasks):
     """
     Creates a TTS job to convert text into audio bytes in the background.
 
     Args:
-        req (dict): Request containing 'text' to convert.
+        req (TTSRequest): Request containing 'text' to convert.
         background_tasks (BackgroundTasks): FastAPI background tasks manager.
 
     Returns:
         Job status containing 'job_id' and current status.
     """
     job_id, job = ttv.set_job_status(status='pending')
-    background_tasks.add_task(ttv.generate_tts_job, job_id, req['text'])
+    background_tasks.add_task(ttv.generate_tts_job, job_id, req.text)
 
     return JSONResponse(respond_job_status(job_id, job))
 
 
-@app.get('/vtt-status/{job_id}')
+@app.get('/vtt-status/{job_id}', tags=["Text to Audio"])
 async def check_vtt_status(job_id: str):
     """
     Checks the current status of a TTS job.
@@ -151,7 +118,7 @@ async def check_vtt_status(job_id: str):
     return JSONResponse(respond_job_status(job_id, job))
 
 
-@app.get('/vtt-result/{job_id}')
+@app.get('/vtt-result/{job_id}', tags=["Text to Audio"])
 async def get_vtt_result(job_id: str):
     """
     Retrieve the resulting TTS audio file if the job is completed.
@@ -174,34 +141,34 @@ async def get_vtt_result(job_id: str):
     return JSONResponse(job_response)
 
 
-@app.post('/ppt-generator')
-async def ppt_generator(req: dict):
+@app.post('/ppt-generator', tags=["Image Generator"])
+async def ppt_generator(req: PPTRequest):
     """
     Generates PowerPoint slides based on a template and user-specified text
     replacements.
 
     Args:
-        req (dict): Contains 'template_slide', 'old_text', and 'jobs' list for
-            slide creation.
+        req (PPTRequest): Contains 'template_slide', 'old_text', and 'jobs'
+            list for slide creation.
 
     Returns:
         File info including path, name, and total slides created.
     """
-    ppt = PPTGenerator()
-    ppt.template_slide = int(req['template_slide'])
-    ppt.old_text = req['old_text']
-    file_path = ppt.create_slide(req['jobs'])
+    ppt = PPTGenerator(req.template_file)
+    ppt.template_slide = req.template_slide
+    ppt.old_text = req.old_text
+    file_path = ppt.create_slide(req.jobs)
 
     return JSONResponse(
         {
             'file_name': file_path.name,
             'file_path': str(file_path),
-            'total_slides': str(len(req['jobs'])),
+            'total_slides': str(len(req.jobs)),
         }
     )
 
 
-@app.get('/ppt/{file_name}')
+@app.get('/ppt/{file_name}', tags=["Image Generator"])
 async def get_ppt_file(file_name: str):
     """
     Downloads a generated PowerPoint file by name.
@@ -214,7 +181,7 @@ async def get_ppt_file(file_name: str):
     """
     file_path = Path(PPT_FILES_DIR, f'{file_name}.pptx')
     if not file_path.exists():
-        return {'error': 'File not found'}
+        raise HTTPException(status_code=404, detail="File not found")
 
     return FileResponse(
         path=str(file_path),
@@ -223,32 +190,28 @@ async def get_ppt_file(file_name: str):
     )
 
 
-@app.post("/extract-slides")
-async def extract_slides(req: dict, background_tasks: BackgroundTasks):
+@app.post("/extract-slides", tags=["Image Generator"])
+async def extract_slides(req: ExtractSlidesRequest, background_tasks: BackgroundTasks):
     """
     Extracts slides from a PowerPoint file as images in the background.
 
     Args:
-        req (dict): Contains 'file_name', 'total_slides', and optional
-            'batch_size'.
+        req (ExtractSlidesRequest): Contains 'file_name', 'start_slide',
+            'end_slide', and 'total_slides'.
         background_tasks (BackgroundTasks): FastAPI background task manager.
 
     Returns:
         Job status with 'pending', 'completed', or 'failed'.
     """
-    file_name = req["file_name"]
-    start_slide = int(req["start_slide"])
-    end_slide = int(req["end_slide"])
-    total_slides = int(req["total_slides"])
-    _, job = img_ext.set_job_status(file_name, status='pending')
+    _, job = img_ext.set_job_status(req.file_name, status='pending')
     background_tasks.add_task(
-        img_ext.extract_slides, file_name, start_slide, end_slide, total_slides
+        img_ext.extract_slides, req.file_name, req.start_slide, req.end_slide, req.total_slides, req.epoch, req.video_type
     )
 
-    return JSONResponse(respond_job_status(file_name, job))
+    return JSONResponse(respond_job_status(req.file_name, job))
 
 
-@app.get('/img-ext-status/{job_id}')
+@app.get('/img-ext-status/{job_id}', tags=["Image Generator"])
 async def check_img_status(job_id: str):
     """
     Checks the current status of an image extraction job from a PowerPoint file.
@@ -268,7 +231,7 @@ async def check_img_status(job_id: str):
     return JSONResponse(respond_job_status(job_id, job))
 
 
-@app.get('/img-ext-result/{job_id}')
+@app.get('/img-ext-result/{job_id}', tags=["Image Generator"])
 async def get_img_result(job_id: str):
     """
     Retrieves the result of a completed image extraction job.
@@ -291,30 +254,29 @@ async def get_img_result(job_id: str):
     return JSONResponse(job_response)
 
 
-@app.post("/convert-to-mp4")
-async def convert_to_mp4(req: dict, background_tasks: BackgroundTasks):
+@app.post("/convert-to-mp4", tags=["Video Generator"])
+async def convert_to_mp4(req: ConvertToMp4Request, background_tasks: BackgroundTasks):
     """
     Convert an image and audio file into an MP4 video in the background.
 
     Args:
-        req (dict): Contains 'image_file' and 'audio_file'.
+        req (ConvertToMp4Request): Contains 'image_file' and 'audio_file'.
         background_tasks (BackgroundTasks): FastAPI background task manager.
 
     Returns:
         Job status including job_id and status.
     """
-    image_file = req["image_file"]
     job_id, job = video.set_job_status(
-        f'{image_file.split(".")[0]}-img', status='pending'
+        f'{req.image_file.split(".")[0]}-img', status='pending'
     )
     background_tasks.add_task(
-        video.convert_to_mp4, job_id, image_file, req["audio_file"]
+        video.convert_to_mp4, job_id, req.image_file, req.audio_file, req.epoch, req.video_type, req.upload_to_minio
     )
 
     return JSONResponse(respond_job_status(job_id, job))
 
 
-@app.get('/convert-to-mp4-status/{job_id}')
+@app.get('/convert-to-mp4-status/{job_id}', tags=["Video Generator"])
 async def check_mp4_status(job_id: str):
     """
     Check the current status of an image-to-MP4 video conversion job.
@@ -347,14 +309,13 @@ async def check_mp4_status(job_id: str):
     return JSONResponse(job_response)
 
 
-@app.post("/convert-mp4-to-mp4")
-async def convert_mp4_to_mp4(req: dict):
+@app.post("/convert-mp4-to-mp4", tags=["Video Generator"])
+async def convert_mp4_to_mp4(req: ConvertMp4Request):
     """
     Convert an existing MP4 video to a standardized MP4 format using ffmpeg.
 
     Args:
-        req (dict): Request payload containing:
-            - video_file (str): Name of the MP4 file to convert
+        req (ConvertMp4Request): Request payload containing 'video_file'.
 
     Returns:
         JSONResponse:
@@ -362,35 +323,34 @@ async def convert_mp4_to_mp4(req: dict):
             - If failed: JSON object containing 'error' and optional 'stderr'
                 with HTTP 500 status.
     """
-    result = video.convert_mp4_to_mp4(req["video_file"])
+    result = video.convert_mp4_to_mp4(req.video_file, req.upload_to_minio)
 
     if isinstance(result, dict) and "error" in result:
         return JSONResponse(content=result, status_code=500)
     return JSONResponse(content=result, status_code=200)
 
 
-@app.post("/combine-videos")
-async def combine_videos(req: dict, background_tasks: BackgroundTasks):
+@app.post("/combine-videos", tags=["Combine Videos"])
+async def combine_videos(req: CombineVideosRequest, background_tasks: BackgroundTasks):
     """
     Combines multiple MP4 video files into a single video in the background.
 
     Args:
-        req (dict): Contains 'video_file_name' and list of 'video_files'.
+        req (CombineVideosRequest): Contains 'video_file_name' and 'video_files'.
         background_tasks (BackgroundTasks): FastAPI background task manager.
 
     Returns:
         Job status including job_id and status.
     """
-    file_name = req["video_file_name"]
-    job_id, job = video.set_job_status(file_name, status='pending')
+    job_id, job = video.set_job_status(req.video_file_name, status='pending')
     background_tasks.add_task(
-        video.combine_videos, file_name, req["video_files"]
+        video.combine_videos, req.video_file_name, req.video_files, req.epoch, req.video_type, req.upload_to_minio
     )
 
     return JSONResponse(respond_job_status(job_id, job))
 
 
-@app.get('/combine-videos-status/{job_id}')
+@app.get('/combine-videos-status/{job_id}', tags=["Combine Videos"])
 async def check_video_status(job_id: str):
     """
     Checks the current status of a video combining job.
@@ -411,7 +371,7 @@ async def check_video_status(job_id: str):
     return JSONResponse(respond_job_status(job_id, job))
 
 
-@app.get('/combine-videos-result/{job_id}')
+@app.get('/combine-videos-result/{job_id}', tags=["Combine Videos"])
 async def get_video_result(job_id: str):
     """
     Retrieves the result of a completed video combining job.
@@ -436,108 +396,62 @@ async def get_video_result(job_id: str):
     return JSONResponse(job_response)
 
 
-@app.post("/obs/upload-file-to-obs-server", tags=["OBS"])
-async def send_file_to_obs_server(
-    req: dict, background_tasks: BackgroundTasks
+# ---------------------------------------------------------------------------
+# Live AI voice chat — WebSocket
+# ---------------------------------------------------------------------------
+# Binary protocol (per frame):
+#   Flutter → server : raw 16 kHz 16-bit mono PCM chunks (~100 ms each)
+#   server → Flutter : WAV audio chunks, one per TTS sentence
+#
+# Flow per utterance:
+#   PCM chunks → VAD detects end-of-speech → Whisper STT
+#   → n8n LLM webhook → Kokoro TTS streamed sentence by sentence → Flutter
+#
+# N8N_WEBHOOK_URL: set via env var or replace inline.
+# ---------------------------------------------------------------------------
+
+N8N_BASE_URL = os.getenv("N8N_WEBHOOK_BASE_URL", "http://n8n:5678/webhook")
+DEFAULT_WEBHOOK_ID = "voice-chat"
+
+
+@app.websocket("/ws/voice-chat")
+async def voice_chat(
+    websocket: WebSocket,
+    webhook_id: str = DEFAULT_WEBHOOK_ID,
 ):
-    file_name = req.get("video_file_name")
-    job_id, job = sfm.set_job_status(file_name, status='pending')
-    background_tasks.add_task(
-        sfm.upload_video_via_ssh, 'video_files', file_name
-    )
+    await websocket.accept()
+    vad = VADStream()
+    webhook_url = f"{N8N_BASE_URL}/{webhook_id}"
 
-    return JSONResponse(respond_job_status(job_id, job))
+    try:
+        while True:
+            # 1. Receive raw PCM chunk from Flutter
+            pcm_chunk = await websocket.receive_bytes()
 
+            # 2. VAD — accumulate until end-of-speech detected
+            utterance_pcm = vad.process(pcm_chunk)
+            if utterance_pcm is None:
+                continue
 
-@app.get("/obs/upload-file-to-obs-server-status/{job_id}", tags=["OBS"])
-async def send_file_to_obs_server_status(job_id: str):
-    job = sfm.get_job(job_id)
-    return JSONResponse(respond_job_status(job_id, job))
+            # 3. Speech → Text (runs Whisper in thread pool)
+            user_text = await stt.transcribe_pcm_async(utterance_pcm)
+            if not user_text:
+                continue
 
+            # 4. AI response via n8n
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    webhook_url,
+                    json={"text": user_text},
+                    timeout=30,
+                )
+            ai_response = resp.json().get("response", "")
+            if not ai_response:
+                continue
 
-@app.post("/obs/delete-file-from-obs-server", tags=["OBS"])
-async def delete_file_from_obs_server(
-    req: dict, background_tasks: BackgroundTasks
-):
-    file_name = req.get("file_name")
-    job_id = file_name.split('.')[0]
-    _, job = sfm.set_job_status(file_name, status='pending')
-    background_tasks.add_task(
-        sfm.delete_remote_file, job_id, 'video_files', file_name
-    )
+            # 5. Stream TTS back sentence by sentence — Flutter plays as it arrives
+            for wav_chunk in audio_tts.synthesize_stream(ai_response):
+                await websocket.send_bytes(wav_chunk)
 
-    return JSONResponse(respond_job_status(job_id, job))
-
-
-@app.get("/obs/delete-file-from-obs-server-status/{job_id}", tags=["OBS"])
-async def delete_file_from_obs_server_status(job_id: str):
-    job = sfm.get_job(job_id)
-    return JSONResponse(respond_job_status(job_id, job))
-
-
-@app.get("/video/{video_id}")
-async def video_page(request: Request, video_id: str):
-    """
-    Renders a HTML page containing a video player for the specified video.
-
-    Args:
-        request (Request): FastAPI Request object.
-        video_id (str): Unique identifier of the video file.
-
-    Returns:
-        HTML page with embedded video player.
-    """
-    video_path = Path(VIDEO_FILES_DIR, f'{video_id}.mp4')
-
-    if not video_path.exists():
-        raise HTTPException(status_code=404, detail="Video not found")
-    return templates.TemplateResponse(
-        "video.jinja", {"request": request, "video_id": video_id}
-    )
-
-
-@app.get("/get-video/{video_id}")
-async def video_endpoint(request: Request, video_id: str):
-    """
-    Streams video content to the client with support for HTTP Range requests.
-
-    Args:
-        request (Request): FastAPI Request object.
-        video_id (str): Name of the video file to stream.
-
-    Returns:
-        StreamingResponse: Video content stream supporting partial content
-            delivery.
-    """
-    video_path = (
-        Path(ASSET_FILES_DIR, f"{video_id}.mp4")
-        if video_id in ['intro', 'outro']
-        else Path(VIDEO_FILES_DIR, f"{video_id}.mp4")
-    )
-
-    if not video_path.exists():
-        raise HTTPException(status_code=404, detail="Video not found")
-
-    file_size = video_path.stat().st_size
-    range_header = request.headers.get("range")
-
-    if range_header:
-        byte1, byte2 = range_header.replace("bytes=", "").split("-")
-        start = int(byte1)
-        end = int(byte2) if byte2 else file_size - 1
-    else:
-        start = 0
-        end = file_size - 1
-
-    chunk_size = end - start + 1
-
-    headers = {
-        "Content-Range": f"bytes {start}-{end}/{file_size}",
-        "Accept-Ranges": "bytes",
-        "Content-Length": str(chunk_size),
-        "Content-Type": "video/mp4",
-    }
-
-    return StreamingResponse(
-        iter_file(video_path, start, end), status_code=206, headers=headers
-    )
+    except WebSocketDisconnect:
+        pass

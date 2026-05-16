@@ -1,0 +1,54 @@
+image: node:20
+
+options:
+  max-time: 60  # optional, limits build to 60 minutes
+
+pipelines:
+  branches:
+    devn8nversion:
+      - step:
+          name: Auto Deploy to Contabo
+          deployment: production
+          script:
+            - echo "🚀 Starting deployment to Contabo..."
+            - mkdir -p ~/.ssh
+            - echo "$CONTABO_SSH_KEY" > ~/.ssh/id_ed25519
+            - chmod 600 ~/.ssh/id_ed25519
+            - ssh-keyscan -H "$CONTABO_IP" >> ~/.ssh/known_hosts
+
+            # SSH and deploy
+            - ssh -i ~/.ssh/id_ed25519 root@$CONTABO_IP "
+                set -e
+
+                echo '--- Checking Node.js ---'
+                if ! command -v node >/dev/null 2>&1; then
+                  echo 'Node.js not found, installing...'
+                  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+                  apt-get install -y nodejs
+                else
+                  echo '✅ Node.js $(node --version) already installed'
+                fi
+
+                echo '--- Checking Docker ---'
+                if ! command -v docker >/dev/null 2>&1; then
+                  echo 'Docker not found, installing...'
+                  curl -fsSL https://get.docker.com | sh
+                  systemctl enable docker
+                  systemctl start docker
+                else
+                  echo '✅ Docker $(docker --version) already installed'
+                fi
+
+                echo '--- Pulling latest code ---'
+                cd $DEPLOY_PATH
+                git fetch origin $BRANCH
+                git reset --hard origin/$BRANCH
+
+                echo '--- Installing dependencies ---'
+                npm ci --silent
+
+                echo '--- Running production build ---'
+                npm run docker-update --silent
+
+                echo '✅ Deployment complete!'
+              "

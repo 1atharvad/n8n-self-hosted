@@ -8,9 +8,15 @@ __pycache__
 **/**.pyc
 .env*
 .ruff_cache
+.code-review-graph/
 venv
 n8n_files
 n8n-data
 credentials.json
 tts_cache
 postgres-data
+loki-data
+minio-data
+redis-data
+.claude/
+.mcp.json

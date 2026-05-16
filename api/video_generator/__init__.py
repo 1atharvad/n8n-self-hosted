@@ -1,10 +1,12 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
+import storage as minio_storage
+
 from .image_extractor import ImageExtractor
 from .ppt_generator import PPTGenerator
-from .server_file_management import ServerFileManagement
 from .text_to_voice import TextToVoice
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -12,6 +14,10 @@ AUDIO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'audio_files')
 IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
 IMG_VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'img_video_files')
 VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
+
+
+def _epoch_dir(epoch: int, video_type: str | None) -> str:
+    return f"{video_type}-epoch_{epoch}" if video_type else f"epoch_{epoch}"
 
 
 class VideoGenerator:
@@ -59,12 +65,10 @@ class VideoGenerator:
         Returns:
             Job ID and its updated metadata dictionary.
         """
-        if job_id not in self.job_store:
-            self.job_store[job_id] = {}
-        self.job_store[job_id]["status"] = status
+        self.job_store[job_id] = {"status": status}
         return job_id, self.job_store.get(job_id)
 
-    def convert_to_mp4(self, job_id: str, image_file: str, audio_file: str):
+    def convert_to_mp4(self, job_id: str, image_file: str, audio_file: str, epoch: int | None = None, video_type: str | None = None, upload_to_minio: bool = False):
         """
         Creates a MP4 video by combining a static image and an audio track.
 
@@ -72,19 +76,22 @@ class VideoGenerator:
             job_id (str): Unique identifier of the job.
             image_file (str): The image file to use as the video background.
             audio_file (str): The audio file to include in the video.
+            epoch (str | None): Optional epoch value; files are stored under
+                img_video_files/epoch_<epoch>/ when provided.
 
         Side Effects:
-            - Generates an MP4 file stored in IMG_VIDEO_FILES_DIR.
+            - Generates an MP4 file stored in IMG_VIDEO_FILES_DIR[/epoch_<epoch>].
             - Removes the original image file after processing.
             - Updates job_store with job status, errors, and output details.
         """
         try:
             video_file = f'{image_file.split(".")[0]}.mp4'
 
-            img_path = Path(IMG_FILES_DIR, image_file)
+            img_path = Path(IMG_FILES_DIR, _epoch_dir(epoch, video_type), image_file) if epoch else Path(IMG_FILES_DIR, image_file)
             audio_path = Path(AUDIO_FILES_DIR, audio_file)
-            out_path = Path(IMG_VIDEO_FILES_DIR, video_file)
-            IMG_VIDEO_FILES_DIR.mkdir(parents=True, exist_ok=True)
+            out_dir = Path(IMG_VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else IMG_VIDEO_FILES_DIR
+            out_path = Path(out_dir, video_file)
+            out_dir.mkdir(parents=True, exist_ok=True)
 
             cmd = [
                 "ffmpeg",
@@ -122,26 +129,32 @@ class VideoGenerator:
 
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
-                os.chown(str(out_path), 1000, 1000)
                 self.job_store[job_id] = {
                     "status": "failed",
                     "error": "ffmpeg failed",
                     "stderr": result.stderr,
                 }
+                return
 
             if img_path.exists():
                 img_path.unlink()
 
-            self.job_store[job_id] = {
+            result = {
                 "status": "completed",
                 "video_file": str(out_path),
                 "filename": video_file,
             }
+            if upload_to_minio:
+                object_name = f"img-videos/{video_file}"
+                minio_storage.upload_file(object_name, str(out_path), content_type="video/mp4")
+                result["minio_object"] = object_name
+                result["minio_url"] = minio_storage.get_presigned_url(object_name)
+            self.job_store[job_id] = result
         except Exception as e:
             self.job_store[job_id] = {"status": "failed", "error": str(e)}
 
     @staticmethod
-    def convert_mp4_to_mp4(video_file: str):
+    def convert_mp4_to_mp4(video_file: str, upload_to_minio: bool = False):
         """
         Re-encodes an MP4 video with standardized settings.
 
@@ -188,17 +201,26 @@ class VideoGenerator:
                 return {"error": "ffmpeg failed", "stderr": result.stderr}
 
             output_path.rename(input_path)
-            return {"video_file": str(input_path), "filename": video_file}
+            result = {"video_file": str(input_path), "filename": video_file}
+            if upload_to_minio:
+                object_name = f"img-videos/{video_file}"
+                minio_storage.upload_file(object_name, str(input_path), content_type="video/mp4")
+                result["minio_object"] = object_name
+                result["minio_url"] = minio_storage.get_presigned_url(object_name)
+            return result
         except Exception as e:
             return {"error": str(e)}
 
-    def combine_videos(self, video_file_name: str, video_files: list):
+    def combine_videos(self, video_file_name: str, video_files: list, epoch: int | None = None, video_type: str | None = None, upload_to_minio: bool = False):
         """
         Combines multiple MP4 videos into a single file.
 
         Args:
             video_file_name (str): The base name of the output video file.
             video_files (list): List of video file names to combine.
+            epoch (str | None): Optional epoch value; files are read from
+                img_video_files/epoch_<epoch>/ and the folder is removed on
+                success.
 
         Returns:
             dict: On success, includes status, file path, and filename.
@@ -206,33 +228,52 @@ class VideoGenerator:
 
         Side Effects:
             - Creates a combined MP4 file stored in VIDEO_FILES_DIR.
-            - Deletes individual video segments after combining.
+            - Deletes the epoch subfolder (or individual files) after combining.
             - Updates job_store with job status and output details.
         """
         try:
-            list_file = Path(BASE_DIR, "n8n_files", "videos.txt")
+            src_dir = Path(IMG_VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else IMG_VIDEO_FILES_DIR
+            list_file = Path(src_dir, "videos.txt")
             video_path = Path(VIDEO_FILES_DIR, f"{video_file_name}.mp4")
+            VIDEO_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
-            if not video_files or len(video_files) < 2:
-                return {"error": "Please provide at least 2 video files."}
+            if not video_files:
+                self.job_store[video_file_name] = {
+                    "status": "failed",
+                    "error": "No video files provided.",
+                }
+                return
+
+            if len(video_files) == 1:
+                src = Path(src_dir, video_files[0])
+                src.rename(video_path)
+                if epoch and src_dir.exists():
+                    shutil.rmtree(src_dir)
+                result = {
+                    "status": "completed",
+                    "file_path": str(video_path),
+                    "filename": f"{video_file_name}.mp4",
+                }
+                if upload_to_minio:
+                    object_name = f"videos/{video_file_name}.mp4"
+                    minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
+                    result["minio_object"] = object_name
+                    result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                self.job_store[video_file_name] = result
+                return
 
             with open(list_file, "w+") as f:
                 for file_name in video_files:
-                    file_path = Path(IMG_VIDEO_FILES_DIR, file_name)
+                    file_path = Path(src_dir, file_name)
                     if file_path.exists():
                         f.write(f"file '{str(file_path)}'\n")
                     else:
-                        relative_path = file_path.relative_to(BASE_DIR)
-
-                        if relative_path.exists():
-                            f.write(f"file '{str(relative_path)}'\n")
-                        else:
-                            print('error')
-                            self.job_store[video_file_name] = {
-                                "status": "failed",
-                                "error": "ffmpeg failed",
-                                "stderr": f"Video file {file_name} not found at {video_path}",
-                            }
+                        self.job_store[video_file_name] = {
+                            "status": "failed",
+                            "error": "ffmpeg failed",
+                            "stderr": f"Video file {file_name} not found at {src_dir}",
+                        }
+                        return
 
             cmd = [
                 "ffmpeg",
@@ -274,15 +315,21 @@ class VideoGenerator:
                 }
             else:
                 for file_name in video_files:
-                    file_path = Path(IMG_VIDEO_FILES_DIR, file_name)
+                    file_path = Path(src_dir, file_name)
                     if file_path.exists():
                         file_path.unlink()
 
-                self.job_store[video_file_name] = {
+                result = {
                     "status": "completed",
                     "file_path": str(video_path),
                     "filename": f"{video_file_name}.mp4",
                 }
+                if upload_to_minio:
+                    object_name = f"videos/{video_file_name}.mp4"
+                    minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
+                    result["minio_object"] = object_name
+                    result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                self.job_store[video_file_name] = result
         except Exception as e:
             self.job_store[video_file_name] = {
                 "status": "failed",
@@ -295,5 +342,4 @@ __all__ = [
     'PPTGenerator',
     'ImageExtractor',
     'TextToVoice',
-    'ServerFileManagement',
 ]

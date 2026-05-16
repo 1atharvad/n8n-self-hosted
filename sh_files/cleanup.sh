@@ -80,7 +80,7 @@ for folder in $FOLDERS_TO_CLEAN; do
 
     if [ -d "$folder_path" ]; then
         >&2 echo "Cleaning $folder..."
-        rm -f "$folder_path"/* || {
+        rm -rf "$folder_path"/* || {
             >&2 echo "Warning: Could not clean all files in $folder"
         }
         cleaned_count=$((cleaned_count + 1))

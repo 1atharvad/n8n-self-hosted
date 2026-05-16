@@ -14,14 +14,27 @@ POSTGRES_DB = os.getenv("POSTGRES_DB")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 POSTGRES_PASSWORD_ENCODED = urllib.parse.quote_plus(POSTGRES_PASSWORD)
 
-db_url = f"{POSTGRES_USER}:{POSTGRES_PASSWORD_ENCODED}@postgres:{POSTGRES_PORT}/{POSTGRES_DB}"
-ASYNC_DATABASE_URL = f"postgresql+asyncpg://{db_url}"
-async_engine = create_async_engine(ASYNC_DATABASE_URL, echo=True)
+ASYNC_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD_ENCODED}@postgres:{POSTGRES_PORT}/{POSTGRES_DB}"
+async_engine = create_async_engine(
+    ASYNC_DATABASE_URL,
+    echo=True,
+    connect_args={
+        "server_settings": {
+            "search_path": "job_listing"
+        }
+    }
+)
 
 async_session = sessionmaker(
     async_engine, class_=AsyncSession, expire_on_commit=False
 )
 
 # Sync engine for SQLAdmin
-SYNC_DATABASE_URL = f"postgresql+psycopg2://{db_url}"
-sync_engine = create_engine(SYNC_DATABASE_URL, echo=True)
+SYNC_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD_ENCODED}@postgres:{POSTGRES_PORT}/{POSTGRES_DB}"
+sync_engine = create_engine(
+    SYNC_DATABASE_URL,
+    echo=True,
+    connect_args={
+        "options": "-csearch_path=job_listing"
+    }
+)

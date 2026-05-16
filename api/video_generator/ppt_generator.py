@@ -5,19 +5,19 @@ from pathlib import Path
 from pptx import Presentation
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-TEMPLATE_PATH = Path(BASE_DIR, "n8n_files", "job_news_template.pptx")
 FILES_DIR = Path(BASE_DIR, "n8n_files", "ppt_files")
 AUDIO_DIR = Path(BASE_DIR, "n8n_files", "audio_files")
 
 
 class PPTGenerator:
-    def __init__(self):
+    def __init__(self, template_file: str):
         """
         A utility class for generating PowerPoint presentations from a
         predefined template. It supports copying, inserting, and removing
         slides while dynamically replacing text placeholders with job-specific
         content.
         """
+        self.template_path = Path(BASE_DIR, "n8n_files", template_file)
         self.files_dir = FILES_DIR
         self.files_dir.mkdir(exist_ok=True)
         self.template_slide = 0
@@ -95,7 +95,7 @@ class PPTGenerator:
         Returns:
             The file path of the generated PowerPoint presentation.
         """
-        prs = Presentation(TEMPLATE_PATH)
+        prs = Presentation(self.template_path)
         template_slide = prs.slides[self.template_slide]
 
         for index, job in enumerate(jobs):
@@ -112,7 +112,7 @@ class PPTGenerator:
 
 
 if __name__ == '__main__':
-    ppt = PPTGenerator()
+    ppt = PPTGenerator("job_news_template.pptx")
     ppt.template_slide = 0
     ppt.old_text = {
         'company_name': "{{COMPANY_NAME}}",

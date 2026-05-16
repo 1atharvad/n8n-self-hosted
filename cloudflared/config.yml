@@ -3,5 +3,5 @@ credentials-file: /etc/cloudflared/credentials.json
 
 ingress:
   - hostname: local.atharvadevasthali.com
-    service: http://nginx:8080
+    service: http://nginx:6060
   - service: http_status:404

@@ -26,7 +26,7 @@ def init_admin(app):
     app.router.lifespan_context = lifespan
 
     # Create Admin instance
-    admin = Admin(app, sync_engine)
+    admin = Admin(app, sync_engine, base_url="/db-admin")
 
     # JobLink admin
     class JobLinkAdmin(ModelView, model=JobLink):
@@ -51,11 +51,16 @@ def init_admin(app):
     class Mp4ListAdmin(ModelView, model=Mp4List):
         column_list = [
             Mp4List.id,
+            Mp4List.execution_id,
             Mp4List.date,
             Mp4List.pages_scrapped,
             Mp4List.start_time,
             Mp4List.end_time,
             Mp4List.mp4_name,
+            Mp4List.status,
+            Mp4List.job_id,
+            Mp4List.num_of_jobs,
+            Mp4List.video_type
         ]
         column_sortable_list = [Mp4List.date, Mp4List.id]
 

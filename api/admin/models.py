@@ -45,3 +45,8 @@ class Mp4List(Base):
     end_time = Column(Time)
     mp4_name = Column(String(255))
     mp4_path = Column(Text)
+    execution_id = Column(Integer)
+    status = Column(String(50))
+    job_id = Column(Integer)
+    num_of_jobs = Column(Integer)
+    video_type = Column(String(50))
