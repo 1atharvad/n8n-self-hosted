@@ -120,7 +120,6 @@ services:
     container_name: media-api
     restart: unless-stopped
     environment:
-      API_URL: ${API_URL}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
