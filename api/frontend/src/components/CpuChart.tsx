@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ComposedChart,
   Line,
@@ -115,9 +114,10 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
               <Tooltip
                 contentStyle={tooltipStyle}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number, name: string) => {
-                  if (name === 'CPU raw' || name === 'CPU EMA') return [`${value.toFixed(1)}%`, name];
-                  return [value, name];
+                formatter={(value, name) => {
+                  const n = String(name ?? '');
+                  if ((n === 'CPU raw' || n === 'CPU EMA') && typeof value === 'number') return [`${value.toFixed(1)}%`, n];
+                  return [value ?? '', n];
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
