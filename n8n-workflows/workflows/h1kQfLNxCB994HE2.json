@@ -1,5 +1,5 @@
 {
-  "name": "Youtube Video Upload",
+  "name": "Instagram Video Upload",
   "nodes": [
     {
       "parameters": {
@@ -39,10 +39,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -352,
-        672
+        -896,
+        464
       ],
-      "id": "d17356bb-7e0a-4935-be9d-0a0b6a8f512a",
+      "id": "48b139bd-278b-4934-a60a-cf33b532af90",
       "name": "If"
     },
     {
@@ -56,7 +56,7 @@
         720,
         1328
       ],
-      "id": "054e5838-63dd-443a-a226-b933cdc2e4e7",
+      "id": "bfe1f1b3-b396-4d4f-a0fc-157925cfaeb6",
       "name": "Get Video file",
       "executeOnce": true
     },
@@ -73,10 +73,10 @@
           "mappingMode": "defineBelow",
           "value": {
             "weekday": "={{ $('Input Parameters').item.json.weekday }}",
-            "pages_scrapped": "={{ (() => {\n  const maxEpoch = $('Input Parameters').item.json.maxEpoch;\n  const list = $('Input Parameters').item.json.job_portal_list;\n  const epoch = $('Save Video Details').item.json.epoch;\n  const index = epoch % Math.floor(maxEpoch / list.length);\n\n  return (!$('Updated Input Parameters').isExecuted || index == 0)\n    ? 0\n    : $('Updated Input Parameters').item.json.pages_scrapped;\n})() }}",
-            "num_of_jobs": "={{ $('Input Parameters').item.json.video_count }}",
+            "pages_scrapped": "={{ (() => {\n  const maxEpoch = $('Input Parameters').item.json.maxEpoch;\n  const list = $('Input Parameters').item.json.job_portal_list;\n  const epoch = $('Get current epoch').item.json.epoch;\n  const index = epoch % Math.floor(maxEpoch / list.length);\n\n  return index == 0\n    ? 0\n    : $('Get current epoch').item.json.pages_scrapped;\n})() }}",
+            "num_of_jobs": "={{ max($('Input Parameters').item.json.video_count, 10) }}",
             "scrape_by_weekday": false,
-            "job_portal": "={{ (() => {\n  const maxEpoch = $('Input Parameters').item.json.maxEpoch;\n  const list = $('Input Parameters').item.json.job_portal_list;\n  const epoch = $('Save Video Details').item.json.epoch;\n  const index = Math.floor(epoch / Math.floor(maxEpoch / list.length));\n  return list[index];\n})() }}",
+            "job_portal": "={{ (() => {\n  const maxEpoch = $('Input Parameters').item.json.maxEpoch;\n  const list = $('Input Parameters').item.json.job_portal_list;\n  const epoch = $('Get current epoch').item.json.epoch;\n  const index = Math.floor(epoch / Math.floor(maxEpoch / list.length));\n  return list[index];\n})() }}",
             "additional_date": 0
           },
           "matchingColumns": [],
@@ -150,7 +150,7 @@
         64,
         448
       ],
-      "id": "9295707c-37d9-43b3-821c-b94fb9b89c54",
+      "id": "9e44362c-e058-4578-accc-0a09370b8f57",
       "name": "Job Scrapper",
       "onError": "continueErrorOutput"
     },
@@ -169,10 +169,11 @@
             "old_text": "={{ $json.old_text }}",
             "jobs": "={{ $json.jobs }}",
             "template_slide": "={{ $json.template_slide }}",
-            "date": "={{ $('Input Parameters').item.json.date }}",
-            "batch_size": "={{ $('Input Parameters').item.json.batch_size }}",
+            "date": "={{ $('Input Parameters').first().json.date }}",
+            "batch_size": "={{ $('Input Parameters').first().json.batch_size }}",
             "initial_point": "={{ $json.initial_point }}",
-            "epoch": "={{ parseInt($('Save Video Details').item.json.epoch, 10)  + 1}}"
+            "epoch": "={{ $('Get current epoch').first().json.epoch }}",
+            "template_file": "={{ $json.template_file }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -184,6 +185,16 @@
               "display": true,
               "canBeUsedToMatch": true,
               "type": "number",
+              "removed": false
+            },
+            {
+              "id": "template_file",
+              "displayName": "template_file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
               "removed": false
             },
             {
@@ -247,7 +258,7 @@
               "removed": false
             }
           ],
-          "attemptToConvertTypes": false,
+          "attemptToConvertTypes": true,
           "convertFieldsToString": true
         },
         "options": {}
@@ -256,9 +267,9 @@
       "typeVersion": 1.2,
       "position": [
         288,
-        448
+        464
       ],
-      "id": "cb9cc8e1-49d7-4e9f-bef7-6cc8836b1ca4",
+      "id": "73ebd668-4ca0-4e13-8fdd-6a7a8a3e6226",
       "name": "Create Video",
       "retryOnFail": true
     },
@@ -307,6 +318,12 @@
               "name": "job_portal_list",
               "value": "[\"LinkedIn\"]",
               "type": "array"
+            },
+            {
+              "id": "9d73e3b6-f645-4ef7-95e4-d75c668a34fd",
+              "name": "template_file",
+              "value": "job_news_template_instagram.pptx",
+              "type": "string"
             }
           ]
         },
@@ -318,47 +335,19 @@
         -560,
         896
       ],
-      "id": "513daf77-8e6a-4149-8e0b-8f59c3177a18",
+      "id": "1ddd5cc3-ec0d-4f16-8a4a-7a4df7519ea9",
       "name": "Input Parameters"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "79411c80-361f-4bd5-af88-51d5a292e724",
-              "leftValue": "={{ $json }}",
-              "rightValue": "",
-              "operator": {
-                "type": "object",
-                "operation": "empty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        944,
-        224
-      ],
-      "id": "532adaa2-1de2-4e47-84f5-ad9dacf3bb54",
-      "name": "If1"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
+            {
+              "id": "da127bf3-6987-44b2-b6e7-2e1e0f222a1c",
+              "name": "template_file",
+              "value": "={{ $('Input Parameters').first().json.template_file }}",
+              "type": "string"
+            },
             {
               "id": "f71d0b32-a48b-4d9b-aedd-e226364acc5d",
               "name": "jobs",
@@ -390,10 +379,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1168,
-        224
+        496,
+        240
       ],
-      "id": "a21a73fd-444a-4140-bef0-0aa52e863ffc",
+      "id": "5fb050bb-4fa6-400a-8da5-3f3b09e3d4ee",
       "name": "Script Generator Output"
     },
     {
@@ -405,6 +394,12 @@
               "name": "jobs",
               "value": "={{ $('Script Generator Output').item.json.jobs }}",
               "type": "array"
+            },
+            {
+              "id": "17ad8d2f-78d4-4d6c-8f46-47722dd1eb61",
+              "name": "template_file",
+              "value": "={{ $('Script Generator Output').item.json.template_file }}",
+              "type": "string"
             },
             {
               "id": "baf77441-cfe3-4955-818d-ce777c60a644",
@@ -432,9 +427,9 @@
       "typeVersion": 3.4,
       "position": [
         944,
-        448
+        464
       ],
-      "id": "aa34db56-02d5-4f6d-aa3d-831d91ddb94e",
+      "id": "d28af2a7-ba8f-460e-a289-bc183546473f",
       "name": "Re-iterate Script Output"
     },
     {
@@ -443,32 +438,32 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict",
+            "typeValidation": "loose",
             "version": 2
           },
           "conditions": [
             {
               "id": "79411c80-361f-4bd5-af88-51d5a292e724",
-              "leftValue": "={{ $json }}",
-              "rightValue": "",
+              "leftValue": "={{ $json.video_count }}",
+              "rightValue": "={{ $('Input Parameters').item.json.video_count }}",
               "operator": {
-                "type": "object",
-                "operation": "empty",
-                "singleValue": true
+                "type": "number",
+                "operation": "lte"
               }
             }
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": true,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         -144,
-        448
+        464
       ],
-      "id": "366a1c7c-7700-4164-a311-779814a0a15b",
+      "id": "673723a7-4901-414e-a2c3-9b216c782076",
       "name": "If3"
     },
     {
@@ -500,9 +495,9 @@
       "typeVersion": 2.2,
       "position": [
         720,
-        448
+        464
       ],
-      "id": "1f77c97e-0589-4cab-8ef0-f20dc4f288fb",
+      "id": "5e95613d-ab61-437d-abae-c46516fb7bd8",
       "name": "If2"
     },
     {
@@ -515,7 +510,7 @@
         496,
         672
       ],
-      "id": "0ceff30f-d0a7-4387-8c99-da15413049c2",
+      "id": "9e0d13c3-3c32-43dd-8ad7-21092e1edba5",
       "name": "Loop Over Items"
     },
     {
@@ -533,7 +528,7 @@
             "video_file_name": "={{ $json.video_file_name }}",
             "output_file_name": "={{ $json.output_file_name }}",
             "include_intro_outro": false,
-            "epoch": "={{ parseInt($('Save Video Details').first().json.epoch, 10)  + 1}}",
+            "epoch": "={{ $('Get current epoch').first().json.epoch }}",
             "include_epoch_in_output": true
           },
           "matchingColumns": [],
@@ -587,7 +582,7 @@
               "removed": false
             }
           ],
-          "attemptToConvertTypes": false,
+          "attemptToConvertTypes": true,
           "convertFieldsToString": true
         },
         "options": {}
@@ -598,7 +593,7 @@
         720,
         672
       ],
-      "id": "95b7de5c-73d9-4f12-9029-0f1fb01921a0",
+      "id": "9b874a22-440b-434e-bcb3-c79274334be9",
       "name": "Combine Videos"
     },
     {
@@ -611,7 +606,7 @@
         944,
         672
       ],
-      "id": "dd338125-7bf7-463e-ad09-f19cecb36736",
+      "id": "6c025bf9-e7d4-4970-89d4-fcea1dfcce6d",
       "name": "Execute Command"
     },
     {
@@ -640,7 +635,7 @@
         1168,
         672
       ],
-      "id": "8ee8ed67-1159-4a5d-b213-e837764665dc",
+      "id": "171bdc5e-2c3b-48cd-9559-b468d3454421",
       "name": "Edit Fields"
     },
     {
@@ -653,7 +648,7 @@
         288,
         880
       ],
-      "id": "8f93138c-3d10-472b-b887-167ad0315a41",
+      "id": "0367a49c-28f7-4b95-834c-490a26764614",
       "name": "Code",
       "executeOnce": false
     },
@@ -665,7 +660,7 @@
         1376,
         880
       ],
-      "id": "a6536ec1-a549-4680-b816-cc3d8a280061",
+      "id": "c59a3baa-30d4-4c5a-9610-72f77e55bc14",
       "name": "UUID Generator"
     },
     {
@@ -679,7 +674,7 @@
         720,
         880
       ],
-      "id": "36d45f34-10e8-4366-a710-fa098846916e",
+      "id": "9f0ee124-44b5-4e4d-887e-ada46c3998af",
       "name": "Split Out1"
     },
     {
@@ -692,7 +687,7 @@
         944,
         880
       ],
-      "id": "016c4b7d-1429-46d6-ae6c-08b79146b978",
+      "id": "7451634c-40ff-437a-beb0-d3447aa14663",
       "name": "Loop Over Items1"
     },
     {
@@ -725,7 +720,7 @@
         496,
         880
       ],
-      "id": "efa41bdc-bd2b-4a76-8521-b35fb67ad888",
+      "id": "78fbe4fe-ac76-4e0c-a900-4d0e7fceed48",
       "name": "If4"
     },
     {
@@ -758,7 +753,7 @@
         1168,
         880
       ],
-      "id": "2a325092-3eef-4976-bab0-a868a04534a1",
+      "id": "9ffdc821-d276-4af3-8770-5c124ac0cce6",
       "name": "If5"
     },
     {
@@ -771,7 +766,7 @@
         1584,
         880
       ],
-      "id": "daf2cef2-2815-4956-91cf-8afb4e5a55f0",
+      "id": "86e72ccf-13d0-4b0b-89be-567d0fb43b24",
       "name": "Code1"
     },
     {
@@ -789,7 +784,7 @@
             "video_file_name": "={{ $json.video_file_name }}",
             "output_file_name": "={{ $json.output_file_name }}",
             "include_intro_outro": false,
-            "epoch": "={{ parseInt($('Save Video Details').first().json.epoch, 10)  + 1}}",
+            "epoch": "={{ $('Get current epoch').first().json.epoch }}",
             "include_epoch_in_output": true
           },
           "matchingColumns": [],
@@ -843,7 +838,7 @@
               "removed": false
             }
           ],
-          "attemptToConvertTypes": false,
+          "attemptToConvertTypes": true,
           "convertFieldsToString": true
         },
         "options": {}
@@ -854,7 +849,7 @@
         1168,
         1104
       ],
-      "id": "58e9243a-760a-4a2a-85f6-b6223a38a448",
+      "id": "c4579d86-71a5-451b-bdfc-1434c7743f3a",
       "name": "Combine Videos1"
     },
     {
@@ -867,7 +862,7 @@
         1376,
         1104
       ],
-      "id": "8e2ef554-ec81-48bb-9568-f7bee54d8485",
+      "id": "4a9e9c13-c1c8-47a4-843f-20bebbec4b3a",
       "name": "Execute Command1"
     },
     {
@@ -896,7 +891,7 @@
         1584,
         1104
       ],
-      "id": "7bafcb53-548a-46ef-ba30-9815631eceed",
+      "id": "651a4fd7-7c30-4a96-a6bc-20b3d64068f7",
       "name": "Edit Fields1"
     },
     {
@@ -925,7 +920,7 @@
         944,
         1104
       ],
-      "id": "f2a903b6-1331-4b41-9874-62aa21128caa",
+      "id": "7bc07767-ca15-4659-9d02-ce3fd1fce3eb",
       "name": "Edit Fields2"
     },
     {
@@ -943,7 +938,7 @@
             "include_intro_outro": false,
             "video_file_name": "={{ $json.video_file_name }}",
             "output_file_name": "={{ $json.output_file_name }}",
-            "epoch": "={{ parseInt($('Save Video Details').first().json.epoch, 10)  + 1}}"
+            "epoch": "={{ $('Get current epoch').first().json.epoch }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -1006,7 +1001,7 @@
         496,
         1104
       ],
-      "id": "29990ab0-807f-4e9d-bdbf-65748c0c45ac",
+      "id": "64e30c48-a292-43aa-b58f-a8918704c815",
       "name": "Combine Videos2"
     },
     {
@@ -1017,7 +1012,7 @@
         288,
         1280
       ],
-      "id": "3284bc06-05a4-4b59-94c0-743b707f752e",
+      "id": "041d388a-a654-43b8-854e-8a59c5c6aacd",
       "name": "UUID Generator1"
     },
     {
@@ -1030,7 +1025,7 @@
         288,
         1104
       ],
-      "id": "57f83bdc-885c-4b9a-820b-dd23c1c12cba",
+      "id": "272f4f25-2c89-4e78-946b-16c3518f2be8",
       "name": "Code2"
     },
     {
@@ -1059,9 +1054,9 @@
       "typeVersion": 1,
       "position": [
         496,
-        448
+        464
       ],
-      "id": "628fccf7-3b4b-4f5a-86fe-1e2c6c9e2751",
+      "id": "c6b91522-ed35-415c-b168-8f003fcb336a",
       "name": "Save Video Output"
     },
     {
@@ -1072,7 +1067,7 @@
         288,
         672
       ],
-      "id": "b96de63d-9356-489d-a3fe-9684f9cd17e7",
+      "id": "badab60a-9cdd-46d5-8fa7-e7ef7c136378",
       "name": "Get Video Output"
     },
     {
@@ -1104,10 +1099,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -144,
-        672
+        -1248,
+        288
       ],
-      "id": "81427e0c-16f5-4432-9738-78f040ca3495",
+      "id": "0d870ee7-1f7d-472a-bd0e-ce0791f87345",
       "name": "Updated Input Parameters"
     },
     {
@@ -1116,7 +1111,7 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict",
+            "typeValidation": "loose",
             "version": 2
           },
           "conditions": [
@@ -1126,67 +1121,23 @@
               "rightValue": "={{ $('Input Parameters').item.json.maxEpoch }}",
               "operator": {
                 "type": "number",
-                "operation": "lt"
+                "operation": "lte"
               }
             }
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": true,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        64,
+        -352,
         672
       ],
-      "id": "0e2f63f9-7686-43bc-bcb0-4025d7a3dae9",
+      "id": "bea39b23-b225-4183-a330-17eac4bbdf6e",
       "name": "If7"
-    },
-    {
-      "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "value": "job_listing",
-          "mode": "list",
-          "cachedResultName": "job_listing"
-        },
-        "table": {
-          "__rl": true,
-          "value": "mp4_list",
-          "mode": "list",
-          "cachedResultName": "mp4_list"
-        },
-        "where": {
-          "values": [
-            {
-              "column": "date",
-              "value": "={{ $json.date }}"
-            },
-            {
-              "column": "epoch",
-              "value": "={{ $json.epoch }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -560,
-        672
-      ],
-      "id": "7815cbe7-f864-42d3-8c73-19b763dc2fbb",
-      "name": "Get video list",
-      "alwaysOutputData": true,
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
     },
     {
       "parameters": {
@@ -1207,9 +1158,10 @@
           "mappingMode": "defineBelow",
           "value": {
             "id": "={{ $json.id || $execution.id }}",
-            "epoch": "={{ \n  $('Updated Input Parameters').isExecuted \n    ? $('Updated Input Parameters').item.json.epoch \n    : $('Input Parameters').item.json.epoch \n}}",
             "date": "={{ $now.format('yyyy-MM-dd') }}",
-            "start_time": "={{ $now.format('HH:mm') }}"
+            "start_time": "={{ $now.format('HH:mm') }}",
+            "status": "running",
+            "execution_id": "={{ $execution.id }}"
           },
           "matchingColumns": [
             "id"
@@ -1242,7 +1194,17 @@
               "display": true,
               "type": "number",
               "canBeUsedToMatch": false,
-              "removed": false
+              "removed": true
+            },
+            {
+              "id": "pages_scrapped",
+              "displayName": "pages_scrapped",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
             },
             {
               "id": "start_time",
@@ -1285,237 +1247,23 @@
               "removed": true
             },
             {
-              "id": "pages_scrapped",
-              "displayName": "pages_scrapped",
+              "id": "execution_id",
+              "displayName": "execution_id",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "type": "number",
               "canBeUsedToMatch": false,
-              "removed": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -560,
-        448
-      ],
-      "id": "ddc3da12-38e0-484d-9908-9bc7adc0beac",
-      "name": "Save Video Details",
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "value": "job_listing",
-          "mode": "list",
-          "cachedResultName": "job_listing"
-        },
-        "table": {
-          "__rl": true,
-          "value": "job_links",
-          "mode": "list",
-          "cachedResultName": "job_links"
-        },
-        "limit": 1,
-        "where": {
-          "values": [
-            {
-              "column": "date",
-              "value": "={{ $('Input Parameters').item.json.date }}"
-            },
-            {
-              "column": "video_created",
-              "value": "false"
-            }
-          ]
-        },
-        "sort": {
-          "values": [
-            {
-              "column": "id"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -352,
-        448
-      ],
-      "id": "3a84b761-9994-44c2-9c2c-65825c1a4a3b",
-      "name": "Get job list",
-      "alwaysOutputData": true,
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM job_listing.job_links\nWHERE date=$1 AND (audio_added=false OR script_added=false) AND video_created=false\nORDER BY id ASC\nLIMIT 1",
-        "options": {
-          "queryReplacement": "={{ $('Input Parameters').item.json.date }}"
-        }
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        720,
-        224
-      ],
-      "id": "8c547728-887b-4737-b33e-5fb50e2b83b1",
-      "name": "Extract Job Openings",
-      "alwaysOutputData": true,
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE job_listing.job_links\nSET video_created = true\nWHERE date = '{{ $('Code').item.json.date }}'\n  AND video_created = false;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        496,
-        1328
-      ],
-      "id": "05f5a72d-5bb0-4893-9c03-8a78f5177011",
-      "name": "Set Video Created",
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "schema": {
-          "__rl": true,
-          "value": "job_listing",
-          "mode": "list",
-          "cachedResultName": "job_listing"
-        },
-        "table": {
-          "__rl": true,
-          "value": "mp4_list",
-          "mode": "list",
-          "cachedResultName": "mp4_list"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "id": "={{ $('Save Video Details').item.json.id }}",
-            "pages_scrapped": "={{ $json.pages_scrapped }}"
-          },
-          "matchingColumns": [
-            "id"
-          ],
-          "schema": [
-            {
-              "id": "id",
-              "displayName": "id",
-              "required": false,
-              "defaultMatch": true,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
               "removed": false
             },
             {
-              "id": "date",
-              "displayName": "date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "epoch",
-              "displayName": "epoch",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "start_time",
-              "displayName": "start_time",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "time",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "end_time",
-              "displayName": "end_time",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "time",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "mp4_name",
-              "displayName": "mp4_name",
+              "id": "status",
+              "displayName": "status",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "mp4_path",
-              "displayName": "mp4_path",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "pages_scrapped",
-              "displayName": "pages_scrapped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
+              "canBeUsedToMatch": false,
               "removed": false
             }
           ],
@@ -1528,17 +1276,39 @@
       "typeVersion": 2.6,
       "position": [
         64,
-        224
+        672
       ],
-      "id": "0f115d9a-4545-4a08-b0b4-76e40a7d4fda",
-      "name": "Update rows in a table",
+      "id": "f6ca0ad7-c817-40e6-aab2-30cccd4acebc",
+      "name": "Save Video Details",
       "credentials": {
         "postgres": {
           "id": "shW2iHfLRrHL9cFY",
           "name": "Postgres account"
         }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE job_listing.job_links\nSET video_created = true\nWHERE date = $1\n  AND video_created = false\n  AND audio_added = true;",
+        "options": {
+          "queryReplacement": "={{ $('Code').item.json.date }}"
+        }
       },
-      "disabled": true
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        496,
+        1328
+      ],
+      "id": "a5adc79b-846f-470d-9299-8d637a42f66e",
+      "name": "Set Video Created",
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
     },
     {
       "parameters": {
@@ -1553,8 +1323,8 @@
           "mappingMode": "defineBelow",
           "value": {
             "date": "={{ $('Input Parameters').first().json.date }}",
-            "test_mode": false,
-            "maxCount": "={{ $('Input Parameters').first().json.batch_size }}"
+            "maxCount": "={{ $('Input Parameters').first().json.batch_size }}",
+            "num_of_jobs": "={{ $('Input Parameters').first().json.video_count }}"
           },
           "matchingColumns": [
             "date"
@@ -1571,13 +1341,13 @@
               "removed": false
             },
             {
-              "id": "test_mode",
-              "displayName": "test_mode",
+              "id": "num_of_jobs",
+              "displayName": "num_of_jobs",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "boolean",
+              "type": "number",
               "removed": false
             },
             {
@@ -1602,9 +1372,9 @@
       "typeVersion": 1.2,
       "position": [
         288,
-        224
+        240
       ],
-      "id": "2f439138-0364-4778-9aa9-7491b0b02569",
+      "id": "d51e4e0e-43b9-4ec8-9006-a3cefd2752d7",
       "name": "Script Generator",
       "retryOnFail": true,
       "executeOnce": true
@@ -1641,7 +1411,7 @@
         -640,
         1296
       ],
-      "id": "5d59532b-92f3-45f4-9c06-11584db52ee6",
+      "id": "71f3c7a7-d0ec-411f-94a6-91c65e873e1a",
       "name": "Update Video Details1",
       "credentials": {
         "postgres": {
@@ -1667,14 +1437,8 @@
         944,
         1328
       ],
-      "id": "12863cbe-875a-4e6d-922b-7ca4da0bbf83",
+      "id": "93475218-ae8e-4a61-8c04-c592d5193f28",
       "name": "Upload a video",
-      "credentials": {
-        "youTubeOAuth2Api": {
-          "id": "55SC7a6PHJbtFxfj",
-          "name": "YouTube account"
-        }
-      },
       "disabled": true,
       "onError": "continueRegularOutput"
     },
@@ -1688,7 +1452,7 @@
         -224,
         1280
       ],
-      "id": "3a2473c1-d862-44f6-a83a-3def0e643be6",
+      "id": "e53109f5-d60d-4636-87ba-fc92fcd90c6d",
       "name": "Folder files cleanup"
     },
     {
@@ -1701,7 +1465,7 @@
         16,
         1280
       ],
-      "id": "1ad80504-14df-4c30-937b-3529d9d69cda",
+      "id": "ea4b15ac-29e2-4fd3-a63f-67ae600706f7",
       "name": "Execute Command2"
     },
     {
@@ -1714,7 +1478,7 @@
         1376,
         1328
       ],
-      "id": "42ba2141-5c2a-422a-ab68-40a966086d7b",
+      "id": "3048fece-7180-41d2-be73-d8c439e40356",
       "name": "Execute Command4"
     },
     {
@@ -1750,7 +1514,7 @@
         -432,
         1264
       ],
-      "id": "01036864-9eed-46e5-96d8-901c9e6bdb09",
+      "id": "043dcec0-e594-45bf-91fd-8b80f085c381",
       "name": "Update Video Details3",
       "credentials": {
         "postgres": {
@@ -1936,7 +1700,7 @@
         -496,
         1472
       ],
-      "id": "99b6c61e-689f-4d46-8ff0-2acb6410c76e",
+      "id": "6466a269-f04f-4ebb-9604-5f5f701af134",
       "name": "Update Video Details4",
       "credentials": {
         "postgres": {
@@ -1946,20 +1710,6 @@
       }
     },
     {
-      "parameters": {
-        "amount": 10
-      },
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
-      "position": [
-        496,
-        224
-      ],
-      "id": "03c64843-5e40-4407-a05a-9f5a5dc8db01",
-      "name": "Wait 10 sec",
-      "webhookId": "941a9d16-993f-4404-917f-68798491412c"
-    },
-    {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -1967,7 +1717,7 @@
         -976,
         1072
       ],
-      "id": "f2f23921-d7d0-4741-9259-4de4fb23394c",
+      "id": "d70c12fa-7322-44ca-9a2d-be48e2b67bf4",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -1980,8 +1730,9 @@
         -752,
         896
       ],
-      "id": "931fe283-847b-41c9-a3bc-e56eb1aacc0b",
-      "name": "Folder files cleanup1"
+      "id": "00534c00-208a-43c9-9f12-84d27333508d",
+      "name": "Folder files cleanup1",
+      "disabled": true
     },
     {
       "parameters": {
@@ -1995,14 +1746,15 @@
         -752,
         1072
       ],
-      "id": "4b4764b4-d1bd-4bb1-8268-e6c5c06d631a",
+      "id": "60a6060a-3587-4245-b96d-0e88505bea77",
       "name": "Update Video Details (if video not created)",
       "credentials": {
         "postgres": {
           "id": "shW2iHfLRrHL9cFY",
           "name": "Postgres account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -2042,7 +1794,7 @@
         1168,
         1328
       ],
-      "id": "5ecd5e5a-0a77-4bed-9105-f58c300327e7",
+      "id": "a64b1de0-a29b-4e9f-bf12-023fe34a0264",
       "name": "Add New Video to Stream",
       "disabled": true,
       "onError": "continueRegularOutput"
@@ -2055,7 +1807,7 @@
         -976,
         896
       ],
-      "id": "b0852a20-ed26-4175-9ef0-26125c8618d3",
+      "id": "00a173c0-661c-4b34-9cad-9add64b56e55",
       "name": "Pass"
     },
     {
@@ -2075,7 +1827,7 @@
         -1200,
         992
       ],
-      "id": "0cf44019-ffbf-4a71-b415-9a7d60d58ac2",
+      "id": "590de85b-039b-4a2b-9203-bd3c0b9c7244",
       "name": "Schedule Trigger (15)"
     },
     {
@@ -2095,7 +1847,7 @@
         -1200,
         1168
       ],
-      "id": "42804f75-004c-4266-afc0-2ace68e4e57f",
+      "id": "ef6d8681-f86e-4f51-a7f3-125f0a03b6ca",
       "name": "Schedule Trigger (30)"
     },
     {
@@ -2115,7 +1867,7 @@
         -1200,
         640
       ],
-      "id": "ec2d25bd-cea8-479d-9db3-ee6dc6e085bd",
+      "id": "ed218eac-a744-4ec9-8b0b-2d7131749c56",
       "name": "Schedule Trigger (0)"
     },
     {
@@ -2135,7 +1887,7 @@
         -1200,
         816
       ],
-      "id": "2e544dc3-5ae4-4048-9b02-6875176c604a",
+      "id": "67e802eb-08bb-4c4f-aa2f-0d86ff7c83e6",
       "name": "Schedule Trigger (45)"
     },
     {
@@ -2158,14 +1910,16 @@
         -352,
         896
       ],
-      "id": "0376f9c3-00d1-4cc3-8a4d-729a8ab7e22e",
+      "id": "07b0eb6a-7c86-4aed-8a40-90cf04ab3219",
       "name": "Epoch Overflow"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE job_listing.mp4_list\nSET \n    end_time = '{{ $now.format('HH:mm') }}',\n    mp4_name = '{{ $json.filename }}',\n    mp4_path = '{{ $json.file_path }}'\nWHERE \n    id = {{ $('Code').item.json.id }};",
-        "options": {}
+        "query": "UPDATE job_listing.mp4_list\nSET \n    end_time = $1,\n    mp4_name = $2,\n    mp4_path = $3,\n    status = 'success'\nWHERE \n    execution_id = $4;",
+        "options": {
+          "queryReplacement": "={{ $now.format('HH:mm') }},{{ $json.filename }},{{ $json.file_path }},{{ $execution.id }}"
+        }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
@@ -2173,29 +1927,8 @@
         720,
         1104
       ],
-      "id": "1547435a-b0b1-498d-8ee9-e7c289678e97",
+      "id": "1e56783f-6c2e-49be-8f96-95a5111ff319",
       "name": "Update Video Details",
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE job_listing.mp4_list\nSET \n    end_time = '{{ $now.format('HH:mm') }}'\nWHERE \n    id = {{ $('Save Video Details').item.json.id }};",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -144,
-        944
-      ],
-      "id": "762acc4d-5e32-4e6e-a850-61bd3812af88",
-      "name": "Update Video Details2",
       "credentials": {
         "postgres": {
           "id": "shW2iHfLRrHL9cFY",
@@ -2213,28 +1946,198 @@
         64,
         944
       ],
-      "id": "f9cb8853-262a-491f-a42a-155efef10996",
+      "id": "ea3aaec7-555d-4cf0-8a70-00d48b531f05",
       "name": "Job Scrape Error"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "job_listing",
+          "mode": "list",
+          "cachedResultName": "job_listing"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mp4_list",
+          "mode": "list",
+          "cachedResultName": "mp4_list"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "date",
+              "value": "={{ $('Input Parameters').item.json.date }}"
+            },
+            {
+              "column": "end_time",
+              "condition": "IS NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -144,
+        672
+      ],
+      "id": "84c3bae5-a526-42d7-8945-42e0dcc4c596",
+      "name": "Get video list",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ordered AS (\n  SELECT\n    id,\n    status,\n    pages_scrapped,\n    ROW_NUMBER() OVER (ORDER BY id ASC) AS rn\n  FROM job_listing.mp4_list\n  WHERE date = $1\n)\nSELECT\n  CASE \n    WHEN COUNT(*) = 0 THEN 1\n    ELSE COALESCE(\n      (SELECT rn FROM ordered WHERE status = 'failed' ORDER BY rn LIMIT 1),\n      COUNT(*)\n    )\n  END AS epoch,\n  COALESCE(\n    (\n      SELECT pages_scrapped\n      FROM ordered\n      ORDER BY id DESC\n      LIMIT 1\n    ),\n    0\n  ) AS pages_scrapped\nFROM ordered;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryReplacement": "={{ $json.date }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -560,
+        672
+      ],
+      "id": "d73b3759-d012-4aa7-8077-97b94d3dd193",
+      "name": "Get current epoch",
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "job_listing",
+          "mode": "list",
+          "cachedResultName": "job_listing"
+        },
+        "table": {
+          "__rl": true,
+          "value": "job_links",
+          "mode": "list",
+          "cachedResultName": "job_links"
+        },
+        "returnAll": true,
+        "where": {
+          "values": []
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -688,
+        272
+      ],
+      "id": "5bb9ea86-e98c-4bbc-86fc-263fb15aa3e6",
+      "name": "Get job list1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) AS video_count\nFROM job_listing.job_links\nWHERE\n  date = $1 AND\n  video_created = FALSE;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryReplacement": "={{ $('Input Parameters').item.json.date }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -352,
+        464
+      ],
+      "id": "80429473-cfbf-48c8-968c-7d42971a0aed",
+      "name": "Pending video count",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE job_listing.mp4_list\nSET \n    status = 'failed'\nWHERE \n    execution_id = $1;",
+        "options": {
+          "queryReplacement": "={{ $execution.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -144,
+        944
+      ],
+      "id": "8f8eefa2-8dc3-478e-b55f-4f50a549d3f6",
+      "name": "Update Video Details (On Error)",
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "reels",
+        "node": "me",
+        "additionalFields": {}
+      },
+      "type": "@mookielianhd/n8n-nodes-instagram.instagram",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        640
+      ],
+      "id": "25cef53d-6da0-44cd-8462-991a12924c5e",
+      "name": "Publish",
+      "credentials": {
+        "instagramApi": {
+          "id": "TqVTlvtvbp2wYyOz",
+          "name": "Unnamed credential"
+        }
+      }
     }
   ],
   "pinData": {},
   "connections": {
     "If": {
       "main": [
-        [
-          {
-            "node": "Save Video Details",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Updated Input Parameters",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [],
+        []
       ]
     },
     "Get Video file": {
@@ -2252,14 +2155,14 @@
       "main": [
         [
           {
-            "node": "Update rows in a table",
+            "node": "Script Generator",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Update Video Details2",
+            "node": "Update Video Details (On Error)",
             "type": "main",
             "index": 0
           }
@@ -2281,25 +2184,7 @@
       "main": [
         [
           {
-            "node": "Get video list",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If1": {
-      "main": [
-        [
-          {
-            "node": "Script Generator Output",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Script Generator",
+            "node": "Get current epoch",
             "type": "main",
             "index": 0
           }
@@ -2614,13 +2499,7 @@
     },
     "Updated Input Parameters": {
       "main": [
-        [
-          {
-            "node": "If7",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "If7": {
@@ -2641,44 +2520,11 @@
         ]
       ]
     },
-    "Get video list": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Save Video Details": {
       "main": [
         [
           {
-            "node": "Get job list",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get job list": {
-      "main": [
-        [
-          {
-            "node": "If3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract Job Openings": {
-      "main": [
-        [
-          {
-            "node": "If1",
+            "node": "Pending video count",
             "type": "main",
             "index": 0
           }
@@ -2696,22 +2542,11 @@
         ]
       ]
     },
-    "Update rows in a table": {
-      "main": [
-        [
-          {
-            "node": "Script Generator",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Script Generator": {
       "main": [
         [
           {
-            "node": "Wait 10 sec",
+            "node": "Script Generator Output",
             "type": "main",
             "index": 0
           }
@@ -2756,17 +2591,6 @@
         [
           {
             "node": "Folder files cleanup",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Wait 10 sec": {
-      "main": [
-        [
-          {
-            "node": "Extract Job Openings",
             "type": "main",
             "index": 0
           }
@@ -2883,7 +2707,40 @@
         ]
       ]
     },
-    "Update Video Details2": {
+    "Get video list": {
+      "main": [
+        [
+          {
+            "node": "Save Video Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get current epoch": {
+      "main": [
+        [
+          {
+            "node": "If7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending video count": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Video Details (On Error)": {
       "main": [
         [
           {
@@ -2907,12 +2764,12 @@
     "timeSavedMode": "fixed",
     "timeSavedPerExecution": 40
   },
-  "versionId": "d88e2ce5-2dc4-4e39-88d6-1cea52ba27dc",
+  "versionId": "37976535-7417-4802-a0aa-78a68b72d105",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
   },
-  "id": "qdTPjAJEFePSZNC5",
+  "id": "h1kQfLNxCB994HE2",
   "tags": [
     {
       "updatedAt": "2026-02-04T18:01:27.216Z",

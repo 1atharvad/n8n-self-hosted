@@ -1,1 +1,781 @@
-{"updatedAt":"2026-04-23T10:07:18.146Z","createdAt":"2026-04-23T02:50:00.599Z","id":"66MHT0z3zhiYgblm","name":"Combine Videos","description":null,"active":true,"isArchived":false,"nodes":[{"parameters":{"method":"POST","url":"={{ $('Workflow Variables').item.json.api_url }}/combine-videos","sendBody":true,"bodyParameters":{"parameters":[{"name":"video_file_name","value":"={{ (() => {\n  const input = $('When Executed by Another Workflow').first().json;\n  const prefix = input.include_epoch_in_output ? `epoch-${input.epoch }_` : '';\n  return `${prefix}${$json.output_file_name}`;\n})() }}"},{"name":"video_files","value":"={{ $json.video_file_name }}"},{"name":"epoch","value":"={{ $('When Executed by Another Workflow').item.json.epoch }}"}]},"options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[624,256],"id":"f9f5c77e-67be-40b3-84d1-04b0e43b51e1","name":"Compile Final Video"},{"parameters":{"url":"={{ $('Workflow Variables').first().json.api_url }}/combine-videos-status/{{ $json.job_id }}","options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[624,512],"id":"1d16e3cd-4032-492e-8354-a2b2cefdd497","name":"Status Video Check"},{"parameters":{"rules":{"values":[{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{ $json.status }}","rightValue":"completed","operator":{"type":"string","operation":"equals"},"id":"74ffeffe-65a4-495c-b92f-13fdf8313dd8"}],"combinator":"and"},"renameOutput":true,"outputKey":"Completed"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"e2732860-56fe-4d0a-aab1-532b9283869f","leftValue":"={{ $json.status }}","rightValue":"pending","operator":{"type":"string","operation":"equals","name":"filter.operator.equals"}}],"combinator":"and"},"renameOutput":true,"outputKey":"Pending"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"c86e7360-bd28-4dd7-b419-1780d718e872","leftValue":"={{ $json.status }}","rightValue":"failed","operator":{"type":"string","operation":"equals","name":"filter.operator.equals"}}],"combinator":"and"},"renameOutput":true,"outputKey":"failed"}]},"options":{}},"type":"n8n-nodes-base.switch","typeVersion":3.2,"position":[832,496],"id":"41a83e00-ee87-4b65-8600-ef3497b70acc","name":"Check video request status"},{"parameters":{"url":"={{ $('Workflow Variables').first().json.api_url }}/combine-videos-result/{{ $json.job_id }}","options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[1056,480],"id":"808b662c-793d-4679-b6d1-c392fdee110d","name":"Get Final Video"},{"parameters":{"workflowInputs":{"values":[{"name":"video_file_name","type":"array"},{"name":"output_file_name"},{"name":"epoch","type":"number"},{"name":"include_intro_outro","type":"boolean"},{"name":"include_epoch_in_output","type":"boolean"}]}},"type":"n8n-nodes-base.executeWorkflowTrigger","typeVersion":1.1,"position":[0,-176],"id":"8a5ae77d-c3c0-48d5-9658-290cdb056015","name":"When Executed by Another Workflow"},{"parameters":{"amount":20},"type":"n8n-nodes-base.wait","typeVersion":1.1,"position":[416,512],"id":"d504a5fd-817e-464e-ad1b-e0cc3a36893c","name":"Wait 20 sec","webhookId":"2b2a5600-6796-4fa8-8f50-997ead338851"},{"parameters":{"assignments":{"assignments":[{"id":"e1c17b88-64e8-4bed-a346-1b87f42a040c","name":"intro_videos","value":"['intro.mp4']","type":"array"},{"id":"fd6b9016-5fcb-41de-bd67-85c85a772406","name":"outro_videos","value":"['outro.mp4']","type":"array"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[624,48],"id":"4aa3d7cd-35cb-4123-b666-6ea6a517e03d","name":"Intro / Outro Videos"},{"parameters":{"options":{}},"type":"n8n-nodes-base.splitInBatches","typeVersion":3,"position":[1248,0],"id":"e71377c0-c1e5-4352-ad16-58614892230b","name":"Loop Over Items1"},{"parameters":{"fieldToSplitOut":"filename","options":{}},"type":"n8n-nodes-base.splitOut","typeVersion":1,"position":[1040,48],"id":"f53375af-4715-4803-9fa8-e375bbed36b5","name":"Split Out2"},{"parameters":{"assignments":{"assignments":[{"id":"ec2fd297-af55-429a-ac9d-22dacda5dc7f","name":"filename","value":"={{ [...$json.intro_videos, ...$json.outro_videos] }}","type":"array"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[832,48],"id":"1d329d80-46aa-40e6-bfe2-f07ae3e91896","name":"Edit Fields"},{"parameters":{"command":"=sh /sh_files/copy_video.sh --filename {{ $json.filename }}"},"type":"n8n-nodes-base.executeCommand","typeVersion":1,"position":[1472,0],"id":"40a783f8-0406-40d3-88ce-139126245d9b","name":"Execute Command"},{"parameters":{"method":"POST","url":"={{ $('Workflow Variables').item.json.api_url }}/convert-mp4-to-mp4","sendBody":true,"bodyParameters":{"parameters":[{"name":"video_file","value":"={{ $json.stdout }}"}]},"options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[1680,0],"id":"eb02ad71-ae7f-45fc-bd38-9e981271a09a","name":"MP4 to MP4 conversion"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"ba7cd78a-dd6b-4c2a-8314-3bf8c00fc032","leftValue":"={{ $json.include_intro_outro }}","rightValue":"","operator":{"type":"boolean","operation":"true","singleValue":true}}],"combinator":"and"},"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[416,160],"id":"4ba5b0fb-fc89-48fd-8b9c-c68d8c2b4e2d","name":"If1"},{"parameters":{"command":"=ls n8n_files/img_video_files/epoch_{{ $('When Executed by Another Workflow').item.json.epoch }}"},"type":"n8n-nodes-base.executeCommand","typeVersion":1,"position":[416,-176],"id":"9062780e-d530-4e73-8344-863345bbb9d9","name":"Execute Command1"},{"parameters":{"assignments":{"assignments":[{"id":"4232dba0-3904-455f-b54f-afd497eb2ea0","name":"video_file_name","value":"={{ $('When Executed by Another Workflow').item.json.video_file_name }}","type":"array"},{"id":"eb36bd60-8346-489c-81f7-291eb625eab0","name":"file_exists","value":"={{ $json.stdout.toString().includes($(\"When Executed by Another Workflow\").item.json.output_file_name) }}","type":"boolean"},{"id":"22c5c12e-9a05-4f03-8134-bd941d3686bc","name":"output_file_name","value":"={{ $('When Executed by Another Workflow').item.json.output_file_name }}","type":"string"},{"id":"db1181a8-7073-4119-be25-9ec67bc42f18","name":"include_intro_outro","value":"={{ $('When Executed by Another Workflow').item.json.include_intro_outro }}","type":"boolean"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[624,-176],"id":"7ac20ba0-a467-4b2a-94ba-156405efc222","name":"Edit Fields2"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"f63ccb15-89b5-403a-9ba9-96d7455a6226","leftValue":"={{ $json.file_exists }}","rightValue":"","operator":{"type":"boolean","operation":"true","singleValue":true}}],"combinator":"and"},"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[832,-176],"id":"fb6dc559-8557-4f8b-b4eb-f937c73f695e","name":"If"},{"parameters":{"assignments":{"assignments":[{"id":"e9e0fed1-bfa5-44ca-9e0b-146a3f0e5af7","name":"file_path","value":"=/n8n_files/video_files/{{ $json.output_file_name }}.mp4","type":"string"},{"id":"c8cb007f-cb15-4501-8f7c-2ce9ebdeb037","name":"filename","value":"={{ $json.output_file_name }}.mp4","type":"string"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[1040,-176],"id":"7083a08e-f5d5-4a39-9a97-87d7a2a6a9a4","name":"Output"},{"parameters":{"errorMessage":"={{ $json.stderr || $json.error }}"},"type":"n8n-nodes-base.stopAndError","typeVersion":1,"position":[1056,704],"id":"6c0bdef9-e5d8-444e-8d18-ab1cfa31fef5","name":"Stop and Error"},{"parameters":{"executionIdMode":"custom","customExecutionId":"job_posting"},"type":"CUSTOM.Workflow Variables","typeVersion":1,"position":[208,-176],"id":"7bb9b984-722b-4020-96b3-b8350f946a34","name":"Workflow Variables"},{"parameters":{"jsCode":"const input = $('When Executed by Another Workflow').first().json;\nconst intro_outro = $('Intro / Outro Videos').first().json;\nconst video_file_name = [\n  ...intro_outro.intro_videos,\n  ...input.video_file_name,\n  ...intro_outro.outro_videos\n];\n\nreturn {\n  json: {\n    video_file_name,\n    output_file_name: input.output_file_name\n  }\n};"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[1040,256],"id":"622ac558-c7fc-4141-81c9-ca4622d0878a","name":"Code in JavaScript"}],"connections":{"Compile Final Video":{"main":[[{"node":"Wait 20 sec","type":"main","index":0}]]},"Status Video Check":{"main":[[{"node":"Check video request status","type":"main","index":0}]]},"Check video request status":{"main":[[{"node":"Get Final Video","type":"main","index":0}],[{"node":"Wait 20 sec","type":"main","index":0}],[{"node":"Stop and Error","type":"main","index":0}]]},"When Executed by Another Workflow":{"main":[[{"node":"Workflow Variables","type":"main","index":0}]]},"Wait 20 sec":{"main":[[{"node":"Status Video Check","type":"main","index":0}]]},"Intro / Outro Videos":{"main":[[{"node":"Edit Fields","type":"main","index":0}]]},"Loop Over Items1":{"main":[[{"node":"Code in JavaScript","type":"main","index":0}],[{"node":"Execute Command","type":"main","index":0}]]},"Split Out2":{"main":[[{"node":"Loop Over Items1","type":"main","index":0}]]},"Edit Fields":{"main":[[{"node":"Split Out2","type":"main","index":0}]]},"Execute Command":{"main":[[{"node":"MP4 to MP4 conversion","type":"main","index":0}]]},"MP4 to MP4 conversion":{"main":[[{"node":"Loop Over Items1","type":"main","index":0}]]},"If1":{"main":[[{"node":"Intro / Outro Videos","type":"main","index":0}],[{"node":"Compile Final Video","type":"main","index":0}]]},"Execute Command1":{"main":[[{"node":"Edit Fields2","type":"main","index":0}]]},"Edit Fields2":{"main":[[{"node":"If","type":"main","index":0}]]},"If":{"main":[[{"node":"Output","type":"main","index":0}],[{"node":"If1","type":"main","index":0}]]},"Workflow Variables":{"main":[[{"node":"Execute Command1","type":"main","index":0}]]},"Code in JavaScript":{"main":[[{"node":"Compile Final Video","type":"main","index":0}]]}},"settings":{"executionOrder":"v1","binaryMode":"separate","timeSavedMode":"fixed","saveDataSuccessExecution":"all","saveExecutionProgress":true,"callerPolicy":"workflowsFromSameOwner","executionTimeout":-1,"availableInMCP":false},"staticData":null,"meta":{"instanceId":"de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"},"pinData":{"When Executed by Another Workflow":[{"json":{"video_file_name":["slide-1.mp4"],"output_file_name":"pseudo_slide-01-05","epoch":6,"include_intro_outro":false,"include_epoch_in_output":true}}]},"versionId":"7d5b5946-468f-4a8b-9439-3335bc706245","activeVersionId":"7d5b5946-468f-4a8b-9439-3335bc706245","versionCounter":172,"triggerCount":0,"tags":[{"updatedAt":"2025-09-26T07:16:33.839Z","createdAt":"2025-09-26T07:16:33.839Z","id":"ens6dG0mnb19cVTi","name":"Sub-Workflow"}],"shared":[{"updatedAt":"2026-04-23T02:50:00.599Z","createdAt":"2026-04-23T02:50:00.599Z","role":"workflow:owner","workflowId":"66MHT0z3zhiYgblm","projectId":"r4FxHAXU5mmnE4p2","project":{"updatedAt":"2026-04-23T00:46:33.004Z","createdAt":"2026-04-23T00:44:53.719Z","id":"r4FxHAXU5mmnE4p2","name":"Atharva Devasthali <atharvadevasthali22@gmail.com>","type":"personal","icon":null,"description":null,"creatorId":"d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"}}],"versionMetadata":{"name":"Version 7d5b5946","description":""}}
+{
+  "name": "Combine Videos",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/combine-videos",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "video_file_name",
+              "value": "={{ (() => {\n  const input = $('When Executed by Another Workflow').first().json;\n  const prefix = input.include_epoch_in_output ? `epoch-${input.epoch }_` : '';\n  return `${prefix}${$json.output_file_name}`;\n})() }}"
+            },
+            {
+              "name": "video_files",
+              "value": "={{ $json.video_file_name }}"
+            },
+            {
+              "name": "epoch",
+              "value": "={{ $('When Executed by Another Workflow').item.json.epoch }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        256
+      ],
+      "id": "f9f5c77e-67be-40b3-84d1-04b0e43b51e1",
+      "name": "Compile Final Video"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Variables').first().json.api_url }}/combine-videos-status/{{ $json.job_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        512
+      ],
+      "id": "1d16e3cd-4032-492e-8354-a2b2cefdd497",
+      "name": "Status Video Check"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "74ffeffe-65a4-495c-b92f-13fdf8313dd8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Completed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e2732860-56fe-4d0a-aab1-532b9283869f",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "pending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pending"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c86e7360-bd28-4dd7-b419-1780d718e872",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "failed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        832,
+        496
+      ],
+      "id": "41a83e00-ee87-4b65-8600-ef3497b70acc",
+      "name": "Check video request status"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Variables').first().json.api_url }}/combine-videos-result/{{ $json.job_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1056,
+        480
+      ],
+      "id": "808b662c-793d-4679-b6d1-c392fdee110d",
+      "name": "Get Final Video"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "video_file_name",
+              "type": "array"
+            },
+            {
+              "name": "output_file_name"
+            },
+            {
+              "name": "epoch",
+              "type": "number"
+            },
+            {
+              "name": "include_intro_outro",
+              "type": "boolean"
+            },
+            {
+              "name": "include_epoch_in_output",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -176
+      ],
+      "id": "8a5ae77d-c3c0-48d5-9658-290cdb056015",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        512
+      ],
+      "id": "d504a5fd-817e-464e-ad1b-e0cc3a36893c",
+      "name": "Wait 20 sec",
+      "webhookId": "2b2a5600-6796-4fa8-8f50-997ead338851"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1c17b88-64e8-4bed-a346-1b87f42a040c",
+              "name": "intro_videos",
+              "value": "['intro.mp4']",
+              "type": "array"
+            },
+            {
+              "id": "fd6b9016-5fcb-41de-bd67-85c85a772406",
+              "name": "outro_videos",
+              "value": "['outro.mp4']",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        48
+      ],
+      "id": "4aa3d7cd-35cb-4123-b666-6ea6a517e03d",
+      "name": "Intro / Outro Videos"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "e71377c0-c1e5-4352-ad16-58614892230b",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "filename",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        48
+      ],
+      "id": "f53375af-4715-4803-9fa8-e375bbed36b5",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec2fd297-af55-429a-ac9d-22dacda5dc7f",
+              "name": "filename",
+              "value": "={{ [...$json.intro_videos, ...$json.outro_videos] }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        48
+      ],
+      "id": "1d329d80-46aa-40e6-bfe2-f07ae3e91896",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "command": "=sh /sh_files/copy_video.sh --filename {{ $json.filename }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "40a783f8-0406-40d3-88ce-139126245d9b",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/convert-mp4-to-mp4",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "video_file",
+              "value": "={{ $json.stdout }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "eb02ad71-ae7f-45fc-bd38-9e981271a09a",
+      "name": "MP4 to MP4 conversion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ba7cd78a-dd6b-4c2a-8314-3bf8c00fc032",
+              "leftValue": "={{ $json.include_intro_outro }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        160
+      ],
+      "id": "4ba5b0fb-fc89-48fd-8b9c-c68d8c2b4e2d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "command": "=ls n8n_files/img_video_files/epoch_{{ $('When Executed by Another Workflow').item.json.epoch }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -176
+      ],
+      "id": "9062780e-d530-4e73-8344-863345bbb9d9",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4232dba0-3904-455f-b54f-afd497eb2ea0",
+              "name": "video_file_name",
+              "value": "={{ $('When Executed by Another Workflow').item.json.video_file_name }}",
+              "type": "array"
+            },
+            {
+              "id": "eb36bd60-8346-489c-81f7-291eb625eab0",
+              "name": "file_exists",
+              "value": "={{ $json.stdout.toString().includes($(\"When Executed by Another Workflow\").item.json.output_file_name) }}",
+              "type": "boolean"
+            },
+            {
+              "id": "22c5c12e-9a05-4f03-8134-bd941d3686bc",
+              "name": "output_file_name",
+              "value": "={{ $('When Executed by Another Workflow').item.json.output_file_name }}",
+              "type": "string"
+            },
+            {
+              "id": "db1181a8-7073-4119-be25-9ec67bc42f18",
+              "name": "include_intro_outro",
+              "value": "={{ $('When Executed by Another Workflow').item.json.include_intro_outro }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -176
+      ],
+      "id": "7ac20ba0-a467-4b2a-94ba-156405efc222",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f63ccb15-89b5-403a-9ba9-96d7455a6226",
+              "leftValue": "={{ $json.file_exists }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        -176
+      ],
+      "id": "fb6dc559-8557-4f8b-b4eb-f937c73f695e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e9e0fed1-bfa5-44ca-9e0b-146a3f0e5af7",
+              "name": "file_path",
+              "value": "=/n8n_files/video_files/{{ $json.output_file_name }}.mp4",
+              "type": "string"
+            },
+            {
+              "id": "c8cb007f-cb15-4501-8f7c-2ce9ebdeb037",
+              "name": "filename",
+              "value": "={{ $json.output_file_name }}.mp4",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        -176
+      ],
+      "id": "7083a08e-f5d5-4a39-9a97-87d7a2a6a9a4",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.stderr || $json.error }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        704
+      ],
+      "id": "6c0bdef9-e5d8-444e-8d18-ab1cfa31fef5",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "executionIdMode": "custom",
+        "customExecutionId": "job_posting"
+      },
+      "type": "CUSTOM.Workflow Variables",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -176
+      ],
+      "id": "7bb9b984-722b-4020-96b3-b8350f946a34",
+      "name": "Workflow Variables"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('When Executed by Another Workflow').first().json;\nconst intro_outro = $('Intro / Outro Videos').first().json;\nconst video_file_name = [\n  ...intro_outro.intro_videos,\n  ...input.video_file_name,\n  ...intro_outro.outro_videos\n];\n\nreturn {\n  json: {\n    video_file_name,\n    output_file_name: input.output_file_name\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        256
+      ],
+      "id": "622ac558-c7fc-4141-81c9-ca4622d0878a",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "video_file_name": [
+            "slide-1.mp4"
+          ],
+          "output_file_name": "pseudo_slide-01-05",
+          "epoch": 6,
+          "include_intro_outro": false,
+          "include_epoch_in_output": true
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Compile Final Video": {
+      "main": [
+        [
+          {
+            "node": "Wait 20 sec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Video Check": {
+      "main": [
+        [
+          {
+            "node": "Check video request status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check video request status": {
+      "main": [
+        [
+          {
+            "node": "Get Final Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20 sec",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Workflow Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20 sec": {
+      "main": [
+        [
+          {
+            "node": "Status Video Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intro / Outro Videos": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "MP4 to MP4 conversion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MP4 to MP4 conversion": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Intro / Outro Videos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Compile Final Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Variables": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Compile Final Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "versionId": "a0883c0d-bf16-459c-a5d5-8e70d5e0761d",
+  "meta": {
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "id": "66MHT0z3zhiYgblm",
+  "tags": [
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
+    },
+    {
+      "name": "F-JNN",
+      "id": "uRLukwQ6lXVe1ia9",
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z"
+    }
+  ]
+}

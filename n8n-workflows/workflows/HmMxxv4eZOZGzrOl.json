@@ -1,1 +1,1131 @@
-{"updatedAt":"2026-04-23T07:41:18.772Z","createdAt":"2026-04-23T02:50:02.851Z","id":"HmMxxv4eZOZGzrOl","name":"Video Creation","description":null,"active":true,"isArchived":false,"nodes":[{"parameters":{"workflowInputs":{"values":[{"name":"template_slide","type":"number"},{"name":"old_text","type":"object"},{"name":"jobs","type":"array"},{"name":"date"},{"name":"batch_size","type":"number"},{"name":"initial_point","type":"number"},{"name":"epoch","type":"number"}]}},"type":"n8n-nodes-base.executeWorkflowTrigger","typeVersion":1.1,"position":[-400,176],"id":"d4f8a42d-e7d2-408c-8f09-79d6a8b6206c","name":"When Executed by Another Workflow"},{"parameters":{"url":"={{ $('Workflow Variables').item.json.api_url }}/img-ext-result/{{ $json.job_id }}","options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[48,704],"id":"22c0f255-8ec6-42aa-a689-22a1e9bb5053","name":"Get images"},{"parameters":{"method":"POST","url":"={{ $('Workflow Variables').item.json.api_url }}/ppt-generator","sendBody":true,"contentType":"raw","body":"={{ $('When Executed by Another Workflow').item.json }}","options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[48,176],"id":"befec674-e35f-43a1-836f-215cdbfc397e","name":"Create PPT"},{"parameters":{"method":"POST","url":"={{ $('Workflow Variables').item.json.api_url }}/extract-slides","sendBody":true,"bodyParameters":{"parameters":[{"name":"file_name","value":"={{ $json.file_id }}"},{"name":"=start_slide","value":"={{ $json.start_slide }}"},{"name":"end_slide","value":"={{ $json.end_slide }}"},{"name":"total_slides","value":"={{ $json.total_slides }}"}]},"options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[240,176],"id":"e1decc04-2381-4898-80fe-b3175d8f35c0","name":"Extract Images"},{"parameters":{"mode":"combine","fieldsToMatchString":"index","options":{}},"type":"n8n-nodes-base.merge","typeVersion":3.2,"position":[448,608],"id":"100cafe1-ca91-437a-9ef4-ad1683e36cc1","name":"Merge"},{"parameters":{"fieldToSplitOut":"slides","options":{}},"type":"n8n-nodes-base.splitOut","typeVersion":1,"position":[48,528],"id":"37cec807-51d0-4415-88b4-397096fcb356","name":"Split Out"},{"parameters":{"options":{}},"type":"n8n-nodes-base.splitInBatches","typeVersion":3,"position":[656,608],"id":"c9c13db7-968a-4a1c-9470-fcdfed7aed66","name":"Loop Over Items"},{"parameters":{"fieldsToAggregate":{"fieldToAggregate":[{"fieldToAggregate":"filename"}]},"options":{}},"type":"n8n-nodes-base.aggregate","typeVersion":1,"position":[848,416],"id":"9b25bb7d-46ef-415d-8206-ce29925e6f54","name":"Aggregate"},{"parameters":{"mode":"combine","combineBy":"combineByPosition","options":{}},"type":"n8n-nodes-base.merge","typeVersion":3.2,"position":[1056,400],"id":"4207d570-d9af-4d74-942d-4b24e783591f","name":"Merge1"},{"parameters":{"method":"POST","url":"={{ $('Workflow Variables').item.json.api_url }}/convert-to-mp4","sendBody":true,"bodyParameters":{"parameters":[{"name":"image_file","value":"={{ $json.slides }}"},{"name":"audio_file","value":"={{ $json.audio_file }}"},{"name":"epoch","value":"={{ $('When Executed by Another Workflow').item.json.epoch }}"}]},"options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[848,608],"id":"a733e245-9ca4-4d1f-a63d-5c4fddc67773","name":"Convert to MP4","retryOnFail":false},{"parameters":{"url":"={{ $('Workflow Variables').item.json.api_url }}/img-ext-status/{{ $json.job_id }}","options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[656,176],"id":"214d5d2a-fcad-40d8-b81b-6934bf884f0d","name":"Status Image Check"},{"parameters":{"rules":{"values":[{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"bdb5ce3b-57c3-41af-ab58-20cfc0d2274a","leftValue":"={{ $json.status }}","rightValue":"failed","operator":{"type":"string","operation":"equals","name":"filter.operator.equals"}}],"combinator":"and"},"renameOutput":true,"outputKey":"failed"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{ $json.status }}","rightValue":"completed","operator":{"type":"string","operation":"equals"},"id":"74ffeffe-65a4-495c-b92f-13fdf8313dd8"}],"combinator":"and"},"renameOutput":true,"outputKey":"Completed"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"e2732860-56fe-4d0a-aab1-532b9283869f","leftValue":"={{ $json.status }}","rightValue":"pending","operator":{"type":"string","operation":"equals","name":"filter.operator.equals"}}],"combinator":"and"},"renameOutput":true,"outputKey":"Pending"}]},"options":{}},"type":"n8n-nodes-base.switch","typeVersion":3.2,"position":[848,160],"id":"3568a939-eb31-4459-adb2-52698b9ae926","name":"Check image request status"},{"parameters":{"url":"={{ $('Workflow Variables').item.json.api_url }}/convert-to-mp4-status/{{ $json.job_id }}","options":{}},"type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[848,832],"id":"75f2ee68-e1e8-4b3a-a71e-d0ef5e591d56","name":"Status MP4 conversion Check"},{"parameters":{"rules":{"values":[{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{ $json.status }}","rightValue":"completed","operator":{"type":"string","operation":"equals"},"id":"74ffeffe-65a4-495c-b92f-13fdf8313dd8"}],"combinator":"and"},"renameOutput":true,"outputKey":"Completed"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"e2732860-56fe-4d0a-aab1-532b9283869f","leftValue":"={{ $json.status }}","rightValue":"pending","operator":{"type":"string","operation":"equals","name":"filter.operator.equals"}}],"combinator":"and"},"renameOutput":true,"outputKey":"Pending"}]},"options":{}},"type":"n8n-nodes-base.switch","typeVersion":3.2,"position":[1056,816],"id":"e357e26d-ca74-44b3-aa3e-7a4c990ddb45","name":"Check MP4 conversion request status","onError":"continueErrorOutput"},{"parameters":{"amount":10},"type":"n8n-nodes-base.wait","typeVersion":1.1,"position":[1056,608],"id":"aa21da3b-93f4-45e1-910b-9bf80bac0f77","name":"Wait 10 sec","webhookId":"7651d0a1-95f5-4f77-8fd8-5253fbc96516"},{"parameters":{"amount":10},"type":"n8n-nodes-base.wait","typeVersion":1.1,"position":[448,176],"id":"e0040aec-97f2-4fc2-88a3-c59dee42a3a2","name":"Wait 10 sec1","webhookId":"2b2a5600-6796-4fa8-8f50-997ead338851"},{"parameters":{"jsCode":"const jobs = $('When Executed by Another Workflow').first().json.jobs;\n\nreturn jobs.map((job, index) => {\n  return {\n    json: {\n      ...job,\n      index: index + 1\n    }\n  };\n});"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[240,704],"id":"2aa8854d-db2e-41ef-8793-f525274de1b8","name":"Code1"},{"parameters":{"assignments":{"assignments":[{"id":"b3be1675-f67b-4aa7-afd3-2b2a24c2963f","name":"file_id","value":"={{ $json.file_name.split('.')[0] }}","type":"string"},{"id":"edc7d060-548e-4ed5-9636-ccc4468f79f8","name":"total_slides","value":"={{ $json.total_slides }}","type":"string"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[656,384],"id":"20fb4cbc-8ab8-48bc-82f0-be1c57cba796","name":"Edit Fields1"},{"parameters":{"assignments":{"assignments":[{"id":"e72c2565-f1ef-4677-b14d-971d57a2c4d6","name":"file_id","value":"={{ $json.file_id }}","type":"string"},{"id":"3d13f947-198f-4bf2-9dd3-26d30bfc767b","name":"output_file_name","value":"={{ $('Code2').item.json.output_file }}","type":"string"},{"id":"975d0371-100e-44c7-9f5b-42f7c6a3a69b","name":"video_file_name","value":"={{ [...$('Code2').item.json.filename, ...$json.filename].filter((file, index, arr) => arr.indexOf(file) === index) }}","type":"array"},{"id":"9938b63f-c261-4de5-a92d-e115a394316c","name":"all_done","value":"={{ $json.total_slides === $json.filename.at(-1).split('-')[1].split('.')[0] }}","type":"boolean"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[1280,400],"id":"44a1ec6a-039c-41a0-a21c-59d94d8beb6b","name":"Output"},{"parameters":{"command":"=ls n8n_files/img_video_files/"},"type":"n8n-nodes-base.executeCommand","typeVersion":1,"position":[240,-48],"id":"be32ef55-c9c6-4069-afb7-6d64db1afbae","name":"Execute Command"},{"parameters":{"jsCode":"const batch_size = $('When Executed by Another Workflow').first().json.batch_size;\nconst initial_point = $('When Executed by Another Workflow').first().json.initial_point;\nconst total_slides = $('Create PPT').first().json.total_slides;\nconst file_name = $('Create PPT').first().json.file_name;\nconst file_list = $input.first().json.stdout;\nconst existing_list = file_list ? file_list.split('\\n').map(video_file => parseInt(video_file.split('.mp4')[0].split('slide-')[1], 10)) : [];\nconst batch_nums = Array.from({length: batch_size}, (_, i) => i + initial_point + 1).filter(num => num <= parseInt(total_slides, 10));\nconst non_exiting_list = batch_nums.filter(num => !existing_list.includes(num));\nconst video_file_list = batch_nums.map(num => `slide-${String(num).padStart(total_slides.length, '0')}.mp4`);\nconst output_file = `pseudo_slide-${String(batch_nums.at(0)).padStart(total_slides.length, '0')}-${String(batch_nums.at(-1)).padStart(total_slides.length, '0')}`;\nconst batch_completed = non_exiting_list.length === 0 || String(file_list).includes(output_file);\n\nreturn {\n  json: {\n    file_id: file_name.split('.')[0],\n    filename: video_file_list,\n    output_file: output_file,\n    batch_completed: batch_completed,\n    start_slide: batch_nums.at(0),\n    end_slide: batch_nums.at(-1),\n    total_slides: parseInt(total_slides, 10)\n  }\n}"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[448,-48],"id":"bfeac368-7399-453c-940b-9c8860fcdef4","name":"Code2"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"0cea7a20-36b2-4524-823e-40dd79a09176","leftValue":"={{ $json.batch_completed }}","rightValue":"","operator":{"type":"boolean","operation":"true","singleValue":true}}],"combinator":"and"},"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[656,-48],"id":"fc941f3b-eed5-450a-b0b5-c4b1c5f81691","name":"If"},{"parameters":{"assignments":{"assignments":[{"id":"b56f9259-2c2d-4afd-a384-a231e4255fb7","name":"filename","value":"={{ $json.filename }}","type":"array"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[848,-48],"id":"897ada54-e37d-48e7-9447-b6803da38de8","name":"File List"},{"parameters":{"errorMessage":"={{ $json.error }}"},"type":"n8n-nodes-base.stopAndError","typeVersion":1,"position":[1120,144],"id":"ca2ed347-cb1a-404a-a7a5-43793b736ffa","name":"Stop and Error"},{"parameters":{"executionIdMode":"custom","customExecutionId":"job_posting"},"type":"CUSTOM.Workflow Variables","typeVersion":1,"position":[-176,176],"id":"103c6ec7-ee57-4975-a25d-f92f620a8ab3","name":"Workflow Variables"},{"parameters":{"jsCode":"for (const item of $input.all()) {\n  item.json.index = parseInt(item.json.slides.split(\"-\")[1].split(\".\")[0]);\n}\n\nreturn $input.all();"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[240,528],"id":"571358a4-0343-42e6-8477-9961b4df87e9","name":"Code in JavaScript"},{"parameters":{"errorMessage":"={{ $json.error }}"},"type":"n8n-nodes-base.stopAndError","typeVersion":1,"position":[1312,864],"id":"343d6951-c8ea-4e59-b382-bdc3f831f6fe","name":"Stop and Error1"}],"connections":{"When Executed by Another Workflow":{"main":[[{"node":"Workflow Variables","type":"main","index":0}]]},"Get images":{"main":[[{"node":"Split Out","type":"main","index":0}]]},"Create PPT":{"main":[[{"node":"Edit Fields1","type":"main","index":0},{"node":"Execute Command","type":"main","index":0}]]},"Extract Images":{"main":[[{"node":"Wait 10 sec1","type":"main","index":0}]]},"Merge":{"main":[[{"node":"Loop Over Items","type":"main","index":0}]]},"Split Out":{"main":[[{"node":"Code in JavaScript","type":"main","index":0}]]},"Loop Over Items":{"main":[[{"node":"Aggregate","type":"main","index":0}],[{"node":"Convert to MP4","type":"main","index":0}]]},"Aggregate":{"main":[[{"node":"Merge1","type":"main","index":1}]]},"Merge1":{"main":[[{"node":"Output","type":"main","index":0}]]},"Convert to MP4":{"main":[[{"node":"Wait 10 sec","type":"main","index":0}]]},"Status Image Check":{"main":[[{"node":"Check image request status","type":"main","index":0}]]},"Check image request status":{"main":[[{"node":"Stop and Error","type":"main","index":0}],[{"node":"Get images","type":"main","index":0}],[{"node":"Wait 10 sec1","type":"main","index":0}]]},"Status MP4 conversion Check":{"main":[[{"node":"Check MP4 conversion request status","type":"main","index":0}]]},"Check MP4 conversion request status":{"main":[[{"node":"Loop Over Items","type":"main","index":0}],[{"node":"Wait 10 sec","type":"main","index":0}],[{"node":"Stop and Error1","type":"main","index":0}]]},"Wait 10 sec":{"main":[[{"node":"Status MP4 conversion Check","type":"main","index":0}]]},"Wait 10 sec1":{"main":[[{"node":"Status Image Check","type":"main","index":0}]]},"Code1":{"main":[[{"node":"Merge","type":"main","index":1}]]},"Edit Fields1":{"main":[[{"node":"Merge1","type":"main","index":0}]]},"Execute Command":{"main":[[{"node":"Code2","type":"main","index":0}]]},"Code2":{"main":[[{"node":"If","type":"main","index":0}]]},"If":{"main":[[{"node":"File List","type":"main","index":0}],[{"node":"Extract Images","type":"main","index":0},{"node":"Code1","type":"main","index":0}]]},"File List":{"main":[[{"node":"Merge1","type":"main","index":1}]]},"Workflow Variables":{"main":[[{"node":"Create PPT","type":"main","index":0}]]},"Code in JavaScript":{"main":[[{"node":"Merge","type":"main","index":0}]]}},"settings":{"executionOrder":"v1","binaryMode":"separate","saveDataSuccessExecution":"all","callerPolicy":"workflowsFromSameOwner","executionTimeout":-1,"timeSavedMode":"fixed","availableInMCP":false,"timeSavedPerExecution":7},"staticData":null,"meta":{"instanceId":"de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"},"pinData":{"When Executed by Another Workflow":[{"json":{"template_slide":0,"old_text":{"company_name":"{{COMPANY_NAME}}","position":"{{POSITION}}","location":"{{LOCATION}}","experience":"{{EXPERIENCE}}","skills":"{{SKILLS}}","job_type":"{{JOB_TYPE}}","link":"{{LINK}}"},"jobs":[{"company_name":"TELUS Digital","position":"Data Partner - Computer Science - French - Remote - Global","location":"Idaho, United States","experience":"Not specified","skills":"Data Partner, Computer Science, French language proficiency, Remote work capability","job_type":"Not specified","link":"https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060677","audio_file":"6f8fc98f-4503-4897-b939-587fda922d12.wav"},{"company_name":"TELUS Digital","position":"Data Partner – Computer Science - Remote - North America","location":"Georgia, United States","experience":"Not specified","skills":"Not specified","job_type":"Not specified","link":"https://www.linkedin.com/jobs/view/data-partner-%E2%80%93-computer-science-remote-north-america-at-telus-digital-4303082277","audio_file":"41416608-033c-4082-816c-d33e2cb62959.wav"},{"company_name":"TELUS Digital","position":"Data Partner - Computer Science - French - Remote - Global","location":"Georgia, United States","experience":"Not specified","skills":"Computer Science, French language proficiency","job_type":"Not specified","link":"https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060674","audio_file":"6cfdfce0-77ef-437d-9416-72dd51abe077.wav"},{"company_name":"TELUS Digital","position":"Data Partner - Chemistry - Remote - North America","location":"Wyoming, United States","experience":"Not specified","skills":"Data analysis, partner management, chemistry knowledge","job_type":"Full-time","link":"https://www.linkedin.com/jobs/view/data-partner-chemistry-remote-north-america-at-telus-digital-4303080418","audio_file":"c6f28537-6ae5-44a3-bde8-78516b315d2e.wav"},{"company_name":"Centene Corporation","position":"Data Analyst II Healthcare Analytics","location":"Arizona, United States","experience":"2+ years of experience in data analysis or related field","skills":"Data analysis, SQL, Excel, healthcare analytics, problem-solving skills","job_type":"Full-time","link":"https://www.linkedin.com/jobs/view/data-analyst-ii-healthcare-analytics-at-centene-corporation-4303074270","audio_file":"573c946e-0656-4391-9472-87298f1b3d44.wav"},{"company_name":"Mercor","position":"Data Science Manager","location":"United States","experience":"5+ years experience in data science or related field","skills":"Data science, machine learning, leadership, project management","job_type":"Full-time","link":"https://www.linkedin.com/jobs/view/data-science-manager-at-mercor-4298981936","audio_file":"500c9b9d-a8c4-4d2d-908e-54381c9d5369.wav"},{"company_name":"Humana","position":"Senior Business Intelligence Engineer","location":"Arkansas, United States","experience":"Senior level experience in Business Intelligence or related field","skills":"Business Intelligence, Data Analysis, SQL, Data Visualization, ETL processes","job_type":"Full-time","link":"https://www.linkedin.com/jobs/view/senior-business-intelligence-engineer-at-humana-4301406340","audio_file":"6f819a92-e7c8-4cb3-ac43-7474275a19bc.wav"},{"company_name":"Dacha Corp","position":"Cyber Warfare Technician","location":"Stockton, KS","experience":"Not specified","skills":"Not specified","job_type":"Not specified","link":"https://www.linkedin.com/jobs/view/cyber-warfare-technician-at-dacha-corp-4303058031","audio_file":"997bec8a-e5ed-4e7b-a977-856a687a8e1e.wav"},{"company_name":"HIRESIGMA","position":"Senior Machine Learning Engineer","location":"United States","experience":"5-8 years","skills":"Machine learning, Python, data analysis, deep learning frameworks","job_type":"Full-time","link":"https://www.linkedin.com/jobs/view/senior-machine-learning-engineer-at-hiresigma-4302765507","audio_file":"569c4dbb-7eea-453d-b093-8767eac0c169.wav"},{"company_name":"Basis","position":"Full Stack Engineer","location":"United States","experience":"Mid-level (3-5 years)","skills":"Full Stack Development, JavaScript, React, Node.js, SQL, REST APIs","job_type":"Full-time","link":"https://www.linkedin.com/jobs/view/full-stack-engineer-at-basis-4302769551","audio_file":"8b0d693c-60a7-4c71-97e8-31dddbfb28dc.wav"}],"date":"2025-08-20","batch_size":5,"initial_point":0,"epoch":1}}]},"versionId":"af3d36f0-8be4-4593-8d61-be235e0d4c01","activeVersionId":"af3d36f0-8be4-4593-8d61-be235e0d4c01","versionCounter":38,"triggerCount":0,"tags":[{"updatedAt":"2025-09-26T07:16:33.839Z","createdAt":"2025-09-26T07:16:33.839Z","id":"ens6dG0mnb19cVTi","name":"Sub-Workflow"}],"shared":[{"updatedAt":"2026-04-23T02:50:02.851Z","createdAt":"2026-04-23T02:50:02.851Z","role":"workflow:owner","workflowId":"HmMxxv4eZOZGzrOl","projectId":"r4FxHAXU5mmnE4p2","project":{"updatedAt":"2026-04-23T00:46:33.004Z","createdAt":"2026-04-23T00:44:53.719Z","id":"r4FxHAXU5mmnE4p2","name":"Atharva Devasthali <atharvadevasthali22@gmail.com>","type":"personal","icon":null,"description":null,"creatorId":"d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"}}],"versionMetadata":{"name":"Version af3d36f0","description":""}}
+{
+  "name": "Video Creation",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "template_slide",
+              "type": "number"
+            },
+            {
+              "name": "old_text",
+              "type": "object"
+            },
+            {
+              "name": "jobs",
+              "type": "array"
+            },
+            {
+              "name": "date"
+            },
+            {
+              "name": "batch_size",
+              "type": "number"
+            },
+            {
+              "name": "initial_point",
+              "type": "number"
+            },
+            {
+              "name": "epoch",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        176
+      ],
+      "id": "d4f8a42d-e7d2-408c-8f09-79d6a8b6206c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/img-ext-result/{{ $json.job_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        704
+      ],
+      "id": "22c0f255-8ec6-42aa-a689-22a1e9bb5053",
+      "name": "Get images"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/ppt-generator",
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ $('When Executed by Another Workflow').item.json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        176
+      ],
+      "id": "befec674-e35f-43a1-836f-215cdbfc397e",
+      "name": "Create PPT"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/extract-slides",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file_name",
+              "value": "={{ $json.file_id }}"
+            },
+            {
+              "name": "=start_slide",
+              "value": "={{ $json.start_slide }}"
+            },
+            {
+              "name": "end_slide",
+              "value": "={{ $json.end_slide }}"
+            },
+            {
+              "name": "total_slides",
+              "value": "={{ $json.total_slides }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        176
+      ],
+      "id": "e1decc04-2381-4898-80fe-b3175d8f35c0",
+      "name": "Extract Images"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "index",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        608
+      ],
+      "id": "100cafe1-ca91-437a-9ef4-ad1683e36cc1",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "slides",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        48,
+        528
+      ],
+      "id": "37cec807-51d0-4415-88b4-397096fcb356",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        608
+      ],
+      "id": "c9c13db7-968a-4a1c-9470-fcdfed7aed66",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "filename"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        848,
+        416
+      ],
+      "id": "9b25bb7d-46ef-415d-8206-ce29925e6f54",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1056,
+        400
+      ],
+      "id": "4207d570-d9af-4d74-942d-4b24e783591f",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/convert-to-mp4",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_file",
+              "value": "={{ $json.slides }}"
+            },
+            {
+              "name": "audio_file",
+              "value": "={{ $json.audio_file }}"
+            },
+            {
+              "name": "epoch",
+              "value": "={{ $('When Executed by Another Workflow').item.json.epoch }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        608
+      ],
+      "id": "a733e245-9ca4-4d1f-a63d-5c4fddc67773",
+      "name": "Convert to MP4",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/img-ext-status/{{ $json.job_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        176
+      ],
+      "id": "214d5d2a-fcad-40d8-b81b-6934bf884f0d",
+      "name": "Status Image Check"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bdb5ce3b-57c3-41af-ab58-20cfc0d2274a",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "74ffeffe-65a4-495c-b92f-13fdf8313dd8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Completed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e2732860-56fe-4d0a-aab1-532b9283869f",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "pending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        848,
+        160
+      ],
+      "id": "3568a939-eb31-4459-adb2-52698b9ae926",
+      "name": "Check image request status"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Variables').item.json.api_url }}/convert-to-mp4-status/{{ $json.job_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        832
+      ],
+      "id": "75f2ee68-e1e8-4b3a-a71e-d0ef5e591d56",
+      "name": "Status MP4 conversion Check"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "74ffeffe-65a4-495c-b92f-13fdf8313dd8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Completed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e2732860-56fe-4d0a-aab1-532b9283869f",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "pending",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1056,
+        816
+      ],
+      "id": "e357e26d-ca74-44b3-aa3e-7a4c990ddb45",
+      "name": "Check MP4 conversion request status",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        608
+      ],
+      "id": "aa21da3b-93f4-45e1-910b-9bf80bac0f77",
+      "name": "Wait 10 sec",
+      "webhookId": "7651d0a1-95f5-4f77-8fd8-5253fbc96516"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        176
+      ],
+      "id": "e0040aec-97f2-4fc2-88a3-c59dee42a3a2",
+      "name": "Wait 10 sec1",
+      "webhookId": "2b2a5600-6796-4fa8-8f50-997ead338851"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $('When Executed by Another Workflow').first().json.jobs;\n\nreturn jobs.map((job, index) => {\n  return {\n    json: {\n      ...job,\n      index: index + 1\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        704
+      ],
+      "id": "2aa8854d-db2e-41ef-8793-f525274de1b8",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3be1675-f67b-4aa7-afd3-2b2a24c2963f",
+              "name": "file_id",
+              "value": "={{ $json.file_name.split('.')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "edc7d060-548e-4ed5-9636-ccc4468f79f8",
+              "name": "total_slides",
+              "value": "={{ $json.total_slides }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        656,
+        384
+      ],
+      "id": "20fb4cbc-8ab8-48bc-82f0-be1c57cba796",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e72c2565-f1ef-4677-b14d-971d57a2c4d6",
+              "name": "file_id",
+              "value": "={{ $json.file_id }}",
+              "type": "string"
+            },
+            {
+              "id": "3d13f947-198f-4bf2-9dd3-26d30bfc767b",
+              "name": "output_file_name",
+              "value": "={{ $('Code2').item.json.output_file }}",
+              "type": "string"
+            },
+            {
+              "id": "975d0371-100e-44c7-9f5b-42f7c6a3a69b",
+              "name": "video_file_name",
+              "value": "={{ [...$('Code2').item.json.filename, ...$json.filename].filter((file, index, arr) => arr.indexOf(file) === index) }}",
+              "type": "array"
+            },
+            {
+              "id": "9938b63f-c261-4de5-a92d-e115a394316c",
+              "name": "all_done",
+              "value": "={{ $json.total_slides === $json.filename.at(-1).split('-')[1].split('.')[0] }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1280,
+        400
+      ],
+      "id": "44a1ec6a-039c-41a0-a21c-59d94d8beb6b",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "command": "=ls n8n_files/img_video_files/"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "be32ef55-c9c6-4069-afb7-6d64db1afbae",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const batch_size = $('When Executed by Another Workflow').first().json.batch_size;\nconst initial_point = $('When Executed by Another Workflow').first().json.initial_point;\nconst total_slides = $('Create PPT').first().json.total_slides;\nconst file_name = $('Create PPT').first().json.file_name;\nconst file_list = $input.first().json.stdout;\nconst existing_list = file_list ? file_list.split('\\n').map(video_file => parseInt(video_file.split('.mp4')[0].split('slide-')[1], 10)) : [];\nconst batch_nums = Array.from({length: batch_size}, (_, i) => i + initial_point + 1).filter(num => num <= parseInt(total_slides, 10));\nconst non_exiting_list = batch_nums.filter(num => !existing_list.includes(num));\nconst video_file_list = batch_nums.map(num => `slide-${String(num).padStart(total_slides.length, '0')}.mp4`);\nconst output_file = `pseudo_slide-${String(batch_nums.at(0)).padStart(total_slides.length, '0')}-${String(batch_nums.at(-1)).padStart(total_slides.length, '0')}`;\nconst batch_completed = non_exiting_list.length === 0 || String(file_list).includes(output_file);\n\nreturn {\n  json: {\n    file_id: file_name.split('.')[0],\n    filename: video_file_list,\n    output_file: output_file,\n    batch_completed: batch_completed,\n    start_slide: batch_nums.at(0),\n    end_slide: batch_nums.at(-1),\n    total_slides: parseInt(total_slides, 10)\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "bfeac368-7399-453c-940b-9c8860fcdef4",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0cea7a20-36b2-4524-823e-40dd79a09176",
+              "leftValue": "={{ $json.batch_completed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -48
+      ],
+      "id": "fc941f3b-eed5-450a-b0b5-c4b1c5f81691",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b56f9259-2c2d-4afd-a384-a231e4255fb7",
+              "name": "filename",
+              "value": "={{ $json.filename }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        -48
+      ],
+      "id": "897ada54-e37d-48e7-9447-b6803da38de8",
+      "name": "File List"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.error }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        144
+      ],
+      "id": "ca2ed347-cb1a-404a-a7a5-43793b736ffa",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "executionIdMode": "custom",
+        "customExecutionId": "job_posting"
+      },
+      "type": "CUSTOM.Workflow Variables",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        176
+      ],
+      "id": "103c6ec7-ee57-4975-a25d-f92f620a8ab3",
+      "name": "Workflow Variables"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  item.json.index = parseInt(item.json.slides.split(\"-\")[1].split(\".\")[0]);\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        528
+      ],
+      "id": "571358a4-0343-42e6-8477-9961b4df87e9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.error }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        864
+      ],
+      "id": "343d6951-c8ea-4e59-b382-bdc3f831f6fe",
+      "name": "Stop and Error1"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "template_slide": 0,
+          "old_text": {
+            "company_name": "{{COMPANY_NAME}}",
+            "position": "{{POSITION}}",
+            "location": "{{LOCATION}}",
+            "experience": "{{EXPERIENCE}}",
+            "skills": "{{SKILLS}}",
+            "job_type": "{{JOB_TYPE}}",
+            "link": "{{LINK}}"
+          },
+          "jobs": [
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner - Computer Science - French - Remote - Global",
+              "location": "Idaho, United States",
+              "experience": "Not specified",
+              "skills": "Data Partner, Computer Science, French language proficiency, Remote work capability",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060677",
+              "audio_file": "6f8fc98f-4503-4897-b939-587fda922d12.wav"
+            },
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner – Computer Science - Remote - North America",
+              "location": "Georgia, United States",
+              "experience": "Not specified",
+              "skills": "Not specified",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-%E2%80%93-computer-science-remote-north-america-at-telus-digital-4303082277",
+              "audio_file": "41416608-033c-4082-816c-d33e2cb62959.wav"
+            },
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner - Computer Science - French - Remote - Global",
+              "location": "Georgia, United States",
+              "experience": "Not specified",
+              "skills": "Computer Science, French language proficiency",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060674",
+              "audio_file": "6cfdfce0-77ef-437d-9416-72dd51abe077.wav"
+            },
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner - Chemistry - Remote - North America",
+              "location": "Wyoming, United States",
+              "experience": "Not specified",
+              "skills": "Data analysis, partner management, chemistry knowledge",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-chemistry-remote-north-america-at-telus-digital-4303080418",
+              "audio_file": "c6f28537-6ae5-44a3-bde8-78516b315d2e.wav"
+            },
+            {
+              "company_name": "Centene Corporation",
+              "position": "Data Analyst II Healthcare Analytics",
+              "location": "Arizona, United States",
+              "experience": "2+ years of experience in data analysis or related field",
+              "skills": "Data analysis, SQL, Excel, healthcare analytics, problem-solving skills",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/data-analyst-ii-healthcare-analytics-at-centene-corporation-4303074270",
+              "audio_file": "573c946e-0656-4391-9472-87298f1b3d44.wav"
+            },
+            {
+              "company_name": "Mercor",
+              "position": "Data Science Manager",
+              "location": "United States",
+              "experience": "5+ years experience in data science or related field",
+              "skills": "Data science, machine learning, leadership, project management",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/data-science-manager-at-mercor-4298981936",
+              "audio_file": "500c9b9d-a8c4-4d2d-908e-54381c9d5369.wav"
+            },
+            {
+              "company_name": "Humana",
+              "position": "Senior Business Intelligence Engineer",
+              "location": "Arkansas, United States",
+              "experience": "Senior level experience in Business Intelligence or related field",
+              "skills": "Business Intelligence, Data Analysis, SQL, Data Visualization, ETL processes",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/senior-business-intelligence-engineer-at-humana-4301406340",
+              "audio_file": "6f819a92-e7c8-4cb3-ac43-7474275a19bc.wav"
+            },
+            {
+              "company_name": "Dacha Corp",
+              "position": "Cyber Warfare Technician",
+              "location": "Stockton, KS",
+              "experience": "Not specified",
+              "skills": "Not specified",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/cyber-warfare-technician-at-dacha-corp-4303058031",
+              "audio_file": "997bec8a-e5ed-4e7b-a977-856a687a8e1e.wav"
+            },
+            {
+              "company_name": "HIRESIGMA",
+              "position": "Senior Machine Learning Engineer",
+              "location": "United States",
+              "experience": "5-8 years",
+              "skills": "Machine learning, Python, data analysis, deep learning frameworks",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/senior-machine-learning-engineer-at-hiresigma-4302765507",
+              "audio_file": "569c4dbb-7eea-453d-b093-8767eac0c169.wav"
+            },
+            {
+              "company_name": "Basis",
+              "position": "Full Stack Engineer",
+              "location": "United States",
+              "experience": "Mid-level (3-5 years)",
+              "skills": "Full Stack Development, JavaScript, React, Node.js, SQL, REST APIs",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/full-stack-engineer-at-basis-4302769551",
+              "audio_file": "8b0d693c-60a7-4c71-97e8-31dddbfb28dc.wav"
+            }
+          ],
+          "date": "2025-08-20",
+          "batch_size": 5,
+          "initial_point": 0,
+          "epoch": 1
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Workflow Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get images": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create PPT": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Images": {
+      "main": [
+        [
+          {
+            "node": "Wait 10 sec1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to MP4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to MP4": {
+      "main": [
+        [
+          {
+            "node": "Wait 10 sec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Image Check": {
+      "main": [
+        [
+          {
+            "node": "Check image request status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check image request status": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get images",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 10 sec1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status MP4 conversion Check": {
+      "main": [
+        [
+          {
+            "node": "Check MP4 conversion request status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check MP4 conversion request status": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 10 sec",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 sec": {
+      "main": [
+        [
+          {
+            "node": "Status MP4 conversion Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 sec1": {
+      "main": [
+        [
+          {
+            "node": "Status Image Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "File List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Images",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File List": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Workflow Variables": {
+      "main": [
+        [
+          {
+            "node": "Create PPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "saveDataSuccessExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedMode": "fixed",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 7
+  },
+  "versionId": "083d19ab-43d5-4508-bd6a-174586eb1388",
+  "meta": {
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "id": "HmMxxv4eZOZGzrOl",
+  "tags": [
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
+    },
+    {
+      "name": "F-JNN",
+      "id": "uRLukwQ6lXVe1ia9",
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z"
+    }
+  ]
+}

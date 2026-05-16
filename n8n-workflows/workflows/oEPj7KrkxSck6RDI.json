@@ -1,0 +1,622 @@
+{
+  "name": "Add New User",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "first_name"
+            },
+            {
+              "name": "last_name"
+            },
+            {
+              "name": "timezone"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -624,
+        64
+      ],
+      "id": "2a903ad5-842d-49dc-ab52-7b1c6a4192bf",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.user_id }}",
+            "latest_question_summary": "={{ $json.latest_question_summary }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "latest_question_summary",
+              "displayName": "latest_question_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        960,
+        336
+      ],
+      "id": "f76ec16b-38bc-4803-9b65-190d8d50fef0",
+      "name": "Update Latest Question Summary",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "if ($input.first().json.existing_weekday.length === 0) {\n  return {\n    json: {\n      user_id: $('Merge').first().json.user_id,\n      next_weekday: 'Monday',\n      latest_question_summary: 'Shift scheduling question asked for Monday'\n    }\n  };\n}\n\nconst allWeekdays = [\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\", \"Saturday\", \"Sunday\"];\nconst curr_weekday_list = $input.first().json.existing_weekday;\nconst missingWeekdays = allWeekdays.filter(day => !curr_weekday_list.includes(day));\n\nreturn {\n  json: {\n    user_id: $('Merge').first().json.user_id,\n    next_weekday: missingWeekdays.length ? missingWeekdays[0] : '',\n    latest_question_summary:  missingWeekdays.length ? `Shift scheduling question asked for ${missingWeekdays[0]}` : 'Shifts scheduled for all weekdays'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        336
+      ],
+      "id": "d85565f1-6f2c-4a36-a84f-cefdb29442b2",
+      "name": "Retrieve Next Weekday"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        528,
+        336
+      ],
+      "id": "c798cb2a-e644-4e43-af9a-99690972fef9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -416,
+        64
+      ],
+      "id": "eb3fa778-c1c7-4770-b80e-55832053656e",
+      "name": "Retrieve User Information",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "27456d60-496b-410f-bc50-c981be7a3c47",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        64
+      ],
+      "id": "95d7650c-c776-4fc7-95ed-01ab532bc59e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 235982528,
+          "mode": "list",
+          "cachedResultName": "Shifts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=235982528"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $('When Executed by Another Workflow').item.json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        0,
+        160
+      ],
+      "id": "01599c71-4ded-4242-943a-3398f7295806",
+      "name": "Get User Weekly Shifts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "weekday",
+              "renameField": true,
+              "outputFieldName": "existing_weekday"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        208,
+        160
+      ],
+      "id": "af5390bd-157c-4b9b-88c6-c0093aee8015",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4e0f15c5-1ba5-4374-bc18-88c2a1f375d8",
+              "name": "existing_weekday",
+              "value": "[]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f317dae4-a33a-4d71-935d-bd9fc2f2e2ca",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1200,
+        160
+      ],
+      "id": "3cc8c24c-16fc-408b-b266-78202f035c01",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('When Executed by Another Workflow').item.json.user_id }}",
+            "first_name": "={{ $('When Executed by Another Workflow').item.json.first_name }}",
+            "last_name": "={{ $('When Executed by Another Workflow').item.json.last_name }}",
+            "timezone": "={{ $('When Executed by Another Workflow').item.json.timezone }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "latest_question_summary",
+              "displayName": "latest_question_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "31122a9a-805f-40e0-a38b-9a1b24dd9cb5",
+      "name": "Add New User",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "user_id": "7519660825",
+          "first_name": "Hello",
+          "last_name": "World",
+          "timezone": "Asia/Kolkata"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Retrieve User Information",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Retrieve Next Weekday": {
+      "main": [
+        [
+          {
+            "node": "Update Latest Question Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Next Weekday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve User Information": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Add New User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get User Weekly Shifts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Weekly Shifts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Latest Question Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add New User": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dc8b5b70-77e4-4c1a-95b8-8c785f46c53d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "id": "oEPj7KrkxSck6RDI",
+  "tags": [
+    {
+      "updatedAt": "2025-09-14T06:04:36.989Z",
+      "createdAt": "2025-09-14T06:04:36.989Z",
+      "id": "wdQ9O45WjJH9K4xb",
+      "name": "Sub-Workflow"
+    }
+  ]
+}

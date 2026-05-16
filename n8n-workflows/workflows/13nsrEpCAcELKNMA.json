@@ -1,1 +1,396 @@
-{"updatedAt":"2026-04-23T03:01:49.718Z","createdAt":"2026-04-23T02:49:55.980Z","id":"13nsrEpCAcELKNMA","name":"Video Report Creator","description":null,"active":false,"isArchived":false,"nodes":[{"parameters":{},"type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[0,-96],"id":"8e0bcafe-01cb-4643-92ea-d757a27f321a","name":"When clicking ‘Execute workflow’"},{"parameters":{"fromEmail":"atharvadevasthali22@gmail.com","toEmail":"avi@blueplanetsolutions.com, rakesh@blueplanetsolutions.com, techindia@panhealth.com, atharvadevasthali22@gmail.com","subject":"=[JNN] {{ $('Report Generator').item.json.output.subject }}","html":"={{ $json.html }}","options":{}},"type":"n8n-nodes-base.emailSend","typeVersion":2.1,"position":[1808,0],"id":"90d88eee-64bb-45ac-ba19-07462b4a16be","name":"Send email","webhookId":"9674c55c-872a-4664-ac8a-cc6bdf6cc7b4","credentials":{"smtp":{"id":"hzYsTeKJFArfqqnt","name":"SMTP account (Gmail: atharvadevasthali22@gmail.com)"}}},{"parameters":{"operation":"select","schema":{"__rl":true,"value":"job_listing","mode":"list","cachedResultName":"job_listing"},"table":{"__rl":true,"value":"mp4_list","mode":"list","cachedResultName":"mp4_list"},"where":{"values":[{"column":"date","value":"={{ $json.date }}"}]},"options":{}},"type":"n8n-nodes-base.postgres","typeVersion":2.6,"position":[432,0],"id":"e8896db7-7bcd-4751-8ab3-4756d6b3821f","name":"Get video list","alwaysOutputData":true,"credentials":{"postgres":{"id":"shW2iHfLRrHL9cFY","name":"Postgres account"}}},{"parameters":{"assignments":{"assignments":[{"id":"c932d7e7-6a83-45dc-8bf9-a35513d93d37","name":"date","value":"={{ $now.format('yyyy-MM-dd') }}","type":"string"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[208,0],"id":"e9a11ab3-0c7f-4e38-9bee-e610f4362321","name":"Edit Fields"},{"parameters":{"resource":"execution","operation":"get","executionId":"={{ $json.id }}","options":{"activeWorkflows":true},"requestOptions":{}},"type":"n8n-nodes-base.n8n","typeVersion":1,"position":[640,0],"id":"91f42e2a-f5af-4e55-abc2-62a3d3ac7dfd","name":"Get an execution","credentials":{"n8nApi":{"id":"l7BWw7c90zwNhpjc","name":"n8n account"}}},{"parameters":{"jsCode":"return $input.all().map((item, index) => {\n  const executionData = item.json.data.resultData.runData;\n  const savedData = $('Get video list').all()[index];\n  let output = {};\n\n  output = {\n    date: $('Edit Fields').first().json.date,\n    epoch: parseInt(savedData.json.epoch, 10),\n    start_time: savedData.json.start_time,\n    end_time: savedData.json.end_time,\n    file_name: savedData.json.mp4_path,\n  };\n\n  if ('Input Parameters' in executionData) {\n    const input_parameter_node = executionData['Input Parameters'][0];\n    \n    if (input_parameter_node.executionStatus === \"success\") {\n      const node_output = input_parameter_node.data.main[0][0];\n      \n      if (node_output && \"json\" in node_output) {\n        const maxEpoch = node_output.json.maxEpoch;\n        const jobPortalList = node_output.json.job_portal_list;\n        const index = Math.floor(output['epoch'] / Math.floor(maxEpoch / jobPortalList.length));\n        \n        output = {\n          ...output,\n          job_portal: jobPortalList[index]\n        }\n      }\n    }\n  }\n\n  if ('Job Scrapper' in executionData) {\n    const job_scrapper = executionData['Job Scrapper'][0];\n    \n    if (job_scrapper.executionStatus === \"success\") {\n      const node_output = job_scrapper.data.main[0][0];\n      \n      if (node_output && \"json\" in node_output) {\n        output = {\n          ...output,\n          job_count: node_output.json.num_job_scrapped,\n        }\n      }\n    }\n  }\n\n  if ('Upload a video' in executionData) {\n    const video_upload = executionData['Upload a video'][0];\n  \n    if (video_upload.executionStatus === \"success\") {\n      const node_output = video_upload.data.main[0][0];\n  \n      if (node_output && \"json\" in node_output) {\n        output = {\n          ...output,\n          youtube_video_id: node_output.json.uploadId,\n        }\n      }\n    }\n  }\n  \n  return {\n    json: {\n      output: output\n    }\n  }\n})"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[848,0],"id":"b491c3b6-7aeb-4410-a029-b10d1ed0c7eb","name":"Code"},{"parameters":{"fieldsToAggregate":{"fieldToAggregate":[{"fieldToAggregate":"output"}]},"options":{}},"type":"n8n-nodes-base.aggregate","typeVersion":1,"position":[1056,0],"id":"955cd95b-c63d-42c6-b0d2-364cc2b736f6","name":"Aggregate"},{"parameters":{"html":"<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"padding: 20px 0;\">\n        <tr>\n            <td align=\"center\">\n                <table width=\"800\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"max-width: 800px; width: 100%; background-color: #f4f4f4;\">\n                    \n                    <!-- Header -->\n                    <tr>\n                        <td style=\"background: linear-gradient(135deg, #5a63d8 0%, #6d3f97 100%); padding: 25px; text-align: center; border-radius: 8px 8px 0 0;\">\n                            <h2 style=\"margin: 0; color: white; font-size: 24px;\">📹 Video Creation Report</h2>\n                            <p style=\"margin: 5px 0 0 0; color: white; opacity: 0.9;\">n8n Automation System</p>\n                        </td>\n                    </tr>\n\n                    <!-- Summary Stats -->\n                    <tr>\n                        <td style=\"padding: 0;\">\n                            <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width: 100%\">\n                                <tr>\n                                    <td style=\"padding: 20px; text-align: center; border-bottom: 2px solid #e0e0e0;\">\n                                        <div style=\"font-size: 32px; font-weight: bold; color: #667eea;\">{{$json.output.stats.total_videos }}</div>\n                                        <div style=\"font-size: 14px; color: #666; text-transform: uppercase;\">Videos Created</div>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <!-- Video Cards -->\n                    {{$json.output.videos.map(video => `\n                    <tr>\n                        <td style=\"padding: 20px;\">\n                            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background: white; border-radius: 8px; border-left: 5px solid #28a745; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">\n                                \n                                <!-- Video Header -->\n                                <tr>\n                                    <td style=\"padding: 15px 20px; background: #f0f0f0; border: 1px solid #e0e0e0;\">\n                                        <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                                            <tr>\n                                                <td style=\"font-size: 18px; font-weight: bold; color: #333;\">Video ${video.index}</td>\n                                                <td align=\"right\">\n                                                    <span style=\"padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: #d4edda; color: #155724; display: inline-block;\">\n                                                        VIDEO CREATED\n                                                    </span>\n                                                </td>\n                                            </tr>\n                                        </table>\n                                    </td>\n                                </tr>\n\n                                <!-- Video Content -->\n                                <tr>\n                                    <td style=\"padding: 20px;\">\n                                        ${!video.youtube_uploaded ? `\n                                            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; margin-bottom: 15px;\">\n                                                <tr>\n                                                    <td style=\"padding: 15px; color: #856404;\">\n                                                        ⚠️ <strong>YouTube Upload Pending:</strong> Video was successfully created but could not be uploaded to YouTube. No video ID was generated.\n                                                    </td>\n                                                </tr>\n                                            </table>\n                                        ` : `\n                                            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom: 20px;\">\n                                                <tr>\n                                                    <td align=\"center\">\n                                                        <img src=\"${video.thumbnail_url}\" alt=\"Video Thumbnail\" style=\"max-width: 100%; height: auto; border-radius: 8px; display: block;\" />\n                                                    </td>\n                                                </tr>\n                                                <tr>\n                                                    <td align=\"center\" style=\"padding-top: 10px;\">\n                                                        <a href=\"${video.youtube_link}\" style=\"display: inline-block; padding: 10px 20px; background: #ff0000; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;\" target=\"_blank\">▶ Watch on YouTube</a>\n                                                    </td>\n                                                </tr>\n                                            </table>\n                                        `}\n                                        \n                                        <!-- Info Grid -->\n                                        <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                                            <tr>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Date</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.date}</div>\n                                                </td>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Job Portal</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.job_portal}</div>\n                                                </td>\n                                            </tr>\n                                            <tr><td colspan=\"2\" height=\"15\"></td></tr>\n                                            <tr>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Time Range</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.start_time} - ${video.end_time}</div>\n                                                </td>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Jobs Scraped</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.job_count}</div>\n                                                </td>\n                                            </tr>\n                                            <tr><td colspan=\"2\" height=\"15\"></td></tr>\n                                            <tr>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Filename</div>\n                                                    <div style=\"font-size: 11px; color: #333; font-weight: bold; word-break: break-all;\">${video.filename}</div>\n                                                </td>\n                                                ${video.youtube_video_id ? `\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Video ID</div>\n                                                    <div style=\"font-size: 11px; color: #333; font-weight: bold;\">${video.youtube_video_id}</div>\n                                                </td>\n                                                ` : '<td width=\"50%\"></td>'}\n                                            </tr>\n                                        </table>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n                    `).join('') }}\n\n                    <!-- Footer -->\n                    <tr>\n                        <td style=\"padding: 20px; text-align: center; color: #666; font-size: 12px; border-radius: 0 0 8px 8px;\">\n                            <p style=\"margin: 0 0 15px 0;\"><strong>Summary:</strong> {{$json.output.summary }}</p>\n                            <p style=\"margin: 0;\">Automated notification • Generated at: {{DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')}}</p>\n                        </td>\n                    </tr>\n\n                </table>\n            </td>\n        </tr>\n    </table>\n</body>\n</html>"},"type":"n8n-nodes-base.html","typeVersion":1.2,"position":[1600,0],"id":"27d55092-10b5-44be-b235-d3df57e4ad91","name":"HTML"},{"parameters":{"rule":{"interval":[{"triggerAtHour":18,"triggerAtMinute":30}]}},"type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,96],"id":"daf1018d-74da-4c69-ae07-4c8fd4a0745b","name":"Schedule Trigger"},{"parameters":{"promptType":"define","text":"=# N8N YouTube Video Report Email Prompt\n\nCreate an internal email to report that new video(s) have been created and uploaded to YouTube using the following n8n execution data.\n\n## Input Data:\n{{ (() => {\n  return $json.output.map((item, index) => {\n    const hasVideoId = item.youtube_video_id && item.youtube_video_id !== 'undefined';\n    const hasFilename = item.file_name && item.file_name !== 'undefined';\n    return `\nVideo ${index + 1}\n- Date: ${item.date}\n- Start Time: ${item.start_time}\n- End Time: ${item.end_time}\n- Filename: ${item.file_name}\n- Job Portal: ${item.job_portal}\n- Jobs Scrapped: ${item.job_count}\n- Video Created: ${hasFilename ? 'YES' : 'NO'}\n- YouTube Video ID: ${hasVideoId ? item.youtube_video_id : 'NOT UPLOADED'}\n- YouTube Link: ${hasVideoId ? 'https://www.youtube.com/watch?v=' + item.youtube_video_id : 'N/A'}\n- Thumbnail: ${hasVideoId ? 'https://img.youtube.com/vi/' + item.youtube_video_id + '/maxresdefault.jpg' : 'N/A'}\n- YouTube Upload Status: ${hasVideoId ? 'UPLOADED' : 'PENDING'}\n    `;\n  }).join('\\n---\\n');\n})() }}\n\n## Email Requirements:\n- This output will be processed by an HTML node, then sent via SMTP\n- From: n8n Automation System\n- Internal team notification only\n- Tone: Clear, concise, and professional\n- Format output as **structured JSON** for easy parsing in the HTML node\n\n## Output Format:\nReturn a JSON object with the following structure:\n\n```json\n{\n  \"subject\": \"[Clear subject line summarizing the report for video created]\",\n  \"videos\": [\n    {\n      \"index\": 1,\n      \"date\": \"...\",\n      \"start_time\": \"...\",\n      \"end_time\": \"...\",\n      \"filename\": \"...\",\n      \"job_portal\": \"...\",\n      \"job_count\": \"...\",\n      \"youtube_video_id\": \"... or null\",\n      \"youtube_link\": \"https://www.youtube.com/watch?v=... or null\",\n      \"thumbnail_url\": \"https://img.youtube.com/vi/.../maxresdefault.jpg or null\",\n      \"upload_status\": \"SUCCESS or FAILED\"\n    }\n  ],\n  \"summary\": \"[Brief summary text about the automated upload]\",\n  \"stats\": {\n    \"total\": 0,\n    \"successful\": 0,\n    \"failed\": 0\n  }\n}\n```\n\n## Instructions:\n1. Generate a compelling subject line that includes the number of videos created\n2. For each video, extract all relevant data fields\n3. **Handle missing youtube_video_id**: If undefined/null, set upload_status to \"FAILED\" and set youtube_link and thumbnail_url to null\n4. Generate YouTube links and thumbnail URLs only when video ID is present\n5. Add a brief summary highlighting success/failure statistics\n6. Calculate stats: total videos, successful uploads, failed uploads\n7. Return everything as valid JSON for the next HTML node to consume\n\n**Important:** \n- Check if youtube_video_id exists before generating links/thumbnails\n- The JSON output will be used in an HTML template to create visually separated cards/sections\n- Failed uploads should be clearly marked with appropriate messaging\n- Include visual indicators (colors/icons) suggestion for failed vs successful uploads in the summary","hasOutputParser":true,"batching":{}},"type":"@n8n/n8n-nodes-langchain.chainLlm","typeVersion":1.9,"position":[1264,0],"id":"7049cb62-c3fc-43f5-9730-c7f6b16aff0b","name":"Report Generator","retryOnFail":false,"waitBetweenTries":5000},{"parameters":{"schemaType":"manual","inputSchema":"{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"N8N Video Creation Report Output Schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"Email subject line summarizing video creation\",\n      \"minLength\": 1,\n      \"maxLength\": 200\n    },\n    \"videos\": {\n      \"type\": \"array\",\n      \"description\": \"Array of successfully created video objects\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"index\": {\n            \"type\": \"integer\",\n            \"description\": \"Sequential video number\",\n            \"minimum\": 1\n          },\n          \"date\": {\n            \"type\": \"string\",\n            \"description\": \"Video creation date\"\n          },\n          \"start_time\": {\n            \"type\": \"string\",\n            \"description\": \"Video start time\"\n          },\n          \"end_time\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"Video end time\"\n          },\n          \"filename\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"Original video filename\"\n          },\n          \"job_portal\": {\n            \"type\": \"string\",\n            \"description\": \"Source job portal name\"\n          },\n          \"job_count\": {\n            \"type\": [\"string\", \"number\"],\n            \"description\": \"Number of jobs scraped\"\n          },\n          \"youtube_video_id\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"YouTube video ID (null if YouTube upload pending)\"\n          },\n          \"youtube_link\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"Full YouTube video URL (null if YouTube upload pending)\"\n          },\n          \"thumbnail_url\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"YouTube thumbnail image URL (null if YouTube upload pending)\"\n          },\n          \"youtube_uploaded\": {\n            \"type\": \"boolean\",\n            \"description\": \"Whether video was successfully uploaded to YouTube\"\n          }\n        },\n        \"required\": [\n          \"index\",\n          \"date\",\n          \"start_time\",\n          \"job_portal\",\n          \"youtube_uploaded\"\n        ],\n        \"additionalProperties\": false\n      }\n    },\n    \"summary\": {\n      \"type\": \"string\",\n      \"description\": \"Brief summary text about video creation and YouTube upload status\",\n      \"minLength\": 1,\n      \"maxLength\": 500\n    },\n    \"stats\": {\n      \"type\": \"object\",\n      \"description\": \"Summary statistics for the video batch\",\n      \"properties\": {\n        \"total_videos\": {\n          \"type\": \"integer\",\n          \"description\": \"Total number of videos created\",\n          \"minimum\": 0\n        },\n        \"youtube_uploaded\": {\n          \"type\": \"integer\",\n          \"description\": \"Number of videos uploaded to YouTube\",\n          \"minimum\": 0\n        },\n        \"youtube_pending\": {\n          \"type\": \"integer\",\n          \"description\": \"Number of videos pending YouTube upload\",\n          \"minimum\": 0\n        }\n      },\n      \"required\": [\"total_videos\", \"youtube_uploaded\", \"youtube_pending\"],\n      \"additionalProperties\": false\n    }\n  },\n  \"required\": [\"subject\", \"videos\", \"summary\", \"stats\"],\n  \"additionalProperties\": false\n}","autoFix":true},"type":"@n8n/n8n-nodes-langchain.outputParserStructured","typeVersion":1.3,"position":[1376,208],"id":"df1354af-55e6-48fa-ad45-c62789a1a3a9","name":"Structured Output Parser"},{"parameters":{"model":"openai/gpt-4.1-nano","options":{}},"type":"@n8n/n8n-nodes-langchain.lmChatOpenRouter","typeVersion":1,"position":[1200,208],"id":"1efae9d5-674a-4096-8560-58867b1461a3","name":"OpenRouter Chat Model","credentials":{"openRouterApi":{"id":"ZOsMSA2673vhlLZX","name":"OpenRouter account"}}}],"connections":{"When clicking ‘Execute workflow’":{"main":[[{"node":"Edit Fields","type":"main","index":0}]]},"Edit Fields":{"main":[[{"node":"Get video list","type":"main","index":0}]]},"Get an execution":{"main":[[{"node":"Code","type":"main","index":0}]]},"Get video list":{"main":[[{"node":"Get an execution","type":"main","index":0}]]},"Code":{"main":[[{"node":"Aggregate","type":"main","index":0}]]},"Aggregate":{"main":[[{"node":"Report Generator","type":"main","index":0}]]},"HTML":{"main":[[{"node":"Send email","type":"main","index":0}]]},"Schedule Trigger":{"main":[[{"node":"Edit Fields","type":"main","index":0}]]},"Structured Output Parser":{"ai_outputParser":[[{"node":"Report Generator","type":"ai_outputParser","index":0}]]},"Report Generator":{"main":[[{"node":"HTML","type":"main","index":0}]]},"OpenRouter Chat Model":{"ai_languageModel":[[{"node":"Report Generator","type":"ai_languageModel","index":0},{"node":"Structured Output Parser","type":"ai_languageModel","index":0}]]}},"settings":{"executionOrder":"v1","binaryMode":"separate"},"staticData":null,"meta":{"templateCredsSetupCompleted":true,"instanceId":"de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"},"pinData":{},"versionId":"89023295-0928-4374-ac8e-8799aab797ba","activeVersionId":null,"versionCounter":8,"triggerCount":0,"tags":[],"shared":[{"updatedAt":"2026-04-23T02:49:55.980Z","createdAt":"2026-04-23T02:49:55.980Z","role":"workflow:owner","workflowId":"13nsrEpCAcELKNMA","projectId":"r4FxHAXU5mmnE4p2","project":{"updatedAt":"2026-04-23T00:46:33.004Z","createdAt":"2026-04-23T00:44:53.719Z","id":"r4FxHAXU5mmnE4p2","name":"Atharva Devasthali <atharvadevasthali22@gmail.com>","type":"personal","icon":null,"description":null,"creatorId":"d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"}}],"versionMetadata":{"name":null,"description":null}}
+{
+  "name": "Video Report Creator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "8e0bcafe-01cb-4643-92ea-d757a27f321a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fromEmail": "atharvadevasthali22@gmail.com",
+        "toEmail": "avi@blueplanetsolutions.com, rakesh@blueplanetsolutions.com, techindia@panhealth.com, atharvadevasthali22@gmail.com",
+        "subject": "=[JNN] {{ $('Report Generator').item.json.output.subject }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1808,
+        0
+      ],
+      "id": "90d88eee-64bb-45ac-ba19-07462b4a16be",
+      "name": "Send email",
+      "webhookId": "9674c55c-872a-4664-ac8a-cc6bdf6cc7b4",
+      "credentials": {
+        "smtp": {
+          "id": "hzYsTeKJFArfqqnt",
+          "name": "SMTP account (Gmail: atharvadevasthali22@gmail.com)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "job_listing",
+          "mode": "list",
+          "cachedResultName": "job_listing"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mp4_list",
+          "mode": "list",
+          "cachedResultName": "mp4_list"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "date",
+              "value": "={{ $json.date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        432,
+        0
+      ],
+      "id": "e8896db7-7bcd-4751-8ab3-4756d6b3821f",
+      "name": "Get video list",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c932d7e7-6a83-45dc-8bf9-a35513d93d37",
+              "name": "date",
+              "value": "={{ $now.format('yyyy-MM-dd') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e9a11ab3-0c7f-4e38-9bee-e610f4362321",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "execution",
+        "operation": "get",
+        "executionId": "={{ $json.id }}",
+        "options": {
+          "activeWorkflows": true
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "91f42e2a-f5af-4e55-abc2-62a3d3ac7dfd",
+      "name": "Get an execution",
+      "credentials": {
+        "n8nApi": {
+          "id": "RoNsUPb4uJyIk2WV",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((item, index) => {\n  const executionData = item.json.data.resultData.runData;\n  const savedData = $('Get video list').all()[index];\n  let output = {};\n\n  output = {\n    date: $('Edit Fields').first().json.date,\n    epoch: parseInt(savedData.json.epoch, 10),\n    start_time: savedData.json.start_time,\n    end_time: savedData.json.end_time,\n    file_name: savedData.json.mp4_path,\n  };\n\n  if ('Input Parameters' in executionData) {\n    const input_parameter_node = executionData['Input Parameters'][0];\n    \n    if (input_parameter_node.executionStatus === \"success\") {\n      const node_output = input_parameter_node.data.main[0][0];\n      \n      if (node_output && \"json\" in node_output) {\n        const maxEpoch = node_output.json.maxEpoch;\n        const jobPortalList = node_output.json.job_portal_list;\n        const index = Math.floor(output['epoch'] / Math.floor(maxEpoch / jobPortalList.length));\n        \n        output = {\n          ...output,\n          job_portal: jobPortalList[index]\n        }\n      }\n    }\n  }\n\n  if ('Job Scrapper' in executionData) {\n    const job_scrapper = executionData['Job Scrapper'][0];\n    \n    if (job_scrapper.executionStatus === \"success\") {\n      const node_output = job_scrapper.data.main[0][0];\n      \n      if (node_output && \"json\" in node_output) {\n        output = {\n          ...output,\n          job_count: node_output.json.num_job_scrapped,\n        }\n      }\n    }\n  }\n\n  if ('Upload a video' in executionData) {\n    const video_upload = executionData['Upload a video'][0];\n  \n    if (video_upload.executionStatus === \"success\") {\n      const node_output = video_upload.data.main[0][0];\n  \n      if (node_output && \"json\" in node_output) {\n        output = {\n          ...output,\n          youtube_video_id: node_output.json.uploadId,\n        }\n      }\n    }\n  }\n  \n  return {\n    json: {\n      output: output\n    }\n  }\n})"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        0
+      ],
+      "id": "b491c3b6-7aeb-4410-a029-b10d1ed0c7eb",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "955cd95b-c63d-42c6-b0d2-364cc2b736f6",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"padding: 20px 0;\">\n        <tr>\n            <td align=\"center\">\n                <table width=\"800\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"max-width: 800px; width: 100%; background-color: #f4f4f4;\">\n                    \n                    <!-- Header -->\n                    <tr>\n                        <td style=\"background: linear-gradient(135deg, #5a63d8 0%, #6d3f97 100%); padding: 25px; text-align: center; border-radius: 8px 8px 0 0;\">\n                            <h2 style=\"margin: 0; color: white; font-size: 24px;\">📹 Video Creation Report</h2>\n                            <p style=\"margin: 5px 0 0 0; color: white; opacity: 0.9;\">n8n Automation System</p>\n                        </td>\n                    </tr>\n\n                    <!-- Summary Stats -->\n                    <tr>\n                        <td style=\"padding: 0;\">\n                            <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width: 100%\">\n                                <tr>\n                                    <td style=\"padding: 20px; text-align: center; border-bottom: 2px solid #e0e0e0;\">\n                                        <div style=\"font-size: 32px; font-weight: bold; color: #667eea;\">{{$json.output.stats.total_videos }}</div>\n                                        <div style=\"font-size: 14px; color: #666; text-transform: uppercase;\">Videos Created</div>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <!-- Video Cards -->\n                    {{$json.output.videos.map(video => `\n                    <tr>\n                        <td style=\"padding: 20px;\">\n                            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background: white; border-radius: 8px; border-left: 5px solid #28a745; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">\n                                \n                                <!-- Video Header -->\n                                <tr>\n                                    <td style=\"padding: 15px 20px; background: #f0f0f0; border: 1px solid #e0e0e0;\">\n                                        <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                                            <tr>\n                                                <td style=\"font-size: 18px; font-weight: bold; color: #333;\">Video ${video.index}</td>\n                                                <td align=\"right\">\n                                                    <span style=\"padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: #d4edda; color: #155724; display: inline-block;\">\n                                                        VIDEO CREATED\n                                                    </span>\n                                                </td>\n                                            </tr>\n                                        </table>\n                                    </td>\n                                </tr>\n\n                                <!-- Video Content -->\n                                <tr>\n                                    <td style=\"padding: 20px;\">\n                                        ${!video.youtube_uploaded ? `\n                                            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; margin-bottom: 15px;\">\n                                                <tr>\n                                                    <td style=\"padding: 15px; color: #856404;\">\n                                                        ⚠️ <strong>YouTube Upload Pending:</strong> Video was successfully created but could not be uploaded to YouTube. No video ID was generated.\n                                                    </td>\n                                                </tr>\n                                            </table>\n                                        ` : `\n                                            <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom: 20px;\">\n                                                <tr>\n                                                    <td align=\"center\">\n                                                        <img src=\"${video.thumbnail_url}\" alt=\"Video Thumbnail\" style=\"max-width: 100%; height: auto; border-radius: 8px; display: block;\" />\n                                                    </td>\n                                                </tr>\n                                                <tr>\n                                                    <td align=\"center\" style=\"padding-top: 10px;\">\n                                                        <a href=\"${video.youtube_link}\" style=\"display: inline-block; padding: 10px 20px; background: #ff0000; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;\" target=\"_blank\">▶ Watch on YouTube</a>\n                                                    </td>\n                                                </tr>\n                                            </table>\n                                        `}\n                                        \n                                        <!-- Info Grid -->\n                                        <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                                            <tr>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Date</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.date}</div>\n                                                </td>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Job Portal</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.job_portal}</div>\n                                                </td>\n                                            </tr>\n                                            <tr><td colspan=\"2\" height=\"15\"></td></tr>\n                                            <tr>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Time Range</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.start_time} - ${video.end_time}</div>\n                                                </td>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Jobs Scraped</div>\n                                                    <div style=\"font-size: 14px; color: #333; font-weight: bold;\">${video.job_count}</div>\n                                                </td>\n                                            </tr>\n                                            <tr><td colspan=\"2\" height=\"15\"></td></tr>\n                                            <tr>\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Filename</div>\n                                                    <div style=\"font-size: 11px; color: #333; font-weight: bold; word-break: break-all;\">${video.filename}</div>\n                                                </td>\n                                                ${video.youtube_video_id ? `\n                                                <td width=\"50%\" style=\"padding: 10px; background: #f8f9fa; border-radius: 5px; vertical-align: top;\">\n                                                    <div style=\"font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;\">Video ID</div>\n                                                    <div style=\"font-size: 11px; color: #333; font-weight: bold;\">${video.youtube_video_id}</div>\n                                                </td>\n                                                ` : '<td width=\"50%\"></td>'}\n                                            </tr>\n                                        </table>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n                    `).join('') }}\n\n                    <!-- Footer -->\n                    <tr>\n                        <td style=\"padding: 20px; text-align: center; color: #666; font-size: 12px; border-radius: 0 0 8px 8px;\">\n                            <p style=\"margin: 0 0 15px 0;\"><strong>Summary:</strong> {{$json.output.summary }}</p>\n                            <p style=\"margin: 0;\">Automated notification • Generated at: {{DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')}}</p>\n                        </td>\n                    </tr>\n\n                </table>\n            </td>\n        </tr>\n    </table>\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        0
+      ],
+      "id": "27d55092-10b5-44be-b235-d3df57e4ad91",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        96
+      ],
+      "id": "daf1018d-74da-4c69-ae07-4c8fd4a0745b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# N8N YouTube Video Report Email Prompt\n\nCreate an internal email to report that new video(s) have been created and uploaded to YouTube using the following n8n execution data.\n\n## Input Data:\n{{ (() => {\n  return $json.output.map((item, index) => {\n    const hasVideoId = item.youtube_video_id && item.youtube_video_id !== 'undefined';\n    const hasFilename = item.file_name && item.file_name !== 'undefined';\n    return `\nVideo ${index + 1}\n- Date: ${item.date}\n- Start Time: ${item.start_time}\n- End Time: ${item.end_time}\n- Filename: ${item.file_name}\n- Job Portal: ${item.job_portal}\n- Jobs Scrapped: ${item.job_count}\n- Video Created: ${hasFilename ? 'YES' : 'NO'}\n- YouTube Video ID: ${hasVideoId ? item.youtube_video_id : 'NOT UPLOADED'}\n- YouTube Link: ${hasVideoId ? 'https://www.youtube.com/watch?v=' + item.youtube_video_id : 'N/A'}\n- Thumbnail: ${hasVideoId ? 'https://img.youtube.com/vi/' + item.youtube_video_id + '/maxresdefault.jpg' : 'N/A'}\n- YouTube Upload Status: ${hasVideoId ? 'UPLOADED' : 'PENDING'}\n    `;\n  }).join('\\n---\\n');\n})() }}\n\n## Email Requirements:\n- This output will be processed by an HTML node, then sent via SMTP\n- From: n8n Automation System\n- Internal team notification only\n- Tone: Clear, concise, and professional\n- Format output as **structured JSON** for easy parsing in the HTML node\n\n## Output Format:\nReturn a JSON object with the following structure:\n\n```json\n{\n  \"subject\": \"[Clear subject line summarizing the report for video created]\",\n  \"videos\": [\n    {\n      \"index\": 1,\n      \"date\": \"...\",\n      \"start_time\": \"...\",\n      \"end_time\": \"...\",\n      \"filename\": \"...\",\n      \"job_portal\": \"...\",\n      \"job_count\": \"...\",\n      \"youtube_video_id\": \"... or null\",\n      \"youtube_link\": \"https://www.youtube.com/watch?v=... or null\",\n      \"thumbnail_url\": \"https://img.youtube.com/vi/.../maxresdefault.jpg or null\",\n      \"upload_status\": \"SUCCESS or FAILED\"\n    }\n  ],\n  \"summary\": \"[Brief summary text about the automated upload]\",\n  \"stats\": {\n    \"total\": 0,\n    \"successful\": 0,\n    \"failed\": 0\n  }\n}\n```\n\n## Instructions:\n1. Generate a compelling subject line that includes the number of videos created\n2. For each video, extract all relevant data fields\n3. **Handle missing youtube_video_id**: If undefined/null, set upload_status to \"FAILED\" and set youtube_link and thumbnail_url to null\n4. Generate YouTube links and thumbnail URLs only when video ID is present\n5. Add a brief summary highlighting success/failure statistics\n6. Calculate stats: total videos, successful uploads, failed uploads\n7. Return everything as valid JSON for the next HTML node to consume\n\n**Important:** \n- Check if youtube_video_id exists before generating links/thumbnails\n- The JSON output will be used in an HTML template to create visually separated cards/sections\n- Failed uploads should be clearly marked with appropriate messaging\n- Include visual indicators (colors/icons) suggestion for failed vs successful uploads in the summary",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "7049cb62-c3fc-43f5-9730-c7f6b16aff0b",
+      "name": "Report Generator",
+      "retryOnFail": false,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"N8N Video Creation Report Output Schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"Email subject line summarizing video creation\",\n      \"minLength\": 1,\n      \"maxLength\": 200\n    },\n    \"videos\": {\n      \"type\": \"array\",\n      \"description\": \"Array of successfully created video objects\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"index\": {\n            \"type\": \"integer\",\n            \"description\": \"Sequential video number\",\n            \"minimum\": 1\n          },\n          \"date\": {\n            \"type\": \"string\",\n            \"description\": \"Video creation date\"\n          },\n          \"start_time\": {\n            \"type\": \"string\",\n            \"description\": \"Video start time\"\n          },\n          \"end_time\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"Video end time\"\n          },\n          \"filename\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"Original video filename\"\n          },\n          \"job_portal\": {\n            \"type\": \"string\",\n            \"description\": \"Source job portal name\"\n          },\n          \"job_count\": {\n            \"type\": [\"string\", \"number\"],\n            \"description\": \"Number of jobs scraped\"\n          },\n          \"youtube_video_id\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"YouTube video ID (null if YouTube upload pending)\"\n          },\n          \"youtube_link\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"Full YouTube video URL (null if YouTube upload pending)\"\n          },\n          \"thumbnail_url\": {\n            \"type\": [\"string\", \"null\"],\n            \"description\": \"YouTube thumbnail image URL (null if YouTube upload pending)\"\n          },\n          \"youtube_uploaded\": {\n            \"type\": \"boolean\",\n            \"description\": \"Whether video was successfully uploaded to YouTube\"\n          }\n        },\n        \"required\": [\n          \"index\",\n          \"date\",\n          \"start_time\",\n          \"job_portal\",\n          \"youtube_uploaded\"\n        ],\n        \"additionalProperties\": false\n      }\n    },\n    \"summary\": {\n      \"type\": \"string\",\n      \"description\": \"Brief summary text about video creation and YouTube upload status\",\n      \"minLength\": 1,\n      \"maxLength\": 500\n    },\n    \"stats\": {\n      \"type\": \"object\",\n      \"description\": \"Summary statistics for the video batch\",\n      \"properties\": {\n        \"total_videos\": {\n          \"type\": \"integer\",\n          \"description\": \"Total number of videos created\",\n          \"minimum\": 0\n        },\n        \"youtube_uploaded\": {\n          \"type\": \"integer\",\n          \"description\": \"Number of videos uploaded to YouTube\",\n          \"minimum\": 0\n        },\n        \"youtube_pending\": {\n          \"type\": \"integer\",\n          \"description\": \"Number of videos pending YouTube upload\",\n          \"minimum\": 0\n        }\n      },\n      \"required\": [\"total_videos\", \"youtube_uploaded\", \"youtube_pending\"],\n      \"additionalProperties\": false\n    }\n  },\n  \"required\": [\"subject\", \"videos\", \"summary\", \"stats\"],\n  \"additionalProperties\": false\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1376,
+        208
+      ],
+      "id": "df1354af-55e6-48fa-ad45-c62789a1a3a9",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1-nano",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        208
+      ],
+      "id": "1efae9d5-674a-4096-8560-58867b1461a3",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ZOsMSA2673vhlLZX",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get video list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an execution": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get video list": {
+      "main": [
+        [
+          {
+            "node": "Get an execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Report Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Report Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report Generator": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Report Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "528279cf-e1b5-4f4b-80dd-efc3a6139ee7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "id": "13nsrEpCAcELKNMA",
+  "tags": [
+    {
+      "name": "F-JNN",
+      "id": "uRLukwQ6lXVe1ia9",
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z"
+    }
+  ]
+}

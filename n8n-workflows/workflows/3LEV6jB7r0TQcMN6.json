@@ -1,1 +1,190 @@
-{"updatedAt":"2026-04-23T03:10:14.925Z","createdAt":"2026-04-23T02:49:59.443Z","id":"3LEV6jB7r0TQcMN6","name":"Job Video Error Handling","description":null,"active":false,"isArchived":false,"nodes":[{"parameters":{},"type":"n8n-nodes-base.errorTrigger","typeVersion":1,"position":[144,-32],"id":"f9f0752e-f92c-4075-b230-8706de7d15f4","name":"Error Trigger"},{"parameters":{"html":"<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n        .header { background: #ff4757; color: white; padding: 15px; text-align: center; border-radius: 5px; }\n        .content { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 5px; }\n        .error-info { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; }\n        .label { font-weight: bold; color: #666; }\n        .value { color: #333; margin-bottom: 10px; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h2>🚨 Workflow Error Alert</h2>\n            <p>n8n Automation Team</p>\n        </div>\n\n        <div class=\"content\">\n            <div class=\"error-info\">\n                <div class=\"label\">Error Details:</div>\n                <div class=\"value\">{{ $json.output.body }}</div>\n            </div>\n\n            <p style=\"color: #666; font-size: 12px; text-align: center;\">\n                Automated notification • Generated at: {{DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')}}\n            </p>\n        </div>\n    </div>\n</body>\n</html>"},"type":"n8n-nodes-base.html","typeVersion":1.2,"position":[704,-32],"id":"8070c651-a05f-459e-a05d-d8ccb4b934f8","name":"HTML"},{"parameters":{"fromEmail":"atharvadevasthali22@gmail.com","toEmail":"atharvadevasthali22@gmail.com, techindia@panhealth.com","subject":"={{ $('Email Generator').item.json.output.subject }}","html":"={{ $json.html }}","options":{}},"type":"n8n-nodes-base.emailSend","typeVersion":2.1,"position":[912,-32],"id":"ab55e400-f15b-45e0-8f3d-ec7a1aba50cb","name":"Send email","webhookId":"9674c55c-872a-4664-ac8a-cc6bdf6cc7b4","credentials":{"smtp":{"id":"hzYsTeKJFArfqqnt","name":"SMTP account (Gmail: atharvadevasthali22@gmail.com)"}}},{"parameters":{"promptType":"define","text":"=# N8N Workflow Error Email Prompt\n\nCreate an internal email to report a workflow error using the following n8n execution data:\n\n## Data Structure\n- execution.id: {{ $json.execution.id }}\n- execution.url: {{ $json.execution.url }}\n- execution.mode: {{ $json.execution.mode }}\n- error.message: {{ $json.execution.error.message }}\n- error.stack: {{ $json.execution.error.stack }}\n- execution.lastNodeExecuted: {{ $json.execution.lastNodeExecuted }}\n- workflow.id: {{ $json.workflow.id }}\n- workflow.name: {{ $json.workflow.name }}\n- date: {{ $now.format('yyyy-MM-dd') }}\n\n## Output Format Required\n```\nSUBJECT: [Clear, concise subject line]\n\nBODY:\n[Email body content - plain text with line breaks for HTML template]\n```\n\n## Email Requirements\n- This is for sending via n8n's Send Email node with HTML template\n- From: n8n Automation Team\n- Internal team notification only\n- Tone: Direct and technical\n- Include clickable n8n execution link for quick debugging\n- Highlight if this is a retry failure (indicates persistent issue)\n- Focus on immediate action items for developers\n- Body should be formatted for HTML display (use line breaks and simple formatting)\n- Use workflow and node names for easy identification\n- Keep subject concise for email header\n- Body content will be inserted into HTML template with styling\n\nGenerate the email in the exact SUBJECT/BODY format for n8n email automation with HTML template.","hasOutputParser":true,"batching":{}},"type":"@n8n/n8n-nodes-langchain.chainLlm","typeVersion":1.9,"position":[352,-32],"id":"74277f3f-a19e-458c-ba9f-f58c63aec88a","name":"Email Generator","executeOnce":false,"retryOnFail":true,"waitBetweenTries":5000,"onError":"continueRegularOutput"},{"parameters":{"schemaType":"manual","inputSchema":"{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"N8N Email Output Schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"Email subject line\",\n      \"minLength\": 1,\n      \"maxLength\": 200\n    },\n    \"body\": {\n      \"type\": \"string\",\n      \"description\": \"Email body content\",\n      \"minLength\": 1\n    }\n  },\n  \"required\": [\"subject\", \"body\"],\n  \"additionalProperties\": false\n}"},"type":"@n8n/n8n-nodes-langchain.outputParserStructured","typeVersion":1.3,"position":[496,176],"id":"454b0cc9-d5de-4827-8e8b-3e96d6e0205a","name":"Structured Output Parser"},{"parameters":{"model":"openai/gpt-4.1-nano","options":{}},"type":"@n8n/n8n-nodes-langchain.lmChatOpenRouter","typeVersion":1,"position":[320,176],"id":"6ce1b306-b529-4c94-9189-e41cb4ca4da0","name":"OpenRouter Chat Model","credentials":{"openRouterApi":{"id":"ZOsMSA2673vhlLZX","name":"OpenRouter account"}}}],"connections":{"Error Trigger":{"main":[[{"node":"Email Generator","type":"main","index":0}]]},"HTML":{"main":[[{"node":"Send email","type":"main","index":0}]]},"Email Generator":{"main":[[{"node":"HTML","type":"main","index":0}]]},"Structured Output Parser":{"ai_outputParser":[[{"node":"Email Generator","type":"ai_outputParser","index":0}]]},"OpenRouter Chat Model":{"ai_languageModel":[[{"node":"Email Generator","type":"ai_languageModel","index":0}]]}},"settings":{"executionOrder":"v1","binaryMode":"separate"},"staticData":null,"meta":{"templateCredsSetupCompleted":true,"instanceId":"de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"},"pinData":{},"versionId":"9e063002-7808-482a-bc81-85b4a218af14","activeVersionId":null,"versionCounter":7,"triggerCount":0,"tags":[{"updatedAt":"2026-02-07T17:04:35.300Z","createdAt":"2026-02-07T17:04:35.300Z","id":"Zany7xucuTNzZ3nb","name":"Error Handler"}],"shared":[{"updatedAt":"2026-04-23T02:49:59.443Z","createdAt":"2026-04-23T02:49:59.443Z","role":"workflow:owner","workflowId":"3LEV6jB7r0TQcMN6","projectId":"r4FxHAXU5mmnE4p2","project":{"updatedAt":"2026-04-23T00:46:33.004Z","createdAt":"2026-04-23T00:44:53.719Z","id":"r4FxHAXU5mmnE4p2","name":"Atharva Devasthali <atharvadevasthali22@gmail.com>","type":"personal","icon":null,"description":null,"creatorId":"d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"}}],"versionMetadata":{"name":null,"description":null}}
+{
+  "name": "Job Video Error Handling",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -32
+      ],
+      "id": "f9f0752e-f92c-4075-b230-8706de7d15f4",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n        .header { background: #ff4757; color: white; padding: 15px; text-align: center; border-radius: 5px; }\n        .content { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 5px; }\n        .error-info { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; }\n        .label { font-weight: bold; color: #666; }\n        .value { color: #333; margin-bottom: 10px; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h2>🚨 Workflow Error Alert</h2>\n            <p>n8n Automation Team</p>\n        </div>\n\n        <div class=\"content\">\n            <div class=\"error-info\">\n                <div class=\"label\">Error Details:</div>\n                <div class=\"value\">{{ $json.output.body }}</div>\n            </div>\n\n            <p style=\"color: #666; font-size: 12px; text-align: center;\">\n                Automated notification • Generated at: {{DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')}}\n            </p>\n        </div>\n    </div>\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        -32
+      ],
+      "id": "8070c651-a05f-459e-a05d-d8ccb4b934f8",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "fromEmail": "atharvadevasthali22@gmail.com",
+        "toEmail": "atharvadevasthali22@gmail.com, techindia@panhealth.com",
+        "subject": "={{ $('Email Generator').item.json.output.subject }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        -32
+      ],
+      "id": "ab55e400-f15b-45e0-8f3d-ec7a1aba50cb",
+      "name": "Send email",
+      "webhookId": "9674c55c-872a-4664-ac8a-cc6bdf6cc7b4",
+      "credentials": {
+        "smtp": {
+          "id": "hzYsTeKJFArfqqnt",
+          "name": "SMTP account (Gmail: atharvadevasthali22@gmail.com)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# N8N Workflow Error Email Prompt\n\nCreate an internal email to report a workflow error using the following n8n execution data:\n\n## Data Structure\n- execution.id: {{ $json.execution.id }}\n- execution.url: {{ $json.execution.url }}\n- execution.mode: {{ $json.execution.mode }}\n- error.message: {{ $json.execution.error.message }}\n- error.stack: {{ $json.execution.error.stack }}\n- execution.lastNodeExecuted: {{ $json.execution.lastNodeExecuted }}\n- workflow.id: {{ $json.workflow.id }}\n- workflow.name: {{ $json.workflow.name }}\n- date: {{ $now.format('yyyy-MM-dd') }}\n\n## Output Format Required\n```\nSUBJECT: [Clear, concise subject line]\n\nBODY:\n[Email body content - plain text with line breaks for HTML template]\n```\n\n## Email Requirements\n- This is for sending via n8n's Send Email node with HTML template\n- From: n8n Automation Team\n- Internal team notification only\n- Tone: Direct and technical\n- Include clickable n8n execution link for quick debugging\n- Highlight if this is a retry failure (indicates persistent issue)\n- Focus on immediate action items for developers\n- Body should be formatted for HTML display (use line breaks and simple formatting)\n- Use workflow and node names for easy identification\n- Keep subject concise for email header\n- Body content will be inserted into HTML template with styling\n\nGenerate the email in the exact SUBJECT/BODY format for n8n email automation with HTML template.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        352,
+        -32
+      ],
+      "id": "74277f3f-a19e-458c-ba9f-f58c63aec88a",
+      "name": "Email Generator",
+      "executeOnce": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"N8N Email Output Schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"Email subject line\",\n      \"minLength\": 1,\n      \"maxLength\": 200\n    },\n    \"body\": {\n      \"type\": \"string\",\n      \"description\": \"Email body content\",\n      \"minLength\": 1\n    }\n  },\n  \"required\": [\"subject\", \"body\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        176
+      ],
+      "id": "454b0cc9-d5de-4827-8e8b-3e96d6e0205a",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1-nano",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        320,
+        176
+      ],
+      "id": "6ce1b306-b529-4c94-9189-e41cb4ca4da0",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ZOsMSA2673vhlLZX",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Generator": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Email Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "60a04d4e-ca46-489e-9a4a-56fb13137c45",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "id": "3LEV6jB7r0TQcMN6",
+  "tags": [
+    {
+      "updatedAt": "2026-02-07T17:04:35.300Z",
+      "createdAt": "2026-02-07T17:04:35.300Z",
+      "id": "Zany7xucuTNzZ3nb",
+      "name": "Error Handler"
+    },
+    {
+      "name": "F-JNN",
+      "id": "uRLukwQ6lXVe1ia9",
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z"
+    }
+  ]
+}

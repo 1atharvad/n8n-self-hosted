@@ -1,0 +1,282 @@
+{
+  "name": "Blog AI Chat",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant, you can access supabase vector for answering questions about the blog"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1680,
+        1728
+      ],
+      "id": "3fe2db98-ed94-4d60-bcae-49fc50dc4b2c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0a1a686d-8a37-4e96-b938-38f5dac056c8",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2128,
+        1728
+      ],
+      "webhookId": "voice-chat"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { reply: $json.output } }}",
+        "options": {}
+      },
+      "id": "98cfd0ca-ed99-4248-9e63-9719f8cfa69e",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        1728
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        1952
+      ],
+      "id": "f4de35af-cf95-4b3b-9b7f-44163fd2eafe",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lNYUNbpUefVcNyks",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1584,
+        1968
+      ],
+      "id": "24400637-ee5d-4399-a704-8a619e991495",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2128,
+        1904
+      ],
+      "id": "348fdec1-203d-4fc0-97b2-2f5e0c06abd2",
+      "name": "When chat message received",
+      "webhookId": "585a457d-1f24-44af-a28d-8bf40e44455b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3b1857ae-022d-4e2e-878b-6643eb6c93bb",
+              "name": "chatInput",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "7b462383-139a-431b-a298-47ad15b645ff",
+              "name": "=sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1920,
+        1728
+      ],
+      "id": "ddc60a69-6da9-4efa-8247-aa9ef39750b0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use Supabase vectore store to extract the data which is helpful in answering questions about my blog",
+        "tableName": {
+          "__rl": true,
+          "value": "blog_documents",
+          "mode": "list",
+          "cachedResultName": "blog_documents"
+        },
+        "topK": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -1440,
+        1968
+      ],
+      "id": "43af3ff1-ef25-41f0-b3da-496915935853",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "4JbkK9jUCHl9siM2",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        2160
+      ],
+      "id": "0175fa1b-a13f-4bbe-b3dd-59e10fedb9db",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lNYUNbpUefVcNyks",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3c1e8aca-9a3c-438e-b56c-75153acd80d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "id": "dkQ7Ndwg01g2Pg6R",
+  "tags": [
+    {
+      "updatedAt": "2026-05-16T22:02:34.216Z",
+      "createdAt": "2026-05-16T22:01:50.086Z",
+      "id": "YRqkHjY75hzoArPU",
+      "name": "F-BAA"
+    }
+  ]
+}
