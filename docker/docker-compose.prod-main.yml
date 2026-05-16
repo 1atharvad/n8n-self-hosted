@@ -150,7 +150,7 @@ services:
     container_name: frontend
     restart: unless-stopped
     expose:
-      - "80"
+      - "5173"
     networks:
       - baota_net
 
