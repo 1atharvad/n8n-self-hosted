@@ -4,17 +4,6 @@ server:
   http_listen_port: 3100
   log_level: warn # Changed from info to reduce unnecessary disk and log I/O overhead
 
-common:
-  path_prefix: /tmp/loki
-  storage:
-    filesystem:
-      chunks_directory: /tmp/loki/chunks
-      rules_directory: /tmp/loki/rules
-  replication_factor: 1
-  ring:
-    kvstore:
-      store: inmemory
-
 ingester:
   wal:
     dir: /tmp/loki/wal
