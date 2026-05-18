@@ -33,6 +33,7 @@ class ConvertToMp4Request(BaseModel):
 class ConvertMp4Request(BaseModel):
     video_file: str
     upload_to_minio: bool = False
+    video_type: str | None = None
 
 
 class CombineVideosRequest(BaseModel):
@@ -41,3 +42,11 @@ class CombineVideosRequest(BaseModel):
     epoch: int | None = None
     video_type: str | None = None
     upload_to_minio: bool = False
+
+
+class CleanupRequest(BaseModel):
+    folders: list[str] | None = None  # None = clean all folders
+
+
+class VideoFileRequest(BaseModel):
+    filename: str

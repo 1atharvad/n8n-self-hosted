@@ -15,7 +15,6 @@ ingester:
       replication_factor: 1
   chunk_idle_period: 5m
   chunk_retain_period: 30s
-  max_transfer_retries: 0
 
 schema_config:
   configs:
@@ -43,10 +42,10 @@ limits_config:
   max_query_parallelism: 2
   # Lowers maximum logs queried at once to prevent massive memory/CPU loops
   max_entries_limit_per_query: 5000
-
-query_range:
   # Larger chunks = fewer parallel sub-queries per Grafana request = less CPU spike
   split_queries_by_interval: 6h
+
+query_range:
   cache_results: true
   results_cache:
     cache:

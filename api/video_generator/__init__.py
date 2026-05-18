@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+from datetime import date
 from pathlib import Path
 
 import storage as minio_storage
@@ -18,6 +19,11 @@ VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
 
 def _epoch_dir(epoch: int, video_type: str | None) -> str:
     return f"{video_type}-epoch_{epoch}" if video_type else f"epoch_{epoch}"
+
+
+def _minio_video_path(video_type: str | None, filename: str) -> str:
+    today = date.today()
+    return f"{today.year}/{today.month:02d}/{today.day:02d}/{video_type or 'unknown'}/{filename}"
 
 
 class VideoGenerator:
@@ -145,7 +151,7 @@ class VideoGenerator:
                 "filename": video_file,
             }
             if upload_to_minio:
-                object_name = f"img-videos/{video_file}"
+                object_name = _minio_video_path(video_type, video_file)
                 minio_storage.upload_file(object_name, str(out_path), content_type="video/mp4")
                 result["minio_object"] = object_name
                 result["minio_url"] = minio_storage.get_presigned_url(object_name)
@@ -154,7 +160,7 @@ class VideoGenerator:
             self.job_store[job_id] = {"status": "failed", "error": str(e)}
 
     @staticmethod
-    def convert_mp4_to_mp4(video_file: str, upload_to_minio: bool = False):
+    def convert_mp4_to_mp4(video_file: str, upload_to_minio: bool = False, video_type: str | None = None):
         """
         Re-encodes an MP4 video with standardized settings.
 
@@ -203,7 +209,7 @@ class VideoGenerator:
             output_path.rename(input_path)
             result = {"video_file": str(input_path), "filename": video_file}
             if upload_to_minio:
-                object_name = f"img-videos/{video_file}"
+                object_name = _minio_video_path(video_type, video_file)
                 minio_storage.upload_file(object_name, str(input_path), content_type="video/mp4")
                 result["minio_object"] = object_name
                 result["minio_url"] = minio_storage.get_presigned_url(object_name)
@@ -255,7 +261,7 @@ class VideoGenerator:
                     "filename": f"{video_file_name}.mp4",
                 }
                 if upload_to_minio:
-                    object_name = f"videos/{video_file_name}.mp4"
+                    object_name = _minio_video_path(video_type, f"{video_file_name}.mp4")
                     minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
                     result["minio_object"] = object_name
                     result["minio_url"] = minio_storage.get_presigned_url(object_name)
@@ -325,7 +331,7 @@ class VideoGenerator:
                     "filename": f"{video_file_name}.mp4",
                 }
                 if upload_to_minio:
-                    object_name = f"videos/{video_file_name}.mp4"
+                    object_name = _minio_video_path(video_type, f"{video_file_name}.mp4")
                     minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
                     result["minio_object"] = object_name
                     result["minio_url"] = minio_storage.get_presigned_url(object_name)

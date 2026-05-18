@@ -1,0 +1,112 @@
+import shutil
+
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
+
+from schemas import CleanupRequest, VideoFileRequest
+from .utils import ALL_CLEANABLE_FOLDERS, ASSET_FILES_DIR, VIDEO_FILES_DIR, parse_video_filename
+
+router = APIRouter(tags=["File Management"])
+
+
+@router.post('/cleanup')
+async def cleanup(req: CleanupRequest):
+    """
+    Deletes all contents of the specified n8n_files folders.
+
+    Args:
+        req (CleanupRequest): Contains an optional 'folders' list. If omitted,
+            all cleanable folders are processed.
+
+    Returns:
+        JSONResponse:
+            - cleaned (list[str]): Folders that were successfully cleared.
+            - skipped (list[str]): Folders that were not found on disk.
+    """
+    folders = req.folders if req.folders is not None else list(ALL_CLEANABLE_FOLDERS)
+    invalid = [f for f in folders if f not in ALL_CLEANABLE_FOLDERS]
+    if invalid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid folders: {invalid}. Allowed: {sorted(ALL_CLEANABLE_FOLDERS)}",
+        )
+
+    cleaned, skipped = [], []
+    for folder in folders:
+        folder_path = ASSET_FILES_DIR / folder
+        if not folder_path.is_dir():
+            skipped.append(folder)
+            continue
+        for item in folder_path.iterdir():
+            shutil.rmtree(item) if item.is_dir() else item.unlink()
+        cleaned.append(folder)
+
+    return JSONResponse({"cleaned": cleaned, "skipped": skipped})
+
+
+@router.post('/copy-video')
+async def copy_video(req: VideoFileRequest):
+    """
+    Copies a video file from n8n_files root into the appropriate epoch
+    subdirectory under img_video_files.
+
+    The filename must follow the pattern {type}-epoch-{N}_{name}, e.g.
+    yt-ch1-epoch-6_slide-1.mp4. The epoch directory is derived automatically.
+
+    Args:
+        req (VideoFileRequest): Contains 'filename' of the source file located
+            in n8n_files/.
+
+    Returns:
+        JSONResponse:
+            - dest_path (str): Absolute path of the copied file.
+    """
+    try:
+        epoch_dir, file_part = parse_video_filename(req.filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    source = ASSET_FILES_DIR / req.filename
+    if not source.is_file():
+        raise HTTPException(status_code=404, detail=f"File not found: {req.filename}")
+
+    dest_dir = ASSET_FILES_DIR / 'img_video_files' / epoch_dir
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / file_part
+    shutil.copy2(source, dest)
+
+    return JSONResponse({"dest_path": str(dest)})
+
+
+@router.post('/move-video')
+async def move_video(req: VideoFileRequest):
+    """
+    Moves a video file from n8n_files/video_files into the appropriate epoch
+    subdirectory under img_video_files.
+
+    The filename must follow the pattern {type}-epoch-{N}_{name}, e.g.
+    yt-ch1-epoch-6_slide-1.mp4. The epoch directory is derived automatically.
+
+    Args:
+        req (VideoFileRequest): Contains 'filename' of the source file located
+            in n8n_files/video_files/.
+
+    Returns:
+        JSONResponse:
+            - dest_path (str): Absolute path of the moved file.
+    """
+    try:
+        epoch_dir, file_part = parse_video_filename(req.filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    source = VIDEO_FILES_DIR / req.filename
+    if not source.is_file():
+        raise HTTPException(status_code=404, detail=f"File not found in video_files: {req.filename}")
+
+    dest_dir = ASSET_FILES_DIR / 'img_video_files' / epoch_dir
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / file_part
+    shutil.move(str(source), dest)
+
+    return JSONResponse({"dest_path": str(dest)})
