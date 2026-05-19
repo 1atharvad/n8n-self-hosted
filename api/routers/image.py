@@ -1,8 +1,9 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 
+from paths import PPT_FILES_DIR
 from schemas import ExtractSlidesRequest, PPTRequest
-from .utils import PPT_FILES_DIR, respond_job_status
+from .utils import respond_job_status
 from video_generator import ImageExtractor, PPTGenerator
 
 router = APIRouter(tags=["Image Generator"])
