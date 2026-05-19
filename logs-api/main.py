@@ -4,22 +4,16 @@ from typing import List
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
 import redis.asyncio as aioredis
 
 from auth.router import router as auth_router
 from db.crud import seed_admin_if_empty
 from db.database import async_engine, async_session
-from db.models import Base
 from routes import router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create auth schema + tables, seed admin user
-    async with async_engine.begin() as conn:
-        await conn.execute(text("CREATE SCHEMA IF NOT EXISTS auth"))
-        await conn.run_sync(Base.metadata.create_all)
     async with async_session() as session:
         await seed_admin_if_empty(session)
 

@@ -9,14 +9,14 @@ show_usage() {
     echo "  $0 --confirm --folders pdf_files      # Clean only pdf_files"
     echo "  $0 --confirm --folders pdf_files,audio_files  # Clean specific folders"
     echo ""
-    echo "Available folders: img_video_files, pdf_files, ppt_files, ppt_images, audio_files"
+    echo "Available folders: video_files, pdf_files, ppt_files, ppt_images, audio_files"
     exit 1
 }
 
 # Initialize variables
 CONFIRM=false
 FOLDERS=""
-ALL_FOLDERS="img_video_files pdf_files ppt_files ppt_images audio_files"
+ALL_FOLDERS="video_files pdf_files ppt_files ppt_images audio_files"
 
 # Parse arguments
 while [ $# -gt 0 ]; do

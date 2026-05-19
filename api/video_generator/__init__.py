@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -13,7 +12,6 @@ from .text_to_voice import TextToVoice
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 AUDIO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'audio_files')
 IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
-IMG_VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'img_video_files')
 VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
 
 
@@ -83,10 +81,10 @@ class VideoGenerator:
             image_file (str): The image file to use as the video background.
             audio_file (str): The audio file to include in the video.
             epoch (str | None): Optional epoch value; files are stored under
-                img_video_files/epoch_<epoch>/ when provided.
+                video_files/epoch_<epoch>/ when provided.
 
         Side Effects:
-            - Generates an MP4 file stored in IMG_VIDEO_FILES_DIR[/epoch_<epoch>].
+            - Generates an MP4 file stored in VIDEO_FILES_DIR[/epoch_<epoch>].
             - Removes the original image file after processing.
             - Updates job_store with job status, errors, and output details.
         """
@@ -95,7 +93,7 @@ class VideoGenerator:
 
             img_path = Path(IMG_FILES_DIR, _epoch_dir(epoch, video_type), image_file) if epoch else Path(IMG_FILES_DIR, image_file)
             audio_path = Path(AUDIO_FILES_DIR, audio_file)
-            out_dir = Path(IMG_VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else IMG_VIDEO_FILES_DIR
+            out_dir = Path(VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else VIDEO_FILES_DIR
             out_path = Path(out_dir, video_file)
             out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -155,6 +153,7 @@ class VideoGenerator:
                 minio_storage.upload_file(object_name, str(out_path), content_type="video/mp4")
                 result["minio_object"] = object_name
                 result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                out_path.unlink(missing_ok=True)
             self.job_store[job_id] = result
         except Exception as e:
             self.job_store[job_id] = {"status": "failed", "error": str(e)}
@@ -172,8 +171,8 @@ class VideoGenerator:
             On failure, includes error details.
         """
         try:
-            input_path = Path(IMG_VIDEO_FILES_DIR, video_file)
-            output_path = Path(IMG_VIDEO_FILES_DIR, 'temp.mp4')
+            input_path = Path(VIDEO_FILES_DIR, video_file)
+            output_path = Path(VIDEO_FILES_DIR, 'temp.mp4')
 
             cmd = [
                 "ffmpeg",
@@ -225,7 +224,7 @@ class VideoGenerator:
             video_file_name (str): The base name of the output video file.
             video_files (list): List of video file names to combine.
             epoch (str | None): Optional epoch value; files are read from
-                img_video_files/epoch_<epoch>/ and the folder is removed on
+                video_files/epoch_<epoch>/ and the folder is removed on
                 success.
 
         Returns:
@@ -233,15 +232,15 @@ class VideoGenerator:
                   On failure, includes error details.
 
         Side Effects:
-            - Creates a combined MP4 file stored in VIDEO_FILES_DIR.
-            - Deletes the epoch subfolder (or individual files) after combining.
+            - Creates a combined MP4 file stored in the epoch subfolder.
+            - Deletes individual slide files after combining.
             - Updates job_store with job status and output details.
         """
         try:
-            src_dir = Path(IMG_VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else IMG_VIDEO_FILES_DIR
+            src_dir = Path(VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else VIDEO_FILES_DIR
             list_file = Path(src_dir, "videos.txt")
-            video_path = Path(VIDEO_FILES_DIR, f"{video_file_name}.mp4")
-            VIDEO_FILES_DIR.mkdir(parents=True, exist_ok=True)
+            video_path = Path(src_dir, f"{video_file_name}.mp4")
+            src_dir.mkdir(parents=True, exist_ok=True)
 
             if not video_files:
                 self.job_store[video_file_name] = {
@@ -253,8 +252,6 @@ class VideoGenerator:
             if len(video_files) == 1:
                 src = Path(src_dir, video_files[0])
                 src.rename(video_path)
-                if epoch and src_dir.exists():
-                    shutil.rmtree(src_dir)
                 result = {
                     "status": "completed",
                     "file_path": str(video_path),
@@ -265,6 +262,7 @@ class VideoGenerator:
                     minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
                     result["minio_object"] = object_name
                     result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                    video_path.unlink(missing_ok=True)
                 self.job_store[video_file_name] = result
                 return
 
@@ -335,6 +333,7 @@ class VideoGenerator:
                     minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
                     result["minio_object"] = object_name
                     result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                    video_path.unlink(missing_ok=True)
                 self.job_store[video_file_name] = result
         except Exception as e:
             self.job_store[video_file_name] = {

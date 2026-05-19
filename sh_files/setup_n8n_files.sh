@@ -28,7 +28,7 @@ else
 fi
 
 # Create all required directories
-mkdir -p ./n8n_files/{audio_files,img_video_files,pdf_files,ppt_files,ppt_images,video_files}
+mkdir -p ./n8n_files/{audio_files,video_files,pdf_files,ppt_files,ppt_images}
 mkdir -p ./n8n-data
 mkdir -p ./n8n-workflows/workflows
 

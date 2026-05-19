@@ -33,8 +33,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy only installed site-packages and binaries
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin/uvicorn /usr/local/bin/uvicorn
+COPY --from=builder /usr/local/bin/alembic /usr/local/bin/alembic
 
 # Copy your project files
 COPY . .
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9374"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 9374"]

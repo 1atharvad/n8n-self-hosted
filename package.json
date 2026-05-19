@@ -31,8 +31,8 @@
     "docker-update-images": "docker pull n8nio/n8n && docker pull nginx:alpine && docker pull postgres:15",
     "docker-update": "npm run docker-down:prod && docker pull n8nio/n8n && npm run docker-up:prod",
     "docker-rm-cache": "docker container prune -f && docker image prune -a -f && docker volume prune -f && docker builder prune -a -f",
-    "push-workflows": "sh sh_files/backup_n8n_workflows.sh",
-    "pull-workflows": "sh sh_files/upload_n8n_workflows.sh"
+    "pull-workflows": "sh sh_files/backup_n8n_workflows.sh",
+    "push-workflows": "sh sh_files/upload_n8n_workflows.sh"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

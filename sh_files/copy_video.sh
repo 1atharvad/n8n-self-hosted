@@ -50,8 +50,8 @@ fi
 # Define paths (try absolute first, then relative)
 ABSOLUTE_SOURCE="/n8n_files/$FILENAME"
 RELATIVE_SOURCE="n8n_files/$FILENAME"
-ABSOLUTE_DEST="/n8n_files/img_video_files/$EPOCH_DIR/"
-RELATIVE_DEST="n8n_files/img_video_files/$EPOCH_DIR/"
+ABSOLUTE_DEST="/n8n_files/video_files/$EPOCH_DIR/"
+RELATIVE_DEST="n8n_files/video_files/$EPOCH_DIR/"
 
 # Determine which paths to use
 if [ -f "$ABSOLUTE_SOURCE" ]; then

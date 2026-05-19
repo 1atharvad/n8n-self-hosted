@@ -1,28 +1,17 @@
 from contextlib import asynccontextmanager
 
 from sqladmin import Admin, ModelView
-from sqlalchemy import text
 
 from .database import async_engine, sync_engine
-from .models import Base, JobLink, Mp4List
+from .models import JobLink, Mp4List
 
 
 def init_admin(app):
-    """
-    Initialize SQLAdmin on the given FastAPI app.
-    """
-
     @asynccontextmanager
     async def lifespan(app):
-        # ---- Startup ----
-        async with async_engine.begin() as conn:
-            await conn.execute(text("CREATE SCHEMA IF NOT EXISTS job_listing"))
-            await conn.run_sync(Base.metadata.create_all)
         yield
-        # ---- Shutdown ----
         await async_engine.dispose()
 
-    # Attach the lifespan handler
     app.router.lifespan_context = lifespan
 
     # Create Admin instance

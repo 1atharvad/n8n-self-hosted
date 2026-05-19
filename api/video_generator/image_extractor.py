@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PPT_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_files')
 PDF_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'pdf_files')
 SLIDE_IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
-IMG_VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'img_video_files')
+VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
 
 
 class ImageExtractor:

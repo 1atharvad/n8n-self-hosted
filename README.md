@@ -78,11 +78,11 @@ npm run docker-up:prod
 # Stopping Docker
 npm run docker-down:prod
 
-# Exporting Workflows from a n8n instance
-npm run pull-workflow
+# Pull workflows from n8n and commit to git
+npm run pull-workflows
 
-# Importing Workflows from a n8n instance
-npm run push-workflow
+# Push local workflow files into n8n
+npm run push-workflows
 
 # Updating docker images
 npm run docker-update
@@ -96,7 +96,7 @@ npm run docker-update
 ├── custom-n8n-nodes/               # TypeScript custom nodes
 ├── api/                            # API services
 ├── n8n-data/                       # Binary data storage
-├── n8n_files/                      # Data storage for Fastapi
+├── n8n_files/                      # Data storage for FastAPI (audio_files, video_files, ppt_files, ppt_images, pdf_files)
 ├── sh_files/                       # Shell scripts for running commands
 └── .env                            # Environment variables
 ```
@@ -115,8 +115,13 @@ npm run docker-update
 
 ### 🎬 Video Operations
 - `POST /api/convert-to-mp4` - Image + audio to MP4
-- `POST /api/combine-videos` - Combine multiple videos
+- `POST /api/combine-videos` - Combine multiple videos into one (uploads to MinIO if enabled, removes local file)
 - `GET /api/get-video/{video_id}` - Stream with range support
+
+### 📁 File Management
+> All endpoints require `X-API-Key` header.
+- `POST /api/cleanup` - Delete contents of specified n8n_files folders
+- `POST /api/copy-video` - Copy a video from n8n_files root into its epoch subfolder
 
 ## 💻 Development
 
@@ -127,6 +132,8 @@ npm run pip-install        # Install Python dependencies
 npm run add-pkg            # Add new Python package
 npm run docker-up:prod     # Build nodes and start services
 npm run docker-down:prod   # Stop all services
+npm run pull-workflows     # Pull workflows from n8n → commit to git (prompts for confirmation; use --force to skip)
+npm run push-workflows     # Push local workflow files → n8n (prompts for confirmation; use --force to skip)
 ```
 
 ### Custom Node Development
@@ -136,7 +143,17 @@ Develop TypeScript nodes in `custom-n8n-nodes/` directory with full IntelliSense
 
 ### Database Configuration
 - **Local filesystem** for binary data management
-- **Automatic migrations** on service startup
+- **Alembic migrations** run automatically on container startup (`alembic upgrade head`)
+- On first deploy to an existing database, stamp the current state to skip re-running the initial migration:
+  ```bash
+  docker exec media-api alembic stamp head
+  docker exec logs-api alembic stamp head
+  ```
+- To add a schema change: update the model, then generate a migration:
+  ```bash
+  # inside the container or locally with DB access
+  alembic revision --autogenerate -m "describe change"
+  ```
 
 ### Security & Access
 - **Cloudflare Tunnel** for secure web access
