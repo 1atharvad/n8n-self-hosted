@@ -2,11 +2,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-PPT_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_files')
-PDF_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'pdf_files')
-SLIDE_IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
-VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
+from paths import PDF_FILES_DIR, PPT_FILES_DIR, SLIDE_IMG_FILES_DIR
 
 
 class ImageExtractor:

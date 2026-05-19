@@ -104,24 +104,30 @@ npm run docker-update
 ## 🔌 API Endpoints
 
 ### 🎵 Text-to-Speech
-- `POST /api/vtt-generate-audio-bytes` - Generate TTS audio
-- `GET /api/vtt-status/{job_id}` - Check TTS job status
-- `GET /api/vtt-result/{job_id}` - Download audio file
+- `POST /vtt-generate-audio-bytes` - Generate TTS audio
+- `GET /vtt-status/{job_id}` - Check job status
+- `GET /vtt-result/{job_id}` - Download audio file
 
 ### 📊 PowerPoint Processing
-- `POST /api/ppt-generator` - Generate PPT from template
-- `POST /api/extract-slides` - Extract slides as images
-- `GET /api/ppt/{file_name}` - Download PPT file
+- `POST /ppt-generator` - Generate PPT from template
+- `GET /ppt/{file_name}` - Download PPT file
+- `POST /extract-slides` - Extract slides as images (async)
+- `GET /img-ext-status/{job_id}` - Check extraction status
+- `GET /img-ext-result/{job_id}` - Get extraction result
 
 ### 🎬 Video Operations
-- `POST /api/convert-to-mp4` - Image + audio to MP4
-- `POST /api/combine-videos` - Combine multiple videos into one (uploads to MinIO if enabled, removes local file)
-- `GET /api/get-video/{video_id}` - Stream with range support
+- `POST /convert-to-mp4` - Image + audio to MP4 (async)
+- `GET /convert-to-mp4-status/{job_id}` - Check conversion status
+- `POST /convert-mp4-to-mp4` - Re-encode an existing MP4
+- `POST /combine-videos` - Combine multiple videos (uploads to MinIO if enabled, removes local file)
+- `GET /combine-videos-status/{job_id}` - Check combine status
+- `GET /combine-videos-result/{job_id}` - Get combine result
 
 ### 📁 File Management
 > All endpoints require `X-API-Key` header.
-- `POST /api/cleanup` - Delete contents of specified n8n_files folders
-- `POST /api/copy-video` - Copy a video from n8n_files root into its epoch subfolder
+- `POST /cleanup` - Delete contents of specified n8n_files folders
+- `POST /copy-video` - Copy a video from n8n_files root into its epoch subfolder
+- `POST /move-video` - Move a video from video_files root into its epoch subfolder
 
 ## 💻 Development
 

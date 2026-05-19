@@ -9,11 +9,7 @@ from kokoro_onnx import Kokoro
 from pydantic import BaseModel
 from tqdm import tqdm
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FILES_DIR = Path(BASE_DIR, "n8n_files", "audio_files")
-
-model_path = Path(BASE_DIR, "tts_cache", "kokoro-v1.0.onnx")
-voices_path = Path(BASE_DIR, "tts_cache", "voices-v1.0.bin")
+from paths import AUDIO_FILES_DIR as FILES_DIR, TTS_MODEL_PATH as model_path, TTS_VOICES_PATH as voices_path
 
 
 class TTSRequest(BaseModel):
@@ -148,12 +144,12 @@ class TextToVoice:
         required_files = [
             {
                 'file_name': 'kokoro-v1.0.onnx',
-                'file_path': Path(BASE_DIR, "tts_cache", "kokoro-v1.0.onnx"),
+                'file_path': model_path,
                 'download_url': "https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/kokoro-v1.0.onnx",
             },
             {
                 'file_name': 'voices-v1.0.bin',
-                'file_path': Path(BASE_DIR, "tts_cache", "voices-v1.0.bin"),
+                'file_path': voices_path,
                 'download_url': "https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/voices-v1.0.bin",
             },
         ]

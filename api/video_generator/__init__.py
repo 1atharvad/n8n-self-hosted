@@ -5,14 +5,10 @@ from pathlib import Path
 
 import storage as minio_storage
 
+from paths import AUDIO_FILES_DIR, SLIDE_IMG_FILES_DIR as IMG_FILES_DIR, VIDEO_FILES_DIR
 from .image_extractor import ImageExtractor
 from .ppt_generator import PPTGenerator
 from .text_to_voice import TextToVoice
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-AUDIO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'audio_files')
-IMG_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'ppt_images')
-VIDEO_FILES_DIR = Path(BASE_DIR, 'n8n_files', 'video_files')
 
 
 def _epoch_dir(epoch: int, video_type: str | None) -> str:

@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
 
 from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
+
 
 _api_key_header = APIKeyHeader(name="X-API-Key")
 
@@ -12,10 +12,6 @@ def verify_api_key(key: str = Security(_api_key_header)):
         raise HTTPException(status_code=500, detail="API_KEY not configured")
     if key != expected:
         raise HTTPException(status_code=401, detail="Invalid API key")
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ASSET_FILES_DIR = Path(BASE_DIR, 'n8n_files')
-PPT_FILES_DIR = Path(ASSET_FILES_DIR, 'ppt_files')
 
 ALL_CLEANABLE_FOLDERS = {"video_files", "pdf_files", "ppt_files", "ppt_images", "audio_files"}
 

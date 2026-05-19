@@ -4,9 +4,7 @@ from pathlib import Path
 
 from pptx import Presentation
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FILES_DIR = Path(BASE_DIR, "n8n_files", "ppt_files")
-AUDIO_DIR = Path(BASE_DIR, "n8n_files", "audio_files")
+from paths import ASSET_FILES_DIR, PPT_FILES_DIR as FILES_DIR
 
 
 class PPTGenerator:
@@ -17,7 +15,7 @@ class PPTGenerator:
         slides while dynamically replacing text placeholders with job-specific
         content.
         """
-        self.template_path = Path(BASE_DIR, "n8n_files", template_file)
+        self.template_path = Path(ASSET_FILES_DIR, template_file)
         self.files_dir = FILES_DIR
         self.files_dir.mkdir(exist_ok=True)
         self.template_slide = 0
