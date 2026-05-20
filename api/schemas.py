@@ -54,4 +54,3 @@ class VideoFileRequest(BaseModel):
 
 class ExecuteRequest(BaseModel):
     command: str
-    cwd: str | None = None

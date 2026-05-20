@@ -96,7 +96,6 @@ async def execute_command(req: ExecuteRequest):
         shell=True,
         capture_output=True,
         text=True,
-        cwd=req.cwd or None,
     )
     return JSONResponse({
         "stdout": result.stdout,

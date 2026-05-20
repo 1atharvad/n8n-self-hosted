@@ -30,17 +30,9 @@ export class RemoteExecute implements INodeType {
         type: 'string',
         typeOptions: { rows: 5 },
         default: '',
-        placeholder: 'sh /sh_files/cleanup.sh --confirm',
+        placeholder: 'echo "Hello, World!"',
         description: 'Shell command to execute on the FastAPI server',
         noDataExpression: false,
-      },
-      {
-        displayName: 'Working Directory',
-        name: 'cwd',
-        type: 'string',
-        default: '',
-        placeholder: '/home/node',
-        description: 'Working directory on the FastAPI server (optional)',
       },
     ],
   };
@@ -54,7 +46,6 @@ export class RemoteExecute implements INodeType {
 
     for (let i = 0; i < items.length; i++) {
       const command = this.getNodeParameter('command', i) as string;
-      const cwd = (this.getNodeParameter('cwd', i) as string) || undefined;
 
       const response = await this.helpers.httpRequestWithAuthentication.call(
         this,
@@ -62,7 +53,7 @@ export class RemoteExecute implements INodeType {
         {
           method: 'POST',
           url: `${baseUrl}/execute`,
-          body: { command, ...(cwd ? { cwd } : {}) },
+          body: { command },
           json: true,
         },
       );

@@ -16,31 +16,18 @@ describe('RemoteExecute Node', () => {
   it('returns stdout/stderr/returnCode from the API response', async () => {
     const node = new RemoteExecute();
     const mockResponse = { stdout: 'hello\n', stderr: '', returnCode: 0 };
-    const context = makeMock({ command: 'echo hello', cwd: '' }, async () => mockResponse);
+    const context = makeMock({ command: 'echo hello' }, async () => mockResponse);
 
     const result = await node.execute.call(context);
 
     expect(result[0][0].json).toEqual(mockResponse);
   });
 
-  it('includes cwd in request body when provided', async () => {
+  it('sends command in request body', async () => {
     const node = new RemoteExecute();
     let capturedBody: unknown;
     const context = makeMock(
-      { command: 'ls', cwd: '/tmp' },
-      async (_cred, opts) => { capturedBody = opts.body; return { stdout: '', stderr: '', returnCode: 0 }; },
-    );
-
-    await node.execute.call(context);
-
-    expect(capturedBody).toEqual({ command: 'ls', cwd: '/tmp' });
-  });
-
-  it('omits cwd when not provided', async () => {
-    const node = new RemoteExecute();
-    let capturedBody: unknown;
-    const context = makeMock(
-      { command: 'ls', cwd: '' },
+      { command: 'ls' },
       async (_cred, opts) => { capturedBody = opts.body; return { stdout: '', stderr: '', returnCode: 0 }; },
     );
 
