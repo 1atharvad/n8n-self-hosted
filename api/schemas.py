@@ -50,3 +50,8 @@ class CleanupRequest(BaseModel):
 
 class VideoFileRequest(BaseModel):
     filename: str
+
+
+class ExecuteRequest(BaseModel):
+    command: str
+    cwd: str | None = None

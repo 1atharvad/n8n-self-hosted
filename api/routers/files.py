@@ -1,11 +1,12 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
-from paths import ASSET_FILES_DIR, VIDEO_FILES_DIR
-from schemas import CleanupRequest, VideoFileRequest
+from paths import ASSET_FILES_DIR
+from schemas import CleanupRequest, ExecuteRequest, VideoFileRequest
 from .utils import ALL_CLEANABLE_FOLDERS, parse_video_filename, verify_api_key
 
 router = APIRouter(tags=["File Management"], dependencies=[Depends(verify_api_key)])
@@ -87,40 +88,19 @@ async def copy_video(req: VideoFileRequest):
     })
 
 
-@router.post('/move-video')
-async def move_video(req: VideoFileRequest):
-    """
-    Moves a video file from video_files/ root into the appropriate epoch
-    subdirectory under video_files/.
 
-    The filename must follow the pattern {type}-epoch-{N}_{name}, e.g.
-    yt-ch1-epoch-6_slide-1.mp4. The epoch directory is derived automatically.
-
-    Args:
-        req (VideoFileRequest): Contains 'filename' of the source file located
-            in video_files/.
-
-    Returns:
-        JSONResponse:
-            - file_path (str): Absolute path of the moved file.
-            - filename (str): The destination filename.
-    """
-    try:
-        epoch_dir, file_part = parse_video_filename(req.filename)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    source = Path(VIDEO_FILES_DIR, req.filename)
-    if not source.is_file():
-        raise HTTPException(status_code=404, detail=f"File not found: {req.filename}")
-
-    dest_dir = Path(VIDEO_FILES_DIR, epoch_dir)
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / file_part
-    shutil.move(str(source), dest)
-
+@router.post('/execute')
+async def execute_command(req: ExecuteRequest):
+    result = subprocess.run(
+        req.command,
+        shell=True,
+        capture_output=True,
+        text=True,
+        cwd=req.cwd or None,
+    )
     return JSONResponse({
-        "file_path": str(dest),
-        "filename": file_part
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+        "returnCode": result.returncode,
     })
 

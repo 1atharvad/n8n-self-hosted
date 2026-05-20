@@ -127,7 +127,6 @@ npm run docker-update
 > All endpoints require `X-API-Key` header.
 - `POST /cleanup` - Delete contents of specified n8n_files folders
 - `POST /copy-video` - Copy a video from n8n_files root into its epoch subfolder
-- `POST /move-video` - Move a video from video_files root into its epoch subfolder
 
 ## 💻 Development
 
