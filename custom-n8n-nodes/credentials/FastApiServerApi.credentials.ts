@@ -1,4 +1,4 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class FastApiServerApi implements ICredentialType {
   name = 'fastApiServerApi';
@@ -18,4 +18,13 @@ export class FastApiServerApi implements ICredentialType {
       default: '',
     },
   ];
+
+  authenticate: IAuthenticateGeneric = {
+    type: 'generic',
+    properties: {
+      headers: {
+        'X-API-Key': '={{$credentials.apiKey}}',
+      },
+    },
+  };
 }

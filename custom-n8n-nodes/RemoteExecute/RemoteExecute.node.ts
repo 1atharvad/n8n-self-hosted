@@ -1,16 +1,16 @@
-import {
+import type {
   IExecuteFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
-  NodeConnectionType,
 } from 'n8n-workflow';
+import { NodeConnectionType } from 'n8n-workflow';
 
 export class RemoteExecute implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Remote Execute',
     name: 'remoteExecute',
-    icon: 'fa:terminal',
+    icon: 'file:remoteexecute.svg',
     group: ['transform'],
     version: 1,
     description: 'Execute a shell command on the FastAPI server',
@@ -48,7 +48,6 @@ export class RemoteExecute implements INodeType {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('fastApiServerApi');
     const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
-    const apiKey = credentials.apiKey as string;
 
     const items = this.getInputData();
     const returnItems: INodeExecutionData[] = [];
@@ -57,13 +56,16 @@ export class RemoteExecute implements INodeType {
       const command = this.getNodeParameter('command', i) as string;
       const cwd = (this.getNodeParameter('cwd', i) as string) || undefined;
 
-      const response = await this.helpers.httpRequest({
-        method: 'POST',
-        url: `${baseUrl}/execute`,
-        headers: { 'X-API-Key': apiKey },
-        body: { command, ...(cwd ? { cwd } : {}) },
-        json: true,
-      });
+      const response = await this.helpers.httpRequestWithAuthentication.call(
+        this,
+        'fastApiServerApi',
+        {
+          method: 'POST',
+          url: `${baseUrl}/execute`,
+          body: { command, ...(cwd ? { cwd } : {}) },
+          json: true,
+        },
+      );
 
       returnItems.push({ json: response as { stdout: string; stderr: string; returnCode: number } });
     }
