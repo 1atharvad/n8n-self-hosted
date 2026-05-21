@@ -1,4 +1,4 @@
-import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { IAuthenticateGeneric, ICredentialTestRequest, ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class FastApiServerApi implements ICredentialType {
   name = 'fastApiServerApi';
@@ -25,6 +25,13 @@ export class FastApiServerApi implements ICredentialType {
       headers: {
         'X-API-Key': '={{$credentials.apiKey}}',
       },
+    },
+  };
+
+  test: ICredentialTestRequest = {
+    request: {
+      baseURL: '={{$credentials.baseUrl}}',
+      url: '/health',
     },
   };
 }
