@@ -28,6 +28,12 @@ export class FastApiServerApi implements ICredentialType {
     },
   };
 
+  httpRequestNode = {
+    name: 'FastAPI Server',
+    docsUrl: '',
+    apiBaseUrl: '={{$credentials.baseUrl}}',
+  };
+
   test: ICredentialTestRequest = {
     request: {
       baseURL: '={{$credentials.baseUrl}}',
