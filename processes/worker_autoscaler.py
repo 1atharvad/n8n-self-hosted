@@ -7,9 +7,15 @@ containers up or down using `docker compose --scale`.
 CPU smoothing uses asymmetric EWMA: rises quickly (alpha_up) to catch spikes,
 decays slowly (alpha_down) to avoid premature scale-up after a brief idle period.
 
+Active job count uses the n8n REST API as the source of truth (more reliable
+than Redis bull:jobs:active, which retains stale entries when jobs are stopped
+ungracefully). Falls back to Redis if the API is unavailable.
+
 Configuration via environment variables (all optional, defaults shown):
   REDIS_HOST                 redis
   REDIS_PORT                 6379
+  N8N_BASE_URL               http://n8n:5678
+  N8N_API_KEY                (required to use API-based active count)
   COMPOSE_PROJECT_NAME       n8n-automation   (must match your project)
   COMPOSE_FILE               /app/docker-compose.prod.yml
   WORKER_COMPOSE_FILE        /app/docker-compose.worker.yml  (merged on top)
@@ -31,6 +37,7 @@ import subprocess
 import time
 import logging
 import redis
+import requests
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,6 +61,8 @@ def _env_str(name: str, default: str) -> str:
 
 REDIS_HOST = _env_str("REDIS_HOST", "redis")
 REDIS_PORT = _env_int("REDIS_PORT", 6379)
+N8N_BASE_URL = _env_str("N8N_BASE_URL", "http://n8n:5678")
+N8N_API_KEY = _env_str("N8N_API_KEY", "")
 COMPOSE_PROJECT = _env_str("COMPOSE_PROJECT_NAME", "n8n-automation")
 COMPOSE_FILE = _env_str("COMPOSE_FILE", "/app/docker-compose.prod.yml")
 # Host filesystem path where the project root lives (needed so Docker daemon
@@ -114,11 +123,37 @@ def host_cpu_percent() -> float:
     return round((1 - idle_delta / total_delta) * 100, 1)
 
 
-def queue_depths(r: redis.Redis) -> tuple[int, int]:
-    """Return (waiting, active) job counts from Redis."""
+def n8n_active_count() -> int | None:
+    """
+    Return the number of currently running executions from the n8n API.
+    Returns None if the API is unavailable or not configured.
+    Bull's active list retains stale entries when jobs are stopped ungracefully;
+    the n8n API reflects the true running state.
+    """
+    if not N8N_API_KEY:
+        return None
+    try:
+        resp = requests.get(
+            f"{N8N_BASE_URL}/api/v1/executions",
+            headers={"X-N8N-API-KEY": N8N_API_KEY},
+            params={"status": "running", "limit": 250},
+            timeout=5,
+        )
+        resp.raise_for_status()
+        data = resp.json().get("data", [])
+        return len(data)
+    except Exception as exc:
+        log.warning(f"n8n API unavailable, falling back to Redis for active count: {exc}")
+        return None
+
+
+def queue_depths(r: redis.Redis) -> tuple[int, int, str]:
+    """Return (waiting, active, active_source) job counts."""
     waiting = r.llen(BULL_WAIT_KEY)
-    active = r.llen(BULL_ACTIVE_KEY)
-    return int(waiting), int(active)
+    api_active = n8n_active_count()
+    if api_active is not None:
+        return int(waiting), api_active, "api"
+    return int(waiting), int(r.llen(BULL_ACTIVE_KEY)), "redis"
 
 
 def current_worker_count() -> int:
@@ -202,11 +237,11 @@ def run():
                 cpu_ema = EWMA_ALPHA_DOWN * cpu_raw + (1 - EWMA_ALPHA_DOWN) * cpu_ema
             cpu_ema = round(cpu_ema, 1)
             cpu = round(max(cpu_ema, cpu_raw), 1)
-            waiting, active = queue_depths(r)
+            waiting, active, active_src = queue_depths(r)
             workers = current_worker_count()
             now = time.monotonic()
 
-            log.info(f"cpu={cpu:.1f}% (ema={cpu_ema:.1f}% raw={cpu_raw:.1f}%)  waiting={waiting}  active={active}  workers={workers}")
+            log.info(f"cpu={cpu:.1f}% (ema={cpu_ema:.1f}% raw={cpu_raw:.1f}%)  waiting={waiting}  active={active}({active_src})  workers={workers}")
 
             try:
                 snapshot = json.dumps({
@@ -216,6 +251,7 @@ def run():
                     "workers": workers,
                     "waiting": waiting,
                     "active": active,
+                    "active_src": active_src,
                 })
                 r.lpush("autoscaler:metrics", snapshot)
                 r.ltrim("autoscaler:metrics", 0, 199)
