@@ -8,7 +8,7 @@ import storage as minio_storage
 from paths import AUDIO_FILES_DIR, SLIDE_IMG_FILES_DIR as IMG_FILES_DIR, VIDEO_FILES_DIR
 from .image_extractor import ImageExtractor
 from .ppt_generator import PPTGenerator
-from .text_to_voice import TextToVoice
+from audio_manager import TextToVoice
 
 
 def _epoch_dir(epoch: int, video_type: str | None) -> str:
