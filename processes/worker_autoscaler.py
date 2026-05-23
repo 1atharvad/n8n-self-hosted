@@ -136,12 +136,12 @@ def n8n_active_count() -> int | None:
         resp = requests.get(
             f"{N8N_BASE_URL}/api/v1/executions",
             headers={"X-N8N-API-KEY": N8N_API_KEY},
-            params={"status": "running", "limit": 250},
+            params={"limit": 250},
             timeout=5,
         )
         resp.raise_for_status()
         data = resp.json().get("data", [])
-        return len(data)
+        return sum(1 for e in data if e.get("status") == "running")
     except Exception as exc:
         log.warning(f"n8n API unavailable, falling back to Redis for active count: {exc}")
         return None
