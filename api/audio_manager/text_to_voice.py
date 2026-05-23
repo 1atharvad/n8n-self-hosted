@@ -3,6 +3,7 @@ import re
 import subprocess
 import uuid
 from pathlib import Path
+from typing import Generator
 
 import numpy as np
 import soundfile as sf
