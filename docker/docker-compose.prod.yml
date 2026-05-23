@@ -38,7 +38,7 @@ services:
       - DB_POSTGRESDB_USER=${POSTGRES_USER}
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
       - WEBHOOK_URL=${WEBHOOK_TUNNEL_URL}
-      - EXECUTIONS_TIMEOUT=0
+      - EXECUTIONS_TIMEOUT=10800
       - EXECUTIONS_DATA_SAVE_ON_ERROR=all
       - EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
       - EXECUTIONS_DATA_PRUNE=true
@@ -47,12 +47,14 @@ services:
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=3600000
+      - QUEUE_BULL_MAX_STALLED_COUNT=3
       - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
     volumes:
-      - ../n8n-data:/home/node/.n8n
-      - ../n8n_files:/home/node/n8n_files
-      - ../sh_files:/sh_files
-      - ../n8n-workflows:/home/node/n8n-workflows
+      - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
+      - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
+      - ${HOST_PROJECT_DIR}/sh_files:/sh_files
+      - ${HOST_PROJECT_DIR}/n8n-workflows:/home/node/n8n-workflows
     depends_on:
       redis:
         condition: service_healthy
@@ -83,14 +85,17 @@ services:
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=3600000
+      - QUEUE_BULL_MAX_STALLED_COUNT=3
+      - EXECUTIONS_TIMEOUT=10800
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
       - NODE_ENV=production
       - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
     volumes:
-      - ../n8n-data:/home/node/.n8n
-      - ../n8n_files:/home/node/n8n_files
-      - ../sh_files:/sh_files
+      - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
+      - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
+      - ${HOST_PROJECT_DIR}/sh_files:/sh_files
     depends_on:
       redis:
         condition: service_healthy
@@ -116,7 +121,7 @@ services:
       - baota_net
 
   fastapi:
-    build: ../api
+    build: ${HOST_PROJECT_DIR}/api
     container_name: media-api
     restart: unless-stopped
     environment:
@@ -132,8 +137,8 @@ services:
     expose:
       - "9374"
     volumes:
-      - ../tts_cache:/tts_cache
-      - ../n8n_files:/n8n_files
+      - ${HOST_PROJECT_DIR}/tts_cache:/tts_cache
+      - ${HOST_PROJECT_DIR}/n8n_files:/n8n_files
     depends_on:
       - postgres
       - minio
@@ -148,7 +153,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - ../postgres-data:/var/lib/postgresql/data
+      - ${HOST_PROJECT_DIR}/postgres-data:/var/lib/postgresql/data
     expose:
       - "5432"
     networks:
@@ -164,7 +169,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BROWSER_REDIRECT_URL: ${N8N_EDITOR_BASE_URL}/minio/
     volumes:
-      - ../minio-data:/data
+      - ${HOST_PROJECT_DIR}/minio-data:/data
     expose:
       - "9000"
       - "9001"
@@ -172,7 +177,7 @@ services:
       - baota_net
 
   logs-api:
-    build: ../logs-api
+    build: ${HOST_PROJECT_DIR}/logs-api
     container_name: logs-api
     restart: unless-stopped
     expose:
@@ -195,7 +200,7 @@ services:
       - baota_net
 
   frontend:
-    build: ../api/frontend
+    build: ${HOST_PROJECT_DIR}/api/frontend
     container_name: frontend
     restart: unless-stopped
     expose:
@@ -210,7 +215,7 @@ services:
     ports:
       - "6060:6060"
     volumes:
-      - ../nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ${HOST_PROJECT_DIR}/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
     depends_on:
       - n8n
       - fastapi
@@ -227,8 +232,8 @@ services:
     user: "0"
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
-      - ../loki-config.yaml:/etc/loki/local-config.yaml:ro
-      - ../loki-data:/tmp/loki
+      - ${HOST_PROJECT_DIR}/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ${HOST_PROJECT_DIR}/loki-data:/tmp/loki
     ports:
       - "3100:3100"
     networks:
@@ -242,13 +247,13 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/log:/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ../promtail-config.yaml:/etc/promtail/promtail.yaml:ro
+      - ${HOST_PROJECT_DIR}/promtail-config.yaml:/etc/promtail/promtail.yaml:ro
     command: -config.file=/etc/promtail/promtail.yaml
     networks:
       - baota_net
 
   processes:
-    build: ../processes
+    build: ${HOST_PROJECT_DIR}/processes
     container_name: processes
     restart: always
     depends_on:
@@ -263,7 +268,7 @@ services:
 
   worker-autoscaler:
     build:
-      context: ../processes
+      context: ${HOST_PROJECT_DIR}/processes
       dockerfile: Dockerfile.autoscaler
     container_name: worker-autoscaler
     restart: unless-stopped
@@ -284,7 +289,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /proc:/host/proc:ro
-      - ..:/app:ro
+      - ${HOST_PROJECT_DIR}:/app:ro
     depends_on:
       redis:
         condition: service_healthy

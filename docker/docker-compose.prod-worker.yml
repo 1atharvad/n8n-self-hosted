@@ -23,21 +23,24 @@ services:
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
       - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=3600000
+      - QUEUE_BULL_MAX_STALLED_COUNT=3
+      - EXECUTIONS_TIMEOUT=10800
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
       - NODE_ENV=production
       - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
     volumes:
-      - ../n8n-data:/home/node/.n8n
-      - ../n8n_files:/home/node/n8n_files
-      - ../sh_files:/sh_files
+      - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
+      - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
+      - ${HOST_PROJECT_DIR}/sh_files:/sh_files
     depends_on:
       - fastapi
     networks:
       - baota_net
 
   fastapi:
-    build: ../api
+    build: ${HOST_PROJECT_DIR}/api
     container_name: media-api
     restart: unless-stopped
     environment:
@@ -54,14 +57,14 @@ services:
     expose:
       - "9374"
     volumes:
-      - ../tts_cache:/tts_cache
-      - ../n8n_files:/n8n_files
+      - ${HOST_PROJECT_DIR}/tts_cache:/tts_cache
+      - ${HOST_PROJECT_DIR}/n8n_files:/n8n_files
     networks:
       - baota_net
 
   worker-autoscaler:
     build:
-      context: ../processes
+      context: ${HOST_PROJECT_DIR}/processes
       dockerfile: Dockerfile.autoscaler
     container_name: worker-autoscaler
     restart: unless-stopped
@@ -82,7 +85,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /proc:/host/proc:ro
-      - ..:/app:ro
+      - ${HOST_PROJECT_DIR}:/app:ro
     depends_on:
       - n8n-worker
     networks:
