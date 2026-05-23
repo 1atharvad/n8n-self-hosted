@@ -173,6 +173,34 @@ def current_worker_count() -> int:
     return len(ids)
 
 
+def container_cpu_stats() -> dict[str, float]:
+    """
+    Return {container_name: cpu_pct} for all running containers via `docker stats --no-stream`.
+    Returns empty dict on any failure.
+    """
+    try:
+        result = subprocess.run(
+            ["docker", "stats", "--no-stream", "--format", "{{.Name}}\t{{.CPUPerc}}"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        stats: dict[str, float] = {}
+        for line in result.stdout.splitlines():
+            parts = line.strip().split("\t")
+            if len(parts) == 2:
+                name = parts[0].strip()
+                cpu_str = parts[1].strip().rstrip("%")
+                try:
+                    stats[name] = float(cpu_str)
+                except ValueError:
+                    pass
+        return stats
+    except Exception as exc:
+        log.warning(f"container_cpu_stats failed: {exc}")
+        return {}
+
+
 def restart_workers() -> bool:
     """
     Restart all running n8n-worker containers to reset their in-process Bull
@@ -283,6 +311,7 @@ def run():
                     "waiting": waiting,
                     "active": active,
                     "active_src": active_src,
+                    "container_cpu": container_cpu_stats(),
                 })
                 r.lpush("autoscaler:metrics", snapshot)
                 r.ltrim("autoscaler:metrics", 0, 199)

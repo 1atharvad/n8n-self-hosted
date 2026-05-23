@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import { useDashboardStore } from '@/store/useDashboardStore'
 import { useAutoscalerStore } from '@/store/useAutoscalerStore'
 import { Header } from '@/components/Header'
 import { CpuChart } from '@/components/CpuChart'
+import { ContainerCpuChart } from '@/components/ContainerCpuChart'
+import { ActiveContainersSection } from '@/components/ActiveContainersSection'
 import { PageAside } from 'advi-ui'
 import {
   LayoutDashboard,
@@ -34,7 +36,7 @@ const RANGE_OPTIONS = [
   { value: '1d',  label: '1 day' },
 ];
 
-export default function DashboardPage() {
+const DashboardPage = () => {
   const navigate = useNavigate()
   const { data, loading, error, lastRefresh, range, setRange, load } = useDashboardStore()
   const { metrics, loading: autoscalerLoading, load: loadAutoscaler } = useAutoscalerStore()
@@ -208,40 +210,17 @@ export default function DashboardPage() {
 
           <CpuChart metrics={metrics} loading={autoscalerLoading} />
 
-          {/* Container list */}
-          <section className="bg-card border border-border rounded-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-border">
-              <h2 className="text-sm font-semibold">Active containers</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Services with log activity in Loki
-              </p>
-            </div>
-            <div className="px-6 py-4">
-              {loading && !data ? (
-                <p className="text-xs text-muted-foreground">Loading…</p>
-              ) : containers.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">No containers found.</p>
-              ) : (
-                <div className="flex flex-wrap gap-1.5">
-                  {containers.map((c) => (
-                    <span
-                      key={c}
-                      className="font-mono text-xs px-2 py-0.5 rounded bg-secondary text-foreground border border-border"
-                    >
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
+          <ContainerCpuChart metrics={metrics} loading={autoscalerLoading} />
+
+          {/* Active containers + scale events */}
+          <ActiveContainersSection metrics={metrics} fallbackContainers={containers} loading={loading && !data} />
         </main>
       </div>
     </div>
   )
 }
 
-function StatCard({
+const StatCard = ({
   label,
   value,
   icon,
@@ -249,13 +228,13 @@ function StatCard({
   bg,
   loading,
 }: {
-  label: string
-  value: number | string
-  icon: React.ReactNode
-  color: string
-  bg: string
-  loading: boolean
-}) {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+  color: string;
+  bg: string;
+  loading: boolean;
+}) => {
   return (
     <div className="bg-card border border-border rounded-lg px-4 py-4 flex items-start gap-3">
       <div className={cn('p-2 rounded-md shrink-0', bg)}>
@@ -272,5 +251,8 @@ function StatCard({
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
+
+
+export default DashboardPage;

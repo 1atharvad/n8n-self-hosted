@@ -9,6 +9,7 @@ export interface AutoscalerPoint {
   workers: number;
   waiting: number;
   active: number;
+  container_cpu?: Record<string, number>;
 }
 
 export interface AutoscalerMetrics {
