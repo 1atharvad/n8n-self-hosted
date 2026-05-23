@@ -173,6 +173,35 @@ def current_worker_count() -> int:
     return len(ids)
 
 
+def restart_workers() -> bool:
+    """
+    Restart all running n8n-worker containers to reset their in-process Bull
+    concurrency counters. Called when the queue becomes fully idle so that
+    stuck workers don't block the next batch of jobs.
+    """
+    result = subprocess.run(
+        [
+            "docker", "ps",
+            "--filter", f"label=com.docker.compose.project={COMPOSE_PROJECT}",
+            "--filter", "label=com.docker.compose.service=n8n-worker",
+            "--filter", "status=running",
+            "--format", "{{.Names}}",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    containers = [l.strip() for l in result.stdout.splitlines() if l.strip()]
+    if not containers:
+        return True
+    log.info(f"Restarting workers to reset Bull concurrency counters: {containers}")
+    for name in containers:
+        r = subprocess.run(["docker", "restart", name], capture_output=True, text=True)
+        if r.returncode != 0:
+            log.error(f"Failed to restart {name}: {r.stderr}")
+            return False
+    return True
+
+
 def scale_to(n: int) -> bool:
     """
     Run `docker compose up --scale n8n-worker=N -d --no-recreate`.
@@ -225,6 +254,8 @@ def run():
     last_scale_time = 0.0
     idle_since: float | None = None
     cpu_ema: float | None = None
+    was_active = False          # tracks if queue was active in the previous poll
+    idle_reset_done = False     # ensures we only restart once per idle transition
 
     while True:
         try:
@@ -257,6 +288,16 @@ def run():
                 r.ltrim("autoscaler:metrics", 0, 199)
             except Exception as exc:
                 log.warning(f"Failed to push metrics to Redis: {exc}")
+
+            # --- Idle reset: restart workers when queue drains to zero ---
+            if active > 0 or waiting > 0:
+                was_active = True
+                idle_reset_done = False
+            elif was_active and not idle_reset_done:
+                log.info("Queue drained to idle — restarting workers to clear stuck Bull counters")
+                restart_workers()
+                idle_reset_done = True
+                was_active = False
 
             cooldown_ok = (now - last_scale_time) >= COOLDOWN_SEC
             desired = workers  # default: no change
