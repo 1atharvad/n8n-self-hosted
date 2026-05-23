@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { AutoscalerPoint } from '@/api/autoscaler';
 
