@@ -230,7 +230,7 @@ class TextToVoice:
             chunks.append(current.strip())
         return chunks
 
-    def generate_tts_job(self, job_id: str, text: str):
+    def generate_tts_job(self, job_id: str, text: str, voice: str = "am_michael"):
         """
         Generates a speech audio file from text using the TTS engine.
 
@@ -259,7 +259,7 @@ class TextToVoice:
             audio_segments = []
             sr = None
             for chunk in self.chunk_text(text):
-                audio, sr = self.kokoro_tts.create(chunk, voice="am_michael")
+                audio, sr = self.kokoro_tts.create(chunk, voice=voice)
                 audio_segments.append(audio)
 
             final_audio = np.concatenate(audio_segments)

@@ -136,6 +136,10 @@ class VideoGenerator:
                 }
                 return
 
+            # ensure file is fully flushed before marking completed
+            with open(out_path, "rb") as f:
+                os.fsync(f.fileno())
+
             if img_path.exists():
                 img_path.unlink()
 
@@ -256,8 +260,10 @@ class VideoGenerator:
                 if upload_to_minio:
                     object_name = _minio_video_path(video_type, f"{video_file_name}.mp4")
                     minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
+                    minio_url = minio_storage.get_presigned_url(object_name)
                     result["minio_object"] = object_name
-                    result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                    result["minio_url"] = minio_url
+                    result["file_path"] = minio_url
                     video_path.unlink(missing_ok=True)
                 self.job_store[video_file_name] = result
                 return
@@ -311,8 +317,10 @@ class VideoGenerator:
                 if upload_to_minio:
                     object_name = _minio_video_path(video_type, f"{video_file_name}.mp4")
                     minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
+                    minio_url = minio_storage.get_presigned_url(object_name)
                     result["minio_object"] = object_name
-                    result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                    result["minio_url"] = minio_url
+                    result["file_path"] = minio_url
                     video_path.unlink(missing_ok=True)
                 self.job_store[video_file_name] = result
         except Exception as e:
