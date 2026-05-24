@@ -51,6 +51,9 @@ fi
 
 echo "Folders created."
 
+# Prevent chmod changes from showing as git diffs
+git config core.fileMode false
+
 # Build custom n8n nodes
 if [ -f package.json ]; then
     echo "Building n8n custom nodes..."
