@@ -2,7 +2,7 @@ name: n8n-automation
 
 services:
   n8n-worker:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:2.21.6
     entrypoint: ["/bin/sh", "/sh_files/start-n8n-worker.sh"]
     restart: unless-stopped
     environment:
@@ -23,7 +23,6 @@ services:
       - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
       - QUEUE_BULL_REDIS_PORT=6379
       - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=300000
-      - QUEUE_BULL_MAX_STALLED_COUNT=0
       - EXECUTIONS_TIMEOUT=10800
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
