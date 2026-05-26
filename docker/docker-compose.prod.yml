@@ -28,7 +28,7 @@ services:
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
       - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
       - VUE_APP_URL_BASE_API=${VUE_APP_URL_BASE_API}
-      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=true
       - N8N_COMMUNITY_PACKAGES=${N8N_COMMUNITY_PACKAGES}
       - DB_TYPE=${DB_TYPE}
       - DB_POSTGRESDB_HOST=postgres
@@ -43,11 +43,12 @@ services:
       - EXECUTIONS_DATA_PRUNE=true
       - EXECUTIONS_DATA_MAX_AGE=168
       - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=512
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
       - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=300000
-      - QUEUE_BULL_MAX_STALLED_COUNT=0
+      - QUEUE_WORKER_STALLED_INTERVAL=0
       - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
     volumes:
       - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
@@ -84,11 +85,12 @@ services:
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
       - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=300000
-      - QUEUE_BULL_MAX_STALLED_COUNT=0
+      - QUEUE_WORKER_STALLED_INTERVAL=0
       - EXECUTIONS_TIMEOUT=10800
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
       - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=4096
       - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
     volumes:
       - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
