@@ -2,7 +2,7 @@ name: n8n-automation
 
 services:
   n8n:
-    image: n8nio/n8n:2.21.6
+    image: n8nio/n8n:latest
     container_name: n8n
     restart: unless-stopped
     expose:
@@ -65,7 +65,7 @@ services:
       - baota_net
 
   n8n-worker:
-    image: n8nio/n8n:2.21.6
+    image: n8nio/n8n:latest
     entrypoint: ["/bin/sh", "/sh_files/start-n8n-worker.sh"]
     restart: unless-stopped
     environment:
