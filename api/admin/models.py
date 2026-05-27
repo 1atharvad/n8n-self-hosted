@@ -25,12 +25,14 @@ class JobLink(Base):
     experience_required = Column(Text)
     skills_required = Column(Text)
     job_type = Column(Text)
+    job_description = Column(Text)
     link = Column(Text)
     audio_added = Column(Boolean, default=False)
     audio_file_name = Column(String(255))
     script_added = Column(Boolean, default=False)
     script = Column(Text)
     video_created = Column(Boolean, default=False)
+    video_type = Column(String(50))
 
 
 class Mp4List(Base):

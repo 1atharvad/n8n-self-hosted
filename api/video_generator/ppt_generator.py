@@ -60,8 +60,10 @@ class PPTGenerator:
         for shape in new_slide.shapes:
             if shape.has_text_frame:
                 for old_text, new_text in replacements.items():
-                    if old_text in shape.text:
-                        shape.text = shape.text.replace(old_text, new_text)
+                    for para in shape.text_frame.paragraphs:
+                        for run in para.runs:
+                            if old_text in run.text:
+                                run.text = run.text.replace(old_text, new_text)
 
         sld_id_lst = prs.slides._sldIdLst
         new_id = sld_id_lst[-1]

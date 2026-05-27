@@ -26,8 +26,10 @@ def init_admin(app):
             JobLink.location,
             JobLink.date,
             JobLink.skills_required,
+            JobLink.job_description,
             JobLink.audio_added,
             JobLink.video_created,
+            JobLink.video_type,
         ]
         column_searchable_list = [
             JobLink.company_name,
