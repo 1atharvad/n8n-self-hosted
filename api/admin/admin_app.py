@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+from markupsafe import Markup
 from sqladmin import Admin, ModelView
 
 from .database import async_engine, sync_engine
@@ -19,17 +20,15 @@ def init_admin(app):
 
     # JobLink admin
     class JobLinkAdmin(ModelView, model=JobLink):
-        column_list = [
-            JobLink.id,
-            JobLink.company_name,
-            JobLink.position,
-            JobLink.location,
-            JobLink.date,
+        column_exclude_list = [
+            JobLink.experience_required,
             JobLink.skills_required,
+            JobLink.job_type,
             JobLink.job_description,
-            JobLink.audio_added,
-            JobLink.video_created,
-            JobLink.video_type,
+            JobLink.link,
+            JobLink.audio_file_name,
+            JobLink.script_added,
+            JobLink.script,
         ]
         column_searchable_list = [
             JobLink.company_name,
@@ -37,21 +36,16 @@ def init_admin(app):
             JobLink.location,
         ]
         column_sortable_list = [JobLink.date, JobLink.id]
+        column_formatters_detail = {
+            "skills_required": lambda m, _: Markup(f'<div style="white-space: pre-wrap; max-width: 100%">{m.skills_required or ""}</div>'),
+            "job_description": lambda m, _: Markup(f'<div style="white-space: pre-wrap; max-width: 100%">{m.job_description or ""}</div>'),
+            "script": lambda m, _: Markup(f'<div style="white-space: pre-wrap; max-width: 100%">{m.script or ""}</div>'),
+        }
 
     # Mp4List admin
     class Mp4ListAdmin(ModelView, model=Mp4List):
-        column_list = [
-            Mp4List.id,
-            Mp4List.execution_id,
-            Mp4List.date,
-            Mp4List.pages_scrapped,
-            Mp4List.start_time,
-            Mp4List.end_time,
-            Mp4List.mp4_name,
-            Mp4List.status,
-            Mp4List.job_id,
-            Mp4List.num_of_jobs,
-            Mp4List.video_type
+        column_exclude_list = [
+            Mp4List.mp4_path,
         ]
         column_sortable_list = [Mp4List.date, Mp4List.id]
 
