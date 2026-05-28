@@ -3,17 +3,15 @@
 {% block head %}
 <style>
   .filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
     background: var(--tblr-bg-surface-secondary, #f4f6fa);
     border: 1px solid var(--tblr-border-color, #e6ebf1);
     border-radius: 8px;
-    padding: 16px 20px;
+    padding: 10px 16px;
     margin-bottom: 16px;
-  }
-  .filter-bar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
   }
   .filter-bar-title {
     font-size: 0.7rem;
@@ -21,34 +19,40 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--tblr-muted, #626976);
-  }
-  .filter-groups {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    white-space: nowrap;
+    margin-right: 4px;
   }
   .filter-group {
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .filter-group-label {
-    font-size: 0.75rem;
+  .filter-group label {
+    font-size: 0.8rem;
     color: var(--tblr-muted, #626976);
     white-space: nowrap;
+    margin-bottom: 0;
   }
-  .clear-filters-link {
+  .filter-group select {
+    min-width: 130px;
+  }
+  .filter-bar .btn-clear {
+    margin-left: auto;
     font-size: 0.75rem;
-    color: var(--tblr-muted, #626976);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .clear-filters-link:hover {
-    color: var(--tblr-danger, #d63939);
   }
 </style>
+<script>
+  function applyFilter(paramName, selectEl) {
+    var val = selectEl.value;
+    var url = new URL(window.location.href);
+    if (val === '') {
+      url.searchParams.delete(paramName);
+    } else {
+      url.searchParams.set(paramName, val);
+    }
+    window.location.href = url.toString();
+  }
+</script>
 {% endblock %}
 
 {% block content %}
@@ -65,37 +69,24 @@
       {% endfor %}
 
       <div class="filter-bar">
-        <div class="filter-bar-header">
-          <span class="filter-bar-title">Filter by</span>
-          {% if has_active_filter.value %}
-          <a href="{{ request.url.path }}" class="clear-filters-link">
-            <i class="fa-solid fa-times fa-xs"></i> Clear filters
-          </a>
-          {% endif %}
+        <span class="filter-bar-title">Filter by</span>
+        {% for filter in model_view.get_filters() %}
+        {% set active_value = request.query_params.get(filter.parameter_name, '') %}
+        <div class="filter-group">
+          <label>{{ filter.title }}</label>
+          <select class="form-select form-select-sm" onchange="applyFilter('{{ filter.parameter_name }}', this)">
+            <option value="">All</option>
+            {% for lookup in filter.lookups(request, model_view.model, model_view._run_arbitrary_query) %}
+            <option value="{{ lookup[0] }}" {% if lookup[0] == active_value %}selected{% endif %}>{{ lookup[1] }}</option>
+            {% endfor %}
+          </select>
         </div>
-        <div class="filter-groups">
-          {% for filter in model_view.get_filters() %}
-          {% set active_value = request.query_params.get(filter.parameter_name, '') %}
-          <div class="filter-group dropdown">
-            <span class="filter-group-label">{{ filter.title }}</span>
-            <a href="#" class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {% set active_label = namespace(value='All') %}
-              {% for lookup in filter.lookups(request, model_view.model, model_view._run_arbitrary_query) %}
-                {% if lookup[0] == active_value %}{% set active_label.value = lookup[1] %}{% endif %}
-              {% endfor %}
-              {{ active_label.value }}
-            </a>
-            <div class="dropdown-menu">
-              {% for lookup in filter.lookups(request, model_view.model, model_view._run_arbitrary_query) %}
-              <a class="dropdown-item {% if lookup[0] == active_value %}active{% endif %}"
-                href="{{ request.url.include_query_params(**{filter.parameter_name: lookup[0]}) }}">
-                {{ lookup[1] }}
-              </a>
-              {% endfor %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
+        {% endfor %}
+        {% if has_active_filter.value %}
+        <a href="{{ request.url.path }}" class="btn btn-sm btn-outline-secondary btn-clear">
+          <i class="fa-solid fa-times fa-xs"></i> Clear
+        </a>
+        {% endif %}
       </div>
       {% endif %}
 
