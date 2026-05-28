@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from markupsafe import Markup
 from sqladmin import Admin, ModelView
+from sqladmin.filters import AllUniqueStringValuesFilter
 
 from .database import async_engine, sync_engine
 from .models import JobLink, Mp4List
@@ -36,7 +37,7 @@ def init_admin(app):
             JobLink.location,
         ]
         column_sortable_list = [JobLink.date, JobLink.id]
-        column_filters = [JobLink.date, JobLink.video_type]
+        column_filters = [AllUniqueStringValuesFilter(JobLink.date), AllUniqueStringValuesFilter(JobLink.video_type)]
         column_formatters_detail = {
             "skills_required": lambda m, _: Markup(f'<div style="white-space: pre-wrap; max-width: 100%">{m.skills_required or ""}</div>'),
             "job_description": lambda m, _: Markup(f'<div style="white-space: pre-wrap; max-width: 100%">{m.job_description or ""}</div>'),
@@ -49,7 +50,7 @@ def init_admin(app):
             Mp4List.mp4_path,
         ]
         column_sortable_list = [Mp4List.date, Mp4List.id]
-        column_filters = [Mp4List.date, Mp4List.video_type]
+        column_filters = [AllUniqueStringValuesFilter(Mp4List.date), AllUniqueStringValuesFilter(Mp4List.video_type)]
 
     # Register views
     admin.add_view(JobLinkAdmin)
