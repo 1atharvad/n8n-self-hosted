@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from markupsafe import Markup
@@ -6,6 +7,8 @@ from sqladmin.filters import AllUniqueStringValuesFilter
 
 from .database import async_engine, sync_engine
 from .models import JobLink, Mp4List
+
+_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
 
 def init_admin(app):
@@ -17,7 +20,7 @@ def init_admin(app):
     app.router.lifespan_context = lifespan
 
     # Create Admin instance
-    admin = Admin(app, sync_engine, base_url="/db-admin")
+    admin = Admin(app, sync_engine, base_url="/db-admin", templates_dir=_TEMPLATES_DIR)
 
     # JobLink admin
     class JobLinkAdmin(ModelView, model=JobLink):
