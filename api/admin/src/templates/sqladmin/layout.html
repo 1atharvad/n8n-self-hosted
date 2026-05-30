@@ -1,0 +1,77 @@
+{% extends "sqladmin/base.html" %}
+{% from 'sqladmin/_macros.html' import display_menu %}
+
+{% block head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap">
+<link rel="stylesheet" href="{{ main_url_for('admin-assets', path='admin.min.css') }}">
+<script>
+  if(localStorage.getItem('sidebar-collapsed')!=='false')document.documentElement.classList.add('sidebar-collapsed-init');
+  var _theme=localStorage.getItem('admin-theme')||'light';
+  document.documentElement.setAttribute('data-bs-theme',_theme==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):_theme);
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="wrapper">
+  <aside class="navbar navbar-expand-lg navbar-vertical navbar-expand-md navbar-dark">
+    <div class="container-fluid flex-column align-items-stretch h-100 px-0">
+
+      <div class="navbar-brand-autodark">
+        <a href="{{ url_for('admin:index') }}">
+          {% if admin.logo_url %}
+          <img src="{{ admin.logo_url }}" width="32" height="32" alt="Admin" class="navbar-brand-image me-2" />
+          {% else %}
+          <i class="fa-solid fa-database me-3 sidebar-brand-icon"></i>
+          {% endif %}
+          <h3>PgAdmin</h3>
+        </a>
+      </div>
+
+      <nav class="flex-grow-1 overflow-auto">
+        {{ display_menu(admin._menu, request) }}
+      </nav>
+
+      <div class="sidebar-footer">
+        {% if admin.authentication_backend %}
+        <a href="{{ request.url_for('admin:logout') }}" class="nav-link sidebar-logout">
+          <span class="nav-link-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
+          <span class="nav-link-title">Logout</span>
+        </a>
+        {% endif %}
+        <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Toggle sidebar">
+          <i class="fa-solid fa-chevron-left fa-sm"></i>
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+  <div class="page-wrapper">
+    <div class="container-fluid">
+      <div class="page-header d-print-none">
+        {% block content_header %}
+        <div class="row align-items-center">
+          <div class="col">
+            <h2 class="page-title">{{ title }}</h2>
+            <div class="page-pretitle">{{ subtitle }}</div>
+          </div>
+        </div>
+        {% endblock %}
+      </div>
+    </div>
+    <div class="page-body flex-grow-1">
+      <div class="container-fluid">
+        <div class="row row-deck row-cards">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tail %}
+<script src="{{ main_url_for('admin-assets', path='admin.min.js') }}" defer></script>
+{% endblock %}

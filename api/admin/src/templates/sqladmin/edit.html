@@ -1,0 +1,61 @@
+{% extends "sqladmin/layout.html" %}
+{% from 'sqladmin/_macros.html' import render_form_fields %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ main_url_for('admin-assets', path='edit.min.css') }}">
+{% endblock %}
+
+{% block content_header %}
+<div class="row align-items-center">
+  <div class="col">
+    <div class="page-pretitle">
+      <ol class="breadcrumb" aria-label="breadcrumbs">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin:index') }}">Admin</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin:list', identity=model_view.identity) }}">{{ model_view.name }}</a></li>
+        <li class="breadcrumb-item active">Edit</li>
+      </ol>
+    </div>
+    <h2 class="page-title">Edit {{ model_view.name }}</h2>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">ID: #{{ get_object_identifier(obj) }}</h3>
+    </div>
+    <form id="edit-form" action="{{ model_view._build_url_for('admin:edit', request, obj) }}" method="POST"
+      enctype="multipart/form-data">
+      <div class="card-body">
+        {% if error %}
+        <div class="alert alert-danger mb-3" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <fieldset class="form-fieldset">
+          {{ render_form_fields(form, form_opts=form_opts) }}
+        </fieldset>
+      </div>
+
+      <div class="detail-footer">
+        <a href="{{ url_for('admin:list', identity=model_view.identity) }}" class="btn btn-light">
+          <i class="fa-solid fa-arrow-left me-1"></i> Cancel
+        </a>
+        <div class="btn-group">
+          <input type="submit" name="save" value="Save" class="btn btn-primary">
+          <input type="submit" name="save" value="Save and continue editing" class="btn btn-light">
+          {% if model_view.can_create %}
+            {% if model_view.save_as %}
+            <input type="submit" name="save" value="Save as new" class="btn btn-light">
+            {% else %}
+            <input type="submit" name="save" value="Save and add another" class="btn btn-light">
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

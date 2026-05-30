@@ -1,9 +1,17 @@
-# ---- Stage 1: Builder ----
+# ---- Stage 1: Frontend Build ----
+FROM node:20-slim AS frontend
+
+WORKDIR /build
+COPY admin/package.json admin/package-lock.json ./
+RUN npm ci
+COPY admin/src ./src
+RUN npm run build
+
+# ---- Stage 2: Python Builder ----
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-# Install only what’s needed to build Python dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
@@ -13,12 +21,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
-# ---- Stage 2: Runtime ----
+# ---- Stage 3: Runtime ----
 FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
-# Install only runtime tools — minimal dependencies
 # LibreOffice (for ppt→pdf) and FFmpeg (for video automation)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -30,12 +37,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Copy only installed site-packages and binaries
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin/uvicorn /usr/local/bin/uvicorn
 COPY --from=builder /usr/local/bin/alembic /usr/local/bin/alembic
 
-# Copy your project files
 COPY . .
+
+# Overlay compiled frontend assets (built in stage 1)
+COPY --from=frontend /build/static ./admin/static
 
 CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 9374"]

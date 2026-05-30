@@ -1,0 +1,78 @@
+{% from "sqladmin/macros/filter_panel.html" import filter_panel with context %}
+{% macro toolbar(model_view, request, url_for) %}
+<div class="card-body py-3">
+  <div class="d-flex justify-content-between align-items-center gap-2">
+    {% if model_view.column_searchable_list %}
+    <div class="col-md-6">
+      <div class="input-group">
+        <input id="search-input" type="text" class="form-control"
+          placeholder="Search by {{ model_view.search_placeholder() }}"
+          value="{{ request.query_params.get('search', '') }}">
+        <button id="search-button" class="btn btn-outline" type="button">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if model_view.get_filters() %}
+    {% set active_count = namespace(value=0) %}
+    {% for filter in model_view.get_filters() %}
+    {% set fval = request.query_params.get(filter.parameter_name, '') %}
+    {% if fval %}
+    {% for v in fval.split(',') %}{% if v.strip() %}{% set active_count.value = active_count.value + 1 %}{% endif %}{%
+    endfor %}
+    {% endif %}
+    {% endfor %}
+    <button id="filters-toggle" type="button" class="btn btn-outline ms-auto">
+      <i class="fa-solid fa-filter me-1"></i>Filters
+      {% if active_count.value > 0 %}<span class="badge bg-blue ms-1">{{ active_count.value }}</span>{% endif %}
+    </button>
+    {% endif %}
+
+    <div class="dropdown {% if not model_view.get_filters() %}ms-auto{% endif %}">
+      <button {% if not model_view.can_create and not model_view.can_delete and not model_view._custom_actions_in_list
+        and not model_view.can_export %} disabled {% endif %} class="btn btn-light btn-action-menu"
+        type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fa-solid fa-ellipsis"></i>
+      </button>
+      <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+        {% if model_view.can_create %}
+        <a class="dropdown-item" href="{{ url_for('admin:create', identity=model_view.identity) }}">
+          <i class="fa-solid fa-plus me-2"></i>Add new {{ model_view.name }}
+        </a>
+        {% endif %}
+        {% if model_view.can_export %}
+        {% for export_type in model_view.export_types %}
+        <a class="dropdown-item"
+          href="{{ url_for('admin:export', identity=model_view.identity, export_type=export_type) }}">
+          <i class="fa-solid fa-file-arrow-down me-2"></i>Export {{ export_type | upper }}
+        </a>
+        {% endfor %}
+        {% endif %}
+        {% if (model_view.can_create or model_view.can_export) and (model_view.can_delete or
+        model_view._custom_actions_in_list) %}
+        <div class="dropdown-divider"></div>
+        {% endif %}
+        {% if model_view.can_delete %}
+        <a class="dropdown-item text-danger" id="action-delete" href="#" data-name="{{ model_view.name }}"
+          data-url="{{ url_for('admin:delete', identity=model_view.identity) }}" data-bs-toggle="modal"
+          data-bs-target="#modal-delete">
+          <i class="fa-solid fa-trash me-2"></i>Delete selected
+        </a>
+        {% endif %}
+        {% for custom_action, label in model_view._custom_actions_in_list.items() %}
+        {% if custom_action in model_view._custom_actions_confirmation %}
+        <a class="dropdown-item" id="action-customconfirm-{{ custom_action }}" href="#" data-bs-toggle="modal"
+          data-bs-target="#modal-confirmation-{{ custom_action }}">{{ label }}</a>
+        {% else %}
+        <a class="dropdown-item" id="action-custom-{{ custom_action }}" href="#"
+          data-url="{{ model_view._url_for_action(request, custom_action) }}">{{ label }}</a>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {{ filter_panel(model_view, request) }}
+</div>
+{% endmacro %}

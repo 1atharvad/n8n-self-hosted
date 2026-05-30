@@ -1,0 +1,31 @@
+// ── Edit page header ──────────────────────────────────────────────────────────
+.page-pretitle,
+.page-title {
+  padding-left: 24px;
+}
+
+// ── Edit / Create form ────────────────────────────────────────────────────────
+.form-fieldset {
+  padding: 0.5rem 0.75rem 0;
+  border-color: var(--admin-border-color);
+
+  .form-group {
+    margin-bottom: 0.5rem !important;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--admin-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .form-label,
+    .col-form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--admin-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+}

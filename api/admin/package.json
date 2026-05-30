@@ -1,0 +1,17 @@
+{
+  "name": "admin-assets",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "sass src/scss/list.scss static/list.min.css --style=compressed --no-source-map && sass src/scss/admin.scss static/admin.min.css --style=compressed --no-source-map && sass src/scss/detail.scss static/detail.min.css --style=compressed --no-source-map && sass src/scss/edit.scss static/edit.min.css --style=compressed --no-source-map && sass src/scss/home.scss static/home.min.css --style=compressed --no-source-map",
+    "build:js": "esbuild src/ts/list.ts --bundle --minify --outfile=static/list.min.js && esbuild src/ts/admin.ts --bundle --minify --outfile=static/admin.min.js",
+    "watch": "concurrently \"npm run watch:css\" \"npm run watch:js\"",
+    "watch:css": "concurrently \"sass src/scss/list.scss static/list.min.css --style=compressed --no-source-map --watch\" \"sass src/scss/admin.scss static/admin.min.css --style=compressed --no-source-map --watch\" \"sass src/scss/detail.scss static/detail.min.css --style=compressed --no-source-map --watch\" \"sass src/scss/edit.scss static/edit.min.css --style=compressed --no-source-map --watch\" \"sass src/scss/home.scss static/home.min.css --style=compressed --no-source-map --watch\"",
+    "watch:js": "concurrently \"esbuild src/ts/list.ts --bundle --minify --outfile=static/list.min.js --watch\" \"esbuild src/ts/admin.ts --bundle --minify --outfile=static/admin.min.js --watch\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "esbuild": "^0.20.0",
+    "sass": "^1.70.0"
+  }
+}

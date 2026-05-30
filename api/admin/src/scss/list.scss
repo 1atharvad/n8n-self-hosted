@@ -1,0 +1,220 @@
+.page-header .col {
+  padding-left: 30px;
+  padding-bottom: 10px;
+}
+
+.table-scroll-bar .table {
+  border-collapse: separate;
+  border-spacing: 0;
+
+  tr:last-of-type td,
+  th {
+    border-bottom-width: 0;
+  }
+
+  td,
+  th {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  thead th {
+    background: var(--admin-table-header-bg);
+    color: var(--admin-table-header-color);
+    font-size: 0.7rem;
+
+    &:first-child { border-radius: 8px 0 0 8px; }
+    &:last-child  { border-radius: 0 8px 8px 0; }
+  }
+}
+
+.table-scroll-bar {
+  margin-left: var(--tblr-card-spacer-x);
+  margin-right: var(--tblr-card-spacer-x);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.freeze-col {
+  position: sticky;
+  left: var(--freeze-left, 0);
+  z-index: 2;
+
+  // Solid base + header tint overlay so content never bleeds through
+  thead & {
+    background-color: var(--tblr-card-bg, var(--admin-card-bg)) !important;
+    background-image: linear-gradient(var(--admin-table-header-bg), var(--admin-table-header-bg)) !important;
+  }
+
+  tbody & {
+    background-color: var(--tblr-card-bg, var(--admin-card-bg)) !important;
+  }
+
+  &.freeze-col-last {
+    border-right: 1px solid var(--admin-border-color);
+  }
+
+  &:not(.freeze-col-last) {
+    box-shadow: -8px 0 0 0px var(--tblr-card-bg, var(--admin-card-bg)) !important;
+  }
+}
+
+.table-actions-col {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  width: 1%;
+  border-left: 1px solid var(--admin-border-color);
+  box-shadow: 8px 0 0 0px var(--tblr-card-bg, var(--admin-card-bg)) !important;
+
+  thead & {
+    background-color: var(--tblr-card-bg, var(--admin-card-bg)) !important;
+    background-image: linear-gradient(var(--admin-table-header-bg), var(--admin-table-header-bg)) !important;
+  }
+
+  tbody & {
+    background: var(--tblr-card-bg, var(--admin-card-bg)) !important;
+  }
+}
+
+.filter-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.filter-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px 6px 10px;
+  background: var(--admin-filter-bg);
+  border: 1px solid var(--admin-filter-border);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: var(--admin-filter-color);
+  line-height: 1.4;
+
+  .op {
+    opacity: 0.6;
+    font-size: 0.75rem;
+  }
+}
+
+#add-filter-btn {
+  padding: 8.5px 10px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  border-radius: 8px;
+  color: var(--admin-text-secondary);
+  box-shadow: none !important;
+
+  &:hover,
+  &:focus,
+  &.show {
+    background: var(--admin-btn-light-hover-bg);
+    border-color: var(--admin-btn-light-hover-border);
+    box-shadow: none !important;
+  }
+}
+
+.filter-capsule-remove {
+  color: var(--admin-text-muted);
+  text-decoration: none;
+  opacity: 0.6;
+  line-height: 1;
+  padding: 0 2px;
+
+  &:hover { opacity: 1; }
+}
+
+.fb-options {
+  max-height: 200px;
+  overflow-y: auto;
+
+  .dropdown-item {
+    font-size: 0.875rem;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+}
+
+.fb-options-empty {
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted);
+  padding: 6px 8px;
+  text-align: center;
+}
+
+// ── Card footer ────────────────────────────────────────────────────────────────
+.card-footer {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .page-link {
+    font-size: 0.8125rem;
+    font-family: inherit;
+  }
+
+  .dropdown {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    color: var(--admin-text-muted);
+  }
+
+  .btn.dropdown-toggle {
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.3rem 0.625rem;
+    border-radius: 6px;
+    box-shadow: none !important;
+    color: var(--admin-text-secondary);
+    background: var(--admin-btn-light-bg);
+    border-color: var(--admin-btn-light-border);
+
+    &:hover,
+    &.show {
+      background: var(--admin-btn-light-hover-bg);
+      border-color: var(--admin-btn-light-hover-border);
+    }
+
+    &::after {
+      margin-left: 0.3rem;
+    }
+  }
+}
+
+// ── Font fallback for list page ─────────────────────────────────────────────────
+.table,
+.page-header,
+.filter-panel {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.btn-action-menu {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none !important;
+  --tblr-btn-padding-x: 0.75rem;
+  --tblr-btn-padding-y: 0.5rem;
+
+  &:hover,
+  &:focus,
+  &.show {
+    background: var(--admin-btn-light-bg);
+    border-color: var(--admin-border-color);
+    box-shadow: none !important;
+  }
+}

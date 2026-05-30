@@ -1,0 +1,60 @@
+// ── Details page header ───────────────────────────────────────────────────────
+.page-pretitle,
+.page-title {
+  padding-left: 24px;
+}
+
+// ── Details footer ────────────────────────────────────────────────────────────
+.card-footer {
+  margin: 0;
+}
+
+// ── Details table ─────────────────────────────────────────────────────────────
+.detail-table-wrap {
+  margin-left: var(--tblr-card-spacer-x);
+  margin-right: var(--tblr-card-spacer-x);
+  margin-top: var(--tblr-card-spacer-y);
+
+  .table {
+    border-collapse: separate;
+    border-spacing: 0;
+
+    tr:last-of-type td {
+      border-bottom-width: 0;
+    }
+
+    th {
+      border-bottom-width: 0;
+    }
+
+    td,
+    th {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    thead th {
+      background: var(--admin-table-header-bg);
+      color: var(--admin-table-header-color);
+      font-size: 0.7rem;
+
+      &:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+
+      &:last-child {
+        border-radius: 0 8px 8px 0;
+      }
+    }
+
+    tbody td:first-child {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--admin-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      width: 1%;
+    }
+  }
+}

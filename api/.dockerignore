@@ -6,3 +6,5 @@ __pycache__/
 *.pyo
 .env
 .DS_Store
+admin/node_modules/
+admin/static/

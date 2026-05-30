@@ -1,0 +1,54 @@
+{% macro filter_panel(model_view, request) %}
+{% if model_view.get_filters() %}
+{% set has_active = namespace(value=false) %}
+{% for filter in model_view.get_filters() %}
+{% if request.query_params.get(filter.parameter_name) %}{% set has_active.value = true %}{% endif %}
+{% endfor %}
+<div id="filter-panel" class="filter-panel {% if not has_active.value %}d-none{% endif %}">
+  {% for filter in model_view.get_filters() %}
+  {% set fval = request.query_params.get(filter.parameter_name, '') %}
+  {% for single_val in fval.split(',') if fval %}
+  {% set single_val = single_val.strip() %}
+  {% if single_val %}
+  <span class="filter-capsule">
+    <div class="d-flex align-items-end gap-1">
+      <span class="fw-medium">{{ filter.title }}</span>
+      <span class="op">is</span>
+      <span>{{ single_val }}</span>
+    </div>
+    <a href="{{ remove_filter_value(request, filter.parameter_name, single_val) }}" class="filter-capsule-remove">
+      <i class="fa-solid fa-times"></i>
+    </a>
+  </span>
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+  <div class="dropdown">
+    <button class="btn btn-sm btn-ghost-secondary" type="button" id="add-filter-btn" data-bs-toggle="dropdown"
+      data-bs-auto-close="outside" aria-expanded="false">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <div class="dropdown-menu p-0" style="min-width: 220px;">
+      <div id="fb-step-1" class="p-2">
+        {% for filter in model_view.get_filters() %}
+        <a class="dropdown-item fb-col-item" href="#" data-param="{{ filter.parameter_name }}"
+          data-title="{{ filter.title }}" data-options="{{ get_filter_options(filter) | tojson | forceescape }}">{{
+          filter.title
+          }}</a>
+        {% endfor %}
+      </div>
+      <div id="fb-step-2" class="d-none p-3">
+        <div class="d-flex align-items-center mb-3">
+          <a href="#" id="fb-back" class="text-muted me-2 text-decoration-none">
+            <i class="fa-solid fa-chevron-left"></i>
+          </a>
+          <span class="fw-semibold" id="fb-col-label"></span>
+        </div>
+        <input type="text" id="fb-value-input" class="form-control mb-2" placeholder="Search...">
+        <div id="fb-options-list" class="fb-options"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}

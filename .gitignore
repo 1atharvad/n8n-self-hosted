@@ -1,4 +1,6 @@
 node_modules
+api/admin/node_modules/
+api/admin/static/
 dist
 .vscode/*
 !.vscode/extensions.json

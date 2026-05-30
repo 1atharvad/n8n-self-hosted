@@ -1,0 +1,127 @@
+// ── Light mode (default) ──────────────────────────────────────────────────────
+:root {
+  // Page & surface
+  --admin-bg-page: #f1f5fb;
+  --admin-bg-surface: #ffffff;
+  --admin-bg-surface-secondary: #f1f5f9;
+
+  // Borders
+  --admin-border-color: #e6ebf1;
+  --admin-border-strong: #c8d3e1;
+
+  // Text
+  --admin-text-muted: #aeb9ca;
+  --admin-text-secondary: #354052;
+
+  // Override Tabler's default body color (default #6c7a91 = 3.77:1, too low)
+  --tblr-body-color: #354052;
+
+  // Table
+  --admin-table-header-bg: #e9ecef;
+  --admin-table-header-color: #1d273b;
+
+  // Card
+  --admin-card-bg: #ffffff;
+  --admin-card-cap-bg: rgba(0, 0, 0, 0.02);
+
+  // Form inputs
+  --admin-input-bg: #ffffff;
+  --admin-input-border: #e6ebf1;
+  --admin-input-color: #1d273b;
+
+  // Checkboxes
+  --admin-checkbox-bg: #ffffff;
+  --admin-checkbox-border: #c8d3e1;
+
+  // Button light variant
+  --admin-btn-light-bg: #f1f3f7;
+  --admin-btn-light-border: #e6ebf1;
+  --admin-btn-light-color: #354052;
+  --admin-btn-light-hover-bg: #e9ecef;
+  --admin-btn-light-hover-border: #c8d3e1;
+
+  // Button outline variant
+  --admin-btn-outline-bg: transparent;
+  --admin-btn-outline-border: #e6ebf1;
+  --admin-btn-outline-color: #354052;
+  --admin-btn-outline-hover-bg: #f1f3f7;
+
+  // Dropdown menu
+  --admin-dropdown-bg: #ffffff;
+  --admin-dropdown-border: #e6ebf1;
+  --admin-dropdown-item-hover: #f1f5f9;
+
+  // Filter bar
+  --admin-filter-bg: #f1f5f9;
+  --admin-filter-border: #c8d3e1;
+  --admin-filter-color: #354052;
+
+  // Interactive accent — passes 4.5:1 on light backgrounds (#f43f5e only passes on dark)
+  --admin-accent-interactive: #be123c;
+  --admin-accent-interactive-hover: #9f1239;
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+[data-bs-theme="dark"] {
+  // Page & surface
+  --admin-bg-page: #16161f;
+  --admin-bg-surface: #1e1e2d;
+  --admin-bg-surface-secondary: #252536;
+
+  // Borders
+  --admin-border-color: rgba(255, 255, 255, 0.08);
+  --admin-border-strong: rgba(255, 255, 255, 0.14);
+
+  // Text
+  --admin-text-muted: rgba(255, 255, 255, 0.60);
+  --admin-text-secondary: rgba(255, 255, 255, 0.85);
+  --tblr-body-color: rgba(255, 255, 255, 0.85);
+
+  // Table
+  --admin-table-header-bg: rgba(255, 255, 255, 0.05);
+  --admin-table-header-color: rgba(255, 255, 255, 0.70);
+
+  // Card
+  --admin-card-bg: #1e1e2d;
+  --admin-card-cap-bg: rgba(255, 255, 255, 0.03);
+
+  // Force Tabler surface tokens to match so freeze-col bg stays consistent
+  --tblr-card-bg: #1e1e2d;
+  --tblr-bg-surface: #1e1e2d;
+
+  // Form inputs
+  --admin-input-bg: #2a2a3d;
+  --admin-input-border: rgba(255, 255, 255, 0.1);
+  --admin-input-color: #eaeaea;
+
+  // Checkboxes
+  --admin-checkbox-bg: #2a2a3d;
+  --admin-checkbox-border: rgba(255, 255, 255, 0.2);
+
+  // Button light variant
+  --admin-btn-light-bg: rgba(255, 255, 255, 0.08);
+  --admin-btn-light-border: rgba(255, 255, 255, 0.1);
+  --admin-btn-light-color: #e0e0e0;
+  --admin-btn-light-hover-bg: rgba(255, 255, 255, 0.14);
+  --admin-btn-light-hover-border: rgba(255, 255, 255, 0.18);
+
+  // Button outline variant
+  --admin-btn-outline-bg: transparent;
+  --admin-btn-outline-border: rgba(255, 255, 255, 0.15);
+  --admin-btn-outline-color: #e0e0e0;
+  --admin-btn-outline-hover-bg: rgba(255, 255, 255, 0.08);
+
+  // Dropdown menu
+  --admin-dropdown-bg: #252536;
+  --admin-dropdown-border: rgba(255, 255, 255, 0.08);
+  --admin-dropdown-item-hover: rgba(255, 255, 255, 0.07);
+
+  // Filter bar
+  --admin-filter-bg: rgba(255, 255, 255, 0.06);
+  --admin-filter-border: rgba(255, 255, 255, 0.1);
+  --admin-filter-color: rgba(255, 255, 255, 0.85);
+
+  // Interactive accent — passes 4.5:1 on dark backgrounds
+  --admin-accent-interactive: #fb7185;
+  --admin-accent-interactive-hover: #fda4af;
+}

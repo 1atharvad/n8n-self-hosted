@@ -1,0 +1,473 @@
+@use './colors';
+
+// ── Global font ───────────────────────────────────────────────────────────────
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--admin-bg-page);
+}
+
+// ── Design tokens ─────────────────────────────────────────────────────────────
+:root {
+  --admin-accent: #f43f5e;
+  --admin-accent-hover: #e11d48;
+  --admin-sidebar-bg: #1c1c1e;
+  --admin-sidebar-border: rgba(255, 255, 255, 0.07);
+  --admin-sidebar-text: rgba(161, 161, 170, 1);
+  --admin-sidebar-text-hover: #fafafa;
+  --admin-sidebar-active-bg: rgba(244, 63, 94, 0.12);
+  --admin-sidebar-width: 15rem;
+  --admin-sidebar-collapsed-width: 3.75rem;
+}
+
+// ── Accent / theme overrides ───────────────────────────────────────────────────
+// --admin-accent (#f43f5e) is decorative only (sidebar icons, active borders, badges on dark bg).
+// --admin-accent-interactive is the contrast-safe version for text and button backgrounds.
+:root {
+  --tblr-primary: var(--admin-accent-interactive);
+  --tblr-primary-rgb: 190, 18, 60;   // #be123c — light-mode interactive accent
+  --tblr-link-color: var(--admin-accent-interactive);
+  --tblr-muted: #aeb9ca;
+  --tblr-muted-rgb: 174, 185, 202;
+}
+
+[data-bs-theme="dark"] {
+  --tblr-primary-rgb: 251, 113, 133; // #fb7185 — dark-mode interactive accent
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+.navbar-vertical.navbar-dark {
+  --tblr-navbar-bg: var(--admin-sidebar-bg);
+  --tblr-navbar-border-color: var(--admin-sidebar-border);
+  --tblr-navbar-color: var(--admin-sidebar-text);
+  --tblr-navbar-hover-color: var(--admin-sidebar-text-hover);
+  --tblr-navbar-active-color: #ffffff;
+
+  width: var(--admin-sidebar-width);
+  transition: width 0.22s ease;
+  overflow: hidden;
+
+  .navbar-brand-autodark {
+    display: flex;
+    align-items: center;
+    padding: 1.125rem 1.25rem 1.125rem 1.4rem;
+    border-bottom: 1px solid var(--admin-sidebar-border);
+    gap: 0.5rem;
+    min-height: 0;
+
+    >a {
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    h3 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+      white-space: nowrap;
+      transition: opacity 0.15s, width 0.22s;
+    }
+
+    .sidebar-brand-icon {
+      color: var(--admin-accent);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+  }
+
+  .navbar-nav {
+    padding: 0.75rem 0.5rem;
+    gap: 1px;
+  }
+
+  .nav-link {
+    border-radius: 7px;
+    padding: 0.5rem 0.75rem;
+    color: var(--admin-sidebar-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 0.625rem;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+
+    .nav-link-icon {
+      flex-shrink: 0;
+      width: 1.25rem;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9375rem;
+      opacity: 0.8;
+    }
+
+    &:hover {
+      color: var(--admin-sidebar-text-hover);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.active {
+      color: #ffffff;
+      background: var(--admin-sidebar-active-bg);
+      border-left: 2px solid var(--admin-accent);
+      padding-left: calc(0.75rem - 2px);
+
+      .nav-link-icon {
+        opacity: 1;
+        color: var(--admin-accent);
+      }
+    }
+  }
+
+  .sidebar-footer {
+    padding: 0.75rem 0.5rem;
+    border-top: 1px solid var(--admin-sidebar-border);
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1px;
+
+    .sidebar-logout:hover {
+      color: #f87171;
+      background: rgba(244, 63, 94, 0.1);
+    }
+  }
+}
+
+// ── Sidebar divider above Settings ────────────────────────────────────────────
+.navbar-nav li:has(.nav-link[href*="/settings"]),
+.navbar-nav div:has(.nav-link[href*="/settings"]) {
+  border-top: 1px solid var(--admin-sidebar-border);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+// ── Sidebar toggle ─────────────────────────────────────────────────────────────
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--admin-sidebar-text);
+  cursor: pointer;
+  padding: 1.25rem 1rem;
+  border-radius: 7px;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 0.15s, background 0.15s, transform 0.22s;
+
+  &:hover {
+    color: var(--admin-sidebar-text-hover);
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// ── Collapsed state ────────────────────────────────────────────────────────────
+html.sidebar-collapsed-init body,
+body.sidebar-collapsed {
+  .navbar-vertical.navbar-dark {
+    width: var(--admin-sidebar-collapsed-width);
+
+    .nav-link-title {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .navbar-brand-autodark h3 {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-footer .nav-link-title {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+  }
+
+  .sidebar-toggle-btn {
+    transform: rotate(180deg);
+  }
+
+  .page-wrapper {
+    margin-left: var(--admin-sidebar-collapsed-width) !important;
+  }
+}
+
+// ── Theme picker cards ─────────────────────────────────────────────────────────
+.theme-card {
+  cursor: pointer;
+
+  .theme-card-inner {
+    padding: 0.5rem;
+    border: 2px solid var(--admin-border-color);
+    border-radius: 10px;
+    transition: border-color 0.15s;
+  }
+
+  &.theme-card-active .theme-card-inner,
+  &:hover .theme-card-inner {
+    border-color: var(--admin-accent);
+  }
+}
+
+.theme-preview {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 7rem;
+  height: 4.5rem;
+
+  .theme-preview-sidebar {
+    width: 28%;
+    flex-shrink: 0;
+  }
+
+  .theme-preview-content {
+    flex: 1;
+  }
+
+  &.theme-preview-light {
+    background: #f1f5fb;
+
+    .theme-preview-sidebar {
+      background: #1c1c1e;
+    }
+
+    .theme-preview-content {
+      background: #f1f5fb;
+    }
+  }
+
+  &.theme-preview-dark {
+    background: #16161f;
+
+    .theme-preview-sidebar {
+      background: #1c1c1e;
+    }
+
+    .theme-preview-content {
+      background: #1e1e2d;
+    }
+  }
+
+  &.theme-preview-system {
+    .theme-preview-sidebar {
+      background: #1c1c1e;
+    }
+
+    .theme-preview-content {
+      background: linear-gradient(135deg, #f1f5fb 50%, #1e1e2d 50%);
+    }
+  }
+}
+
+// ── Shared card footer ─────────────────────────────────────────────────────────
+.detail-footer {
+  padding: var(--tblr-card-spacer-y) var(--tblr-card-spacer-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-top: 1px solid var(--admin-border-color);
+}
+
+// ── Component overrides (use admin tokens) ─────────────────────────────────────
+.card {
+  --tblr-card-bg: var(--admin-card-bg);
+  --tblr-card-border-color: var(--admin-border-color);
+  --tblr-card-cap-bg: var(--admin-card-cap-bg);
+}
+
+.page-wrapper {
+  background: var(--admin-bg-page);
+}
+
+.table {
+  --tblr-table-border-color: var(--admin-border-color);
+
+  thead th {
+    background: var(--admin-table-header-bg);
+    color: var(--admin-table-header-color);
+  }
+}
+
+.form-control,
+.form-select {
+  background-color: var(--admin-input-bg);
+  border-color: var(--admin-input-border);
+  color: var(--admin-input-color);
+}
+
+.form-check-input {
+  background-color: var(--admin-checkbox-bg);
+  border-color: var(--admin-checkbox-border);
+}
+
+.btn-light {
+  --tblr-btn-bg: var(--admin-btn-light-bg);
+  --tblr-btn-border-color: var(--admin-btn-light-border);
+  --tblr-btn-color: var(--admin-btn-light-color);
+  --tblr-btn-hover-bg: var(--admin-btn-light-hover-bg);
+}
+
+.btn-outline,
+.btn-outline-secondary {
+  background: var(--admin-btn-outline-bg);
+  border-color: var(--admin-btn-outline-border);
+  color: var(--admin-btn-outline-color);
+
+  &:hover,
+  &:focus {
+    background: var(--admin-btn-outline-hover-bg);
+    border-color: var(--admin-btn-outline-border);
+    color: var(--admin-btn-outline-color);
+  }
+}
+
+// btn-primary always uses the dark-rose tones — white text needs a dark enough background.
+// #fb7185 (dark-mode link accent) is too light for white text, so we hardcode here.
+.btn-primary {
+  --tblr-btn-bg: #be123c;
+  --tblr-btn-border-color: #be123c;
+  --tblr-btn-hover-bg: #9f1239;
+  --tblr-btn-hover-border-color: #9f1239;
+  --tblr-btn-color: #ffffff;
+}
+
+.dropdown-menu {
+  background-color: var(--admin-dropdown-bg);
+  border-color: var(--admin-dropdown-border);
+
+  .dropdown-item:hover,
+  .dropdown-item:focus {
+    background-color: var(--admin-dropdown-item-hover);
+  }
+
+  .dropdown-divider {
+    border-color: var(--admin-border-color);
+  }
+}
+
+.card-footer,
+.card-header {
+  background-color: var(--admin-card-cap-bg);
+  border-color: var(--admin-border-color);
+}
+
+.page-header {
+  margin-bottom: 0.75rem !important;
+}
+
+a:not(.nav-link):not(.dropdown-item):not(.btn):not(.page-link):not(.filter-capsule-remove) {
+  color: var(--admin-accent-interactive);
+
+  &:hover {
+    color: var(--admin-accent-interactive-hover);
+  }
+}
+
+.badge.bg-blue,
+.badge.bg-primary {
+  background-color: var(--admin-accent-interactive) !important;
+}
+
+// ── Login page ─────────────────────────────────────────────────────────────────
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-bg-page);
+  padding: 1.5rem;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 22rem;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 0.375rem;
+}
+
+.login-brand-icon {
+  color: var(--admin-accent);
+  font-size: 1.25rem;
+}
+
+.login-brand-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+  line-height: 1;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--admin-text-muted);
+  font-size: 0.8125rem;
+  margin-top: 0;
+  margin-bottom: 1.75rem;
+}
+
+// ── Dashboard / settings row spacing ──────────────────────────────────────────
+.row-deck.row-cards {
+  --tblr-gutter-y: 1.25rem;
+  --tblr-gutter-x: 1.25rem;
+}
+
+// ── Code / pre ─────────────────────────────────────────────────────────────────
+code {
+  background-color: var(--admin-bg-surface-secondary);
+  color: var(--admin-text-secondary);
+  padding: 0.2em 0.45em;
+  border-radius: 4px;
+}
+
+// ── Badge light variants (stay readable in dark mode) ──────────────────────────
+[data-bs-theme="dark"] {
+
+  .badge.bg-blue-lt,
+  .badge.bg-blue-lt .text-blue,
+  .text-blue {
+    color: #74b0f5 !important;
+  }
+
+  .badge.bg-blue-lt {
+    background-color: rgba(32, 107, 196, 0.25) !important;
+  }
+
+  .badge.bg-green-lt {
+    background-color: rgba(47, 179, 68, 0.2) !important;
+    color: #6fd080 !important;
+  }
+
+  .badge.bg-red-lt {
+    background-color: rgba(244, 63, 94, 0.2) !important;
+    color: #f87090 !important;
+  }
+}
+
+.page-item.active .page-link {
+  background-color: #be123c;
+  border-color: #be123c;
+}

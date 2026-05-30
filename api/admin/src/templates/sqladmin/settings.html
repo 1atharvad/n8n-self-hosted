@@ -1,0 +1,145 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ main_url_for('admin-assets', path='home.min.css') }}">
+{% endblock %}
+
+{% block content_header %}
+<div class="row align-items-center">
+  <div class="col">
+    <div class="page-pretitle">Admin</div>
+    <h2 class="page-title">Settings</h2>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{# ── Appearance ── #}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fa-solid fa-palette me-2"></i>Appearance</h3>
+    </div>
+    <div class="card-body">
+      <div class="mb-2 fw-semibold">Theme</div>
+      <div class="d-flex gap-3 flex-wrap">
+        <label class="theme-card" data-theme-value="light">
+          <input type="radio" name="theme" value="light" class="d-none theme-radio">
+          <div class="theme-card-inner">
+            <div class="theme-preview theme-preview-light">
+              <div class="theme-preview-sidebar"></div>
+              <div class="theme-preview-content"></div>
+            </div>
+            <div class="mt-2 text-center small fw-medium">Light</div>
+          </div>
+        </label>
+        <label class="theme-card" data-theme-value="dark">
+          <input type="radio" name="theme" value="dark" class="d-none theme-radio">
+          <div class="theme-card-inner">
+            <div class="theme-preview theme-preview-dark">
+              <div class="theme-preview-sidebar"></div>
+              <div class="theme-preview-content"></div>
+            </div>
+            <div class="mt-2 text-center small fw-medium">Dark</div>
+          </div>
+        </label>
+        <label class="theme-card" data-theme-value="system">
+          <input type="radio" name="theme" value="system" class="d-none theme-radio">
+          <div class="theme-card-inner">
+            <div class="theme-preview theme-preview-system">
+              <div class="theme-preview-sidebar"></div>
+              <div class="theme-preview-content"></div>
+            </div>
+            <div class="mt-2 text-center small fw-medium">System</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── System Info ── #}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fa-solid fa-circle-info me-2"></i>System Info</h3>
+    </div>
+    <div class="detail-table-wrap">
+      <table class="table card-table table-vcenter">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Environment</td>
+            <td><span class="badge bg-blue-lt text-blue">{{ info.environment }}</span></td>
+          </tr>
+          <tr>
+            <td>Python Version</td>
+            <td><code>{{ info.python_version }}</code></td>
+          </tr>
+          <tr>
+            <td>SQLAdmin Version</td>
+            <td><code>{{ info.sqladmin_version }}</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# ── Database Info ── #}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fa-solid fa-database me-2"></i>Database</h3>
+    </div>
+    <div class="detail-table-wrap">
+      <table class="table card-table table-vcenter">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Host</td>
+            <td><code>{{ info.db.host }}</code></td>
+          </tr>
+          <tr>
+            <td>Port</td>
+            <td><code>{{ info.db.port }}</code></td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td><code>{{ info.db.database }}</code></td>
+          </tr>
+          <tr>
+            <td>Username</td>
+            <td><code>{{ info.db.username }}</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# ── Configuration ── #}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fa-solid fa-sliders me-2"></i>Configuration</h3>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">No configurable settings yet. Add settings here as needed.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

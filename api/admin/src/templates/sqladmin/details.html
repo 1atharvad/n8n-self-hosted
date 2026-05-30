@@ -1,0 +1,106 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ main_url_for('admin-assets', path='detail.min.css') }}">
+{% endblock %}
+
+{% block content_header %}
+<div class="row align-items-center">
+  <div class="col">
+    <div class="page-pretitle">
+      <ol class="breadcrumb" aria-label="breadcrumbs">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin:index') }}">Admin</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin:list', identity=model_view.identity) }}">{{ model_view.name }}</a></li>
+        <li class="breadcrumb-item active">Details</li>
+      </ol>
+    </div>
+    <h2 class="page-title">{{ model_view.name }}</h2>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="col-12">
+  <div class="card">
+    <div class="detail-table-wrap">
+      <table class="table card-table table-vcenter">
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for name in model_view._details_prop_names %}
+          {% set label = model_view._column_labels.get(name, name) %}
+          <tr>
+            <td>{{ label }}</td>
+            {% set value, formatted_value = model_view.get_detail_value(model, name) %}
+            {% if name in model_view._relation_names %}
+              {% if is_list(value) %}
+              <td>
+                {% for elem, formatted_elem in zip(value, formatted_value) %}
+                  {% if model_view.show_compact_lists %}
+                  <a href="{{ model_view._build_url_for('admin:details', request, elem) }}">({{ formatted_elem }})</a>
+                  {% else %}
+                  <a href="{{ model_view._build_url_for('admin:details', request, elem) }}">{{ formatted_elem }}</a><br/>
+                  {% endif %}
+                {% endfor %}
+              </td>
+              {% else %}
+              <td><a href="{{ model_view._url_for_details_with_prop(request, model, name) }}">{{ formatted_value }}</a></td>
+              {% endif %}
+            {% else %}
+            <td>{{ formatted_value }}</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="detail-footer">
+      <a href="{{ url_for('admin:list', identity=model_view.identity) }}" class="btn btn-light">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back
+      </a>
+      {% if model_view.can_edit %}
+      <a href="{{ model_view._build_url_for('admin:edit', request, model) }}" class="btn btn-primary">
+        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+      </a>
+      {% endif %}
+      {% if model_view.can_delete %}
+      <a href="#" data-name="{{ model_view.name }}" data-pk="{{ get_object_identifier(model) }}"
+        data-url="{{ model_view._url_for_delete(request, model) }}" data-bs-toggle="modal"
+        data-bs-target="#modal-delete" class="btn btn-danger ms-auto">
+        <i class="fa-solid fa-trash me-1"></i> Delete
+      </a>
+      {% endif %}
+      {% for custom_action, label in model_view._custom_actions_in_detail.items() %}
+        {% if custom_action in model_view._custom_actions_confirmation %}
+        <a href="#" class="btn btn-secondary" data-bs-toggle="modal"
+          data-bs-target="#modal-confirmation-{{ custom_action }}">{{ label }}</a>
+        {% else %}
+        <a href="{{ model_view._url_for_action(request, custom_action) }}?pks={{ get_object_identifier(model) }}"
+          class="btn btn-secondary">{{ label }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+{% if model_view.can_delete %}
+{% include 'sqladmin/modals/delete.html' %}
+{% endif %}
+
+{% for custom_action in model_view._custom_actions_in_detail %}
+{% if custom_action in model_view._custom_actions_confirmation %}
+{% with confirmation_message = model_view._custom_actions_confirmation[custom_action], custom_action=custom_action,
+url=model_view._url_for_action(request, custom_action) + '?pks=' + (get_object_identifier(model) | string) %}
+{% include 'sqladmin/modals/details_action_confirmation.html' %}
+{% endwith %}
+{% endif %}
+{% endfor %}
+
+{% endblock %}
