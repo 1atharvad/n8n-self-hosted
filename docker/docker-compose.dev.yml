@@ -91,7 +91,6 @@ services:
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
       - NODE_ENV=development
       - NODE_OPTIONS=--max-old-space-size=4096
-      - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
     volumes:
       - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
       - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
@@ -141,12 +140,14 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY}
+      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-65}
     expose:
       - "9374"
     volumes:
       - ${HOST_PROJECT_DIR}/api:/app
       - ${HOST_PROJECT_DIR}/tts_cache:/tts_cache
       - ${HOST_PROJECT_DIR}/n8n_files:/n8n_files
+      - /proc:/host/proc:ro
     depends_on:
       - postgres
       - minio
@@ -274,52 +275,6 @@ services:
       - ${HOST_PROJECT_DIR}/cloudflared:/etc/cloudflared
     depends_on:
       - nginx
-    networks:
-      - baota_net
-
-  processes:
-    build: ${HOST_PROJECT_DIR}/processes
-    container_name: processes
-    restart: always
-    depends_on:
-      - n8n
-    environment:
-      - CHECK_INTERVAL=10
-      - TARGET_CONTAINERS=n8n,cloudflare
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - baota_net
-
-  worker-autoscaler:
-    build:
-      context: ${HOST_PROJECT_DIR}/processes
-      dockerfile: Dockerfile.autoscaler
-    container_name: worker-autoscaler
-    restart: unless-stopped
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - N8N_BASE_URL=http://n8n:5678
-      - N8N_API_KEY=${N8N_API_KEY}
-      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-n8n-automation}
-      - COMPOSE_FILE=/app/docker/docker-compose.dev.yml
-      - WORKER_COMPOSE_FILE=
-      - HOST_PROJECT_DIR=${PWD}
-      - MIN_WORKERS=${AUTOSCALER_MIN_WORKERS:-1}
-      - MAX_WORKERS=${AUTOSCALER_MAX_WORKERS:-4}
-      - CPU_SCALE_UP_MAX=${AUTOSCALER_CPU_SCALE_UP_MAX:-65}
-      - CPU_SCALE_DOWN_EMERGENCY=${AUTOSCALER_CPU_SCALE_DOWN_EMERGENCY:-88}
-      - IDLE_BEFORE_SCALEDOWN_SEC=${AUTOSCALER_IDLE_BEFORE_SCALEDOWN_SEC:-120}
-      - POLL_INTERVAL_SEC=${AUTOSCALER_POLL_INTERVAL_SEC:-30}
-      - COOLDOWN_SEC=${AUTOSCALER_COOLDOWN_SEC:-90}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /proc:/host/proc:ro
-      - ${HOST_PROJECT_DIR}:/app:ro
-    depends_on:
-      redis:
-        condition: service_healthy
     networks:
       - baota_net
 

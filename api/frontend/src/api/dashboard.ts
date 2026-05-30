@@ -21,7 +21,7 @@ export interface DashboardStats {
   timeseries: TimePoint[]
 }
 
-export async function fetchStats(range = '1d'): Promise<DashboardStats> {
+export const fetchStats = async (range = '1d'): Promise<DashboardStats> => {
   const res = await authedFetch(`${BASE}/stats?range=${range}`);
   if (!res.ok) throw new Error(`Stats fetch failed: ${res.status}`);
   return res.json();

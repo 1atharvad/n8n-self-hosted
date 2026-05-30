@@ -3,23 +3,23 @@ import { authedFetch } from './client'
 
 const BASE = '/api/logs'
 
-export async function fetchLabels(): Promise<string[]> {
+export const fetchLabels = async (): Promise<string[]> => {
   const res = await authedFetch(`${BASE}/labels`)
   if (!res.ok) throw new Error(`Labels fetch failed: ${res.status}`)
   const data = await res.json()
   return data.labels as string[]
 }
 
-export async function fetchLogs(filters: Filters): Promise<LogEntry[]> {
-  const url = new URL(`${BASE}/query`, window.location.origin)
+export const fetchLogs = async (filters: Filters): Promise<LogEntry[]> => {
+  const params = new URLSearchParams()
   if (filters.containers.length > 0)
-    url.searchParams.set('containers', filters.containers.join(','))
-  if (filters.search) url.searchParams.set('search', filters.search)
-  if (filters.level !== 'all') url.searchParams.set('level', filters.level)
-  url.searchParams.set('range', filters.range)
-  url.searchParams.set('limit', String(filters.limit))
+    params.set('containers', filters.containers.join(','))
+  if (filters.search) params.set('search', filters.search)
+  if (filters.level !== 'all') params.set('level', filters.level)
+  params.set('range', filters.range)
+  params.set('limit', String(filters.limit))
 
-  const res = await authedFetch(url.toString())
+  const res = await authedFetch(`${BASE}/query?${params.toString()}`)
   if (!res.ok) throw new Error(`Log query failed: ${res.status}`)
   const data = await res.json()
   return data.logs as LogEntry[]

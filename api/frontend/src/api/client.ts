@@ -1,18 +1,16 @@
 const TOKEN_KEY = 'logs_access_token'
 
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
-}
+export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY)
 
-export function setToken(token: string): void {
+export const setToken = (token: string): void => {
   localStorage.setItem(TOKEN_KEY, token)
 }
 
-export function clearToken(): void {
+export const clearToken = (): void => {
   localStorage.removeItem(TOKEN_KEY)
 }
 
-export async function authedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+export const authedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const token = getToken()
   const res = await fetch(url, {
     ...options,

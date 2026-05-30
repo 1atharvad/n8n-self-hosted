@@ -3,7 +3,7 @@ import { authedFetch } from './client'
 
 const BASE = '/api/logs/auth'
 
-export async function login(username: string, password: string): Promise<LoginResponse> {
+export const login = async (username: string, password: string): Promise<LoginResponse> => {
   const res = await fetch(`${BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -16,13 +16,13 @@ export async function login(username: string, password: string): Promise<LoginRe
   return res.json()
 }
 
-export async function getMe(): Promise<AuthUser> {
+export const getMe = async (): Promise<AuthUser> => {
   const res = await authedFetch(`${BASE}/me`)
   if (!res.ok) throw new Error('Failed to fetch user')
   return res.json()
 }
 
-export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+export const changePassword = async (oldPassword: string, newPassword: string): Promise<void> => {
   const res = await authedFetch(`${BASE}/change-password`, {
     method: 'POST',
     body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
@@ -33,14 +33,14 @@ export async function changePassword(oldPassword: string, newPassword: string): 
   }
 }
 
-export async function listUsers(): Promise<AuthUser[]> {
+export const listUsers = async (): Promise<AuthUser[]> => {
   const res = await authedFetch(`${BASE}/users`)
   if (!res.ok) throw new Error('Failed to fetch users')
   const data = await res.json()
   return data.users
 }
 
-export async function createUser(body: CreateUserRequest): Promise<AuthUser> {
+export const createUser = async (body: CreateUserRequest): Promise<AuthUser> => {
   const res = await authedFetch(`${BASE}/users`, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -52,7 +52,7 @@ export async function createUser(body: CreateUserRequest): Promise<AuthUser> {
   return res.json()
 }
 
-export async function updateUser(userId: string, body: UpdateUserRequest): Promise<AuthUser> {
+export const updateUser = async (userId: string, body: UpdateUserRequest): Promise<AuthUser> => {
   const res = await authedFetch(`${BASE}/users/${userId}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
@@ -64,7 +64,7 @@ export async function updateUser(userId: string, body: UpdateUserRequest): Promi
   return res.json()
 }
 
-export async function deleteUser(userId: string): Promise<void> {
+export const deleteUser = async (userId: string): Promise<void> => {
   const res = await authedFetch(`${BASE}/users/${userId}`, { method: 'DELETE' })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
