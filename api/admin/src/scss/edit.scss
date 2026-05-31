@@ -6,14 +6,14 @@
 
 // ── Edit / Create form ────────────────────────────────────────────────────────
 .form-fieldset {
-  padding: 0.5rem 0.75rem 0;
   border-color: var(--admin-border-color);
+  padding: 0.5rem 0.75rem 0;
 
   .form-group {
-    margin-bottom: 0.5rem !important;
-    padding-top: 0.5rem;
-    padding-bottom: 1rem;
     border-bottom: 1px solid var(--admin-border-color);
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 1rem;
+    padding-top: 0.5rem;
 
     &:last-child {
       border-bottom: none;
@@ -21,11 +21,11 @@
 
     .form-label,
     .col-form-label {
+      color: var(--admin-text-muted);
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--admin-text-muted);
-      text-transform: uppercase;
       letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
   }
 }

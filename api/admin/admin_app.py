@@ -106,7 +106,7 @@ def _get_filter_options(filter_obj):
     model = getattr(filter_obj.column, "class_", None)
     column_obj = get_column_obj(filter_obj.column, model)
     with Session(sync_engine) as session:
-        rows = session.execute(sa_select(column_obj).distinct().order_by(column_obj)).all()
+        rows = session.execute(sa_select(column_obj).distinct().order_by(column_obj.desc())).all()
         return [str(r[0]) for r in rows if r[0] is not None]
 
 

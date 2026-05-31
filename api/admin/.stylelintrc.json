@@ -1,0 +1,19 @@
+{
+  "extends": [
+    "stylelint-config-standard-scss"
+  ],
+  "plugins": [
+    "stylelint-order"
+  ],
+  "rules": {
+    "selector-class-pattern": null,
+    "scss/dollar-variable-pattern": null,
+    "no-descending-specificity": null,
+    "order/properties-alphabetical-order": true,
+    "max-nesting-depth": 3,
+    "color-named": "never",
+    "scss/no-duplicate-dollar-variables": true,
+    "number-max-precision": 4,
+    "shorthand-property-no-redundant-values": true
+  }
+}

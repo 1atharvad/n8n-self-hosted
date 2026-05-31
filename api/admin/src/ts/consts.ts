@@ -19,6 +19,7 @@ export enum Theme {
 export enum StorageKey {
   Sidebar = 'sidebar-collapsed',
   Theme = 'admin-theme',
+  Filters = 'sqladmin_filters',
 }
 
 /**
