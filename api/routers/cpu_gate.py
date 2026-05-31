@@ -118,7 +118,7 @@ async def get_cpu():
     return await _sample()
 
 
-@router.post("/wait", dependencies=[Depends(verify_api_key)])
+@router.get("/wait", dependencies=[Depends(verify_api_key)])
 async def wait_until_ready(
     timeout: int = Query(
         default=300,
@@ -139,7 +139,7 @@ async def wait_until_ready(
         await asyncio.sleep(min(30, remaining))
 
 
-@router.post("/reset", dependencies=[Depends(verify_api_key)])
+@router.get("/reset", dependencies=[Depends(verify_api_key)])
 async def reset_ema():
     """Reset the local EMA fallback state."""
     global _local_ema, _local_samples
