@@ -30,6 +30,8 @@ export default [
       'no-undef': 'off',              // TypeScript handles this
       'no-empty': ['error', { allowEmptyCatch: true }], // allow intentional empty catch blocks
       'react-hooks/set-state-in-effect': 'off', // Zustand actions call set() internally — not a direct setState
+      'func-style': ['error', 'expression'],
+      'prefer-arrow-callback': 'error',
     },
   },
   prettier,

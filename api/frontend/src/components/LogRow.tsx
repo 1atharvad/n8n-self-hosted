@@ -4,13 +4,13 @@ import { cn } from '@/lib/utils'
 
 const CONTAINER_PALETTE = ['#79c0ff', '#56d364', '#ffa657', '#d2a8ff', '#ff7b72', '#3fb950']
 
-function containerColor(name: string): string {
+const containerColor = (name: string): string => {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) & 0xffffff
   return CONTAINER_PALETTE[Math.abs(hash) % CONTAINER_PALETTE.length]
 }
 
-function formatTs(ts: string): string {
+const formatTs = (ts: string): string => {
   try {
     const d = new Date(ts)
     return (
@@ -30,7 +30,7 @@ const ROW_BG: Record<string, string> = {
   warn: 'bg-[#ffa657]/[0.05]',
 }
 
-export function LogRow({ entry }: { entry: LogEntry }) {
+export const LogRow = ({ entry }: { entry: LogEntry }) => {
   const level = entry.level.toLowerCase()
   return (
     <div

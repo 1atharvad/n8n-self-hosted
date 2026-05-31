@@ -8,7 +8,7 @@ const TIME_LABELS: Record<string, string> = {
   '24h': 'Last 24 hours',
 };
 
-export function StatusBar() {
+export const StatusBar = () => {
   const paused = useLogStore((s) => s.paused);
   const streamConnected = useLogStore((s) => s.streamConnected);
   const filters = useLogStore((s) => s.filters);

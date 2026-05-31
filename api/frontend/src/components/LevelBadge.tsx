@@ -9,7 +9,7 @@ const LEVEL_VARIANT: Record<string, 'destructive' | 'outline' | 'secondary' | 'd
   debug: 'secondary',
 }
 
-export function LevelBadge({ level }: { level: string }) {
+export const LevelBadge = ({ level }: { level: string }) => {
   const key = level.toLowerCase()
   return (
     <Badge

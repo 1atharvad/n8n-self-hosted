@@ -37,7 +37,7 @@ const emptyForm = (): UserForm => ({
   is_active: true,
 })
 
-export function UserManagement() {
+export const UserManagement = () => {
   const allLabels = useLogStore((s) => s.labels)
   const [users, setUsers] = useState<AuthUser[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,7 +48,7 @@ export function UserManagement() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
-  async function load() {
+  const load = async () => {
     setLoading(true)
     try {
       setUsers(await listUsers())
@@ -64,14 +64,14 @@ export function UserManagement() {
     load()
   }, [])
 
-  function openCreate() {
+  const openCreate = () => {
     setForm(emptyForm())
     setEditTarget(null)
     setFormError('')
     setModal('create')
   }
 
-  function openEdit(user: AuthUser) {
+  const openEdit = (user: AuthUser) => {
     setForm({
       username: user.username,
       password: '',
@@ -85,12 +85,12 @@ export function UserManagement() {
     setModal('edit')
   }
 
-  function closeModal() {
+  const closeModal = () => {
     setModal(null)
     setEditTarget(null)
   }
 
-  async function handleSave() {
+  const handleSave = async () => {
     setSaving(true)
     setFormError('')
     try {
@@ -120,7 +120,7 @@ export function UserManagement() {
     }
   }
 
-  async function handleDelete(user: AuthUser) {
+  const handleDelete = async (user: AuthUser) => {
     if (!confirm(`Delete user "${user.username}"?`)) return
     try {
       await deleteUser(user.id)
@@ -130,7 +130,7 @@ export function UserManagement() {
     }
   }
 
-  function toggleContainer(name: string) {
+  const toggleContainer = (name: string) => {
     setForm((prev) => ({
       ...prev,
       allowed_containers: prev.allowed_containers.includes(name)

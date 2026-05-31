@@ -1,6 +1,6 @@
 import { useLogStore } from '@/store/useLogStore'
 
-export function ErrorBanner() {
+export const ErrorBanner = () => {
   const error = useLogStore((s) => s.error)
   const clearError = useLogStore((s) => s.clearError)
 

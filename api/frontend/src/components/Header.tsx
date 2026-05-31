@@ -1,13 +1,14 @@
+import { type ReactNode } from 'react'
 import { useLogStore } from '@/store/useLogStore'
 import { Button } from 'advi-ui'
 import { Pause, Play } from 'lucide-react'
 
 interface HeaderProps {
   title?: string
-  actions?: React.ReactNode
+  actions?: ReactNode
 }
 
-export function Header({ title, actions }: HeaderProps) {
+export const Header = ({ title, actions }: HeaderProps) => {
   const loading = useLogStore((s) => s.loading)
   const lastRefresh = useLogStore((s) => s.lastRefresh)
   const logs = useLogStore((s) => s.logs)
@@ -18,7 +19,7 @@ export function Header({ title, actions }: HeaderProps) {
     <header className="flex items-center justify-between px-4 py-2.5 bg-card border-b border-border shrink-0">
       <div className="flex items-center gap-2.5">
         <span className="text-lg text-primary leading-none">◈</span>
-        <span className="font-bold text-[15px] tracking-wide">Log Viewer</span>
+        <span className="font-bold text-[15px] tracking-wide">Admin Panel</span>
         {title ? (
           <>
             <span className="text-muted-foreground text-[15px]">/</span>
