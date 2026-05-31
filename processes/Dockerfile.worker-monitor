@@ -13,8 +13,6 @@ RUN apt-get update \
 
 RUN pip install --no-cache-dir redis==5.* requests==2.*
 
-# /app is reserved for the project mount (compose files).
-# Script lives at /autoscaler/ so the volume doesn't shadow it.
-COPY worker_autoscaler.py /autoscaler/worker_autoscaler.py
+COPY worker_monitor.py /worker-monitor/worker_monitor.py
 
-CMD ["python", "-u", "/autoscaler/worker_autoscaler.py"]
+CMD ["python", "-u", "/worker-monitor/worker_monitor.py"]

@@ -39,6 +39,26 @@ services:
     networks:
       - baota_net
 
+  worker-monitor:
+    build:
+      context: ${HOST_PROJECT_DIR}/processes
+      dockerfile: Dockerfile.worker-monitor
+    container_name: worker-monitor
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: 6379
+      COMPOSE_PROJECT_NAME: n8n-automation
+      POLL_INTERVAL_SEC: ${WORKER_MONITOR_POLL_SEC:-30}
+      SERVER_ID: ${SERVER_ID}
+      N8N_BASE_URL: ${N8N_BASE_URL:-http://n8n:5678}
+      N8N_API_KEY: ${N8N_API_KEY:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+    networks:
+      - baota_net
+
   fastapi:
     build: ${HOST_PROJECT_DIR}/api
     container_name: media-api
@@ -54,11 +74,28 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       API_KEY: ${API_KEY}
+      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-65}
     expose:
       - "9374"
     volumes:
       - ${HOST_PROJECT_DIR}/tts_cache:/tts_cache
       - ${HOST_PROJECT_DIR}/n8n_files:/n8n_files
+      - /proc:/host/proc:ro
+    networks:
+      - baota_net
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${HOST_PROJECT_DIR}/promtail-config.yaml:/etc/promtail/promtail.yaml:ro
+    environment:
+      LOKI_URL: ${LOKI_URL}
+    command: -config.file=/etc/promtail/promtail.yaml
     networks:
       - baota_net
 

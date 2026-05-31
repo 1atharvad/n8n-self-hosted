@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import { useDashboardStore } from '@/store/useDashboardStore'
-import { useAutoscalerStore } from '@/store/useAutoscalerStore'
+import { useWorkerMonitorStore } from '@/store/useWorkerMonitorStore'
 import { Header } from '@/components/Header'
 import { CpuChart } from '@/components/CpuChart'
 import { ContainerCpuChart } from '@/components/ContainerCpuChart'
@@ -39,17 +39,19 @@ const RANGE_OPTIONS = [
 const DashboardPage = () => {
   const navigate = useNavigate()
   const { data, loading, error, lastRefresh, range, setRange, load } = useDashboardStore()
-  const { metrics, loading: autoscalerLoading, load: loadAutoscaler } = useAutoscalerStore()
+  const { servers, serverNames, selectedServer, setSelectedServer, loading: monitorLoading, error: monitorError, load: loadMonitor } = useWorkerMonitorStore()
   const [asideOpen, setAsideOpen] = useState(true)
+
+  const metrics = selectedServer ? (servers[selectedServer] ?? []) : [];
 
   useEffect(() => {
     load()
-    loadAutoscaler()
-  }, [load, loadAutoscaler])
+    loadMonitor()
+  }, [load, loadMonitor])
   useEffect(() => {
-    const id = setInterval(() => { load(); loadAutoscaler(); }, 30_000)
+    const id = setInterval(() => { load(); loadMonitor(); }, 30_000)
     return () => clearInterval(id)
-  }, [load, loadAutoscaler])
+  }, [load, loadMonitor])
 
   const summary = data?.summary
   const timeseries = data?.timeseries ?? []
@@ -72,11 +74,24 @@ const DashboardPage = () => {
       <Header
         title="Dashboard"
         actions={
-          lastRefresh && (
-            <span className="text-[11px] text-muted-foreground">
-              {loading ? 'Refreshing…' : `Updated ${lastRefresh.toLocaleTimeString()}`}
-            </span>
-          )
+          <div className="flex items-center gap-3">
+            {serverNames.length > 1 && (
+              <select
+                value={selectedServer ?? ''}
+                onChange={(e) => setSelectedServer(e.target.value)}
+                className="text-xs bg-secondary border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {serverNames.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            )}
+            {lastRefresh && (
+              <span className="text-[11px] text-muted-foreground">
+                {loading ? 'Refreshing…' : `Updated ${lastRefresh.toLocaleTimeString()}`}
+              </span>
+            )}
+          </div>
         }
       />
 
@@ -110,6 +125,12 @@ const DashboardPage = () => {
             <div className="mb-4 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {error}
+            </div>
+          )}
+          {monitorError && (
+            <div className="mb-4 flex items-center gap-2 rounded-md border border-yellow-400/40 bg-yellow-400/10 px-3 py-2 text-xs text-yellow-400">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Worker monitor: {monitorError}
             </div>
           )}
 
@@ -208,9 +229,9 @@ const DashboardPage = () => {
             </div>
           </section>
 
-          <CpuChart metrics={metrics} loading={autoscalerLoading} />
+          <CpuChart metrics={metrics} loading={monitorLoading} />
 
-          <ContainerCpuChart metrics={metrics} loading={autoscalerLoading} />
+          <ContainerCpuChart metrics={metrics} loading={monitorLoading} />
 
           {/* Active containers + scale events */}
           <ActiveContainersSection metrics={metrics} fallbackContainers={containers} loading={loading && !data} />

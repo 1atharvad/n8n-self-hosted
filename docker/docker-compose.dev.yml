@@ -105,6 +105,29 @@ services:
     networks:
       - baota_net
 
+  worker-monitor:
+    build:
+      context: ${HOST_PROJECT_DIR}/processes
+      dockerfile: Dockerfile.worker-monitor
+    container_name: worker-monitor
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      COMPOSE_PROJECT_NAME: n8n-automation
+      POLL_INTERVAL_SEC: ${WORKER_MONITOR_POLL_SEC:-30}
+      SERVER_ID: ${SERVER_ID:-dev}
+      N8N_BASE_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - baota_net
+
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -247,7 +270,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - ${HOST_PROJECT_DIR}/loki-config.yaml:/etc/loki/local-config.yaml:ro
-      - ${HOST_PROJECT_DIR}/loki-data:/tmp/loki
+      - ${HOST_PROJECT_DIR}/loki-data:/loki
     ports:
       - "3100:3100"
     networks:

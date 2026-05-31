@@ -1,33 +1,31 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useLogStore } from '@/store/useLogStore'
-import { Header } from '@/components/Header'
-import { Toolbar } from '@/components/Toolbar'
-import { LogTable } from '@/components/LogTable'
-import { StatusBar } from '@/components/StatusBar'
-import { ErrorBanner } from '@/components/ErrorBanner'
-import { PageAside } from 'advi-ui'
-import { Settings, LayoutDashboard, ScrollText } from 'lucide-react'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLogStore } from '@/store/useLogStore';
+import { Header } from '@/components/Header';
+import { Toolbar } from '@/components/Toolbar';
+import { LogTable } from '@/components/LogTable';
+import { StatusBar } from '@/components/StatusBar';
+import { ErrorBanner } from '@/components/ErrorBanner';
+import { PageAside } from 'advi-ui';
+import { Settings, LayoutDashboard, ScrollText } from 'lucide-react';
 
 export default function LogsPage() {
-  const loadLabels = useLogStore((s) => s.loadLabels)
-  const loadLogs = useLogStore((s) => s.loadLogs)
-  const filters = useLogStore((s) => s.filters)
+  const loadLabels = useLogStore((s) => s.loadLabels);
+  const startStream = useLogStore((s) => s.startStream);
+  const stopStream = useLogStore((s) => s.stopStream);
+  const filters = useLogStore((s) => s.filters);
 
-  const navigate = useNavigate()
-  const [asideOpen, setAsideOpen] = useState(true)
-
-  useEffect(() => {
-    loadLabels()
-  }, [loadLabels])
-  useEffect(() => {
-    loadLogs()
-  }, [loadLogs, filters])
+  const navigate = useNavigate();
+  const [asideOpen, setAsideOpen] = useState(true);
 
   useEffect(() => {
-    const id = setInterval(loadLogs, 5_000)
-    return () => clearInterval(id)
-  }, [loadLogs])
+    loadLabels();
+  }, [loadLabels]);
+
+  useEffect(() => {
+    void startStream();
+    return () => stopStream();
+  }, [filters]);
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
@@ -57,7 +55,6 @@ export default function LogsPage() {
           ]}
         />
 
-        {/* Main content */}
         <div className="flex flex-col flex-1 overflow-hidden">
           <Toolbar />
           <ErrorBanner />
@@ -66,5 +63,5 @@ export default function LogsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

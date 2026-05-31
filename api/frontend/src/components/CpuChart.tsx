@@ -10,10 +10,10 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
-import type { AutoscalerPoint } from '@/api/autoscaler';
+import type { MonitorPoint } from '@/api/worker-monitor';
 
 interface CpuChartProps {
-  metrics: AutoscalerPoint[];
+  metrics: MonitorPoint[];
   loading: boolean;
 }
 
@@ -21,8 +21,6 @@ interface ChartPoint {
   time: string;
   'CPU raw': number;
   'CPU EMA': number;
-  Workers: number;
-  Waiting: number;
   Active: number;
 }
 
@@ -41,8 +39,6 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
     time: fmt(p.ts),
     'CPU raw': p.cpu_raw,
     'CPU EMA': p.cpu_ema,
-    Workers: p.workers,
-    Waiting: p.waiting,
     Active: p.active,
   }));
 
@@ -52,7 +48,7 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
     <section className="bg-card border border-border rounded-lg overflow-hidden mb-6">
       <div className="px-6 py-4 border-b border-border flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold">Worker autoscaler — CPU & queue</h2>
+          <h2 className="text-sm font-semibold">Worker monitor — CPU & queue</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Last {metrics.length} polls · refreshes every 30s
           </p>
@@ -60,8 +56,7 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
         {latest && (
           <div className="flex gap-4 text-right">
             <Pill label="CPU" value={`${latest.cpu_ema.toFixed(1)}%`} color="text-primary" />
-            <Pill label="Workers" value={String(latest.workers)} color="text-green-400" />
-            <Pill label="Waiting" value={String(latest.waiting)} color="text-yellow-400" />
+            <Pill label="Active" value={String(latest.active)} color="text-green-400" />
           </div>
         )}
       </div>
@@ -128,7 +123,7 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
                 y={65}
                 stroke="hsl(var(--muted-foreground))"
                 strokeDasharray="4 4"
-                label={{ value: 'scale-up limit', fontSize: 9, fill: 'hsl(var(--muted-foreground))', position: 'insideTopLeft' }}
+                label={{ value: 'threshold', fontSize: 9, fill: 'hsl(var(--muted-foreground))', position: 'insideTopLeft' }}
               />
 
               {/* CPU EMA — filled area */}
@@ -154,24 +149,13 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
                 dot={false}
               />
 
-              {/* Workers — step line, right axis */}
+              {/* Active jobs — step line, right axis */}
               <Line
                 yAxisId="count"
                 type="stepAfter"
-                dataKey="Workers"
+                dataKey="Active"
                 stroke="#4ade80"
-                strokeWidth={2}
-                dot={false}
-              />
-
-              {/* Waiting jobs — step line, right axis */}
-              <Line
-                yAxisId="count"
-                type="stepAfter"
-                dataKey="Waiting"
-                stroke="#facc15"
                 strokeWidth={1.5}
-                strokeDasharray="3 2"
                 dot={false}
               />
             </ComposedChart>

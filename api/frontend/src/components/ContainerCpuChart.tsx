@@ -9,10 +9,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import type { AutoscalerPoint } from '@/api/autoscaler';
+import type { MonitorPoint } from '@/api/worker-monitor';
 
 interface ContainerCpuChartProps {
-  metrics: AutoscalerPoint[];
+  metrics: MonitorPoint[];
   loading: boolean;
 }
 

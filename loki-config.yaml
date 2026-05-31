@@ -6,7 +6,7 @@ server:
 
 ingester:
   wal:
-    dir: /tmp/loki/wal
+    dir: /loki/wal
   lifecycler:
     address: 127.0.0.1
     ring:
@@ -28,10 +28,10 @@ schema_config:
 
 storage_config:
   tsdb_shipper:
-    active_index_directory: /tmp/loki/index
-    cache_location: /tmp/loki/index_cache
+    active_index_directory: /loki/index
+    cache_location: /loki/index_cache
   filesystem:
-    directory: /tmp/loki/chunks
+    directory: /loki/chunks
 
 # --- PERFORMANCE RESTRAINTS FOR CONTABO VPS ---
 
@@ -58,7 +58,7 @@ frontend:
   max_outstanding_per_tenant: 32
 
 compactor:
-  working_directory: /tmp/loki/compactor
+  working_directory: /loki/compactor
   # 30m instead of 10m to reduce frequent CPU spikes from compaction
   compaction_interval: 30m
   max_compaction_parallelism: 1
