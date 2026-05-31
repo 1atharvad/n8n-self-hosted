@@ -45,13 +45,5 @@ class CombineVideosRequest(BaseModel):
     upload_to_minio: bool = False
 
 
-class CleanupRequest(BaseModel):
-    folders: list[str] | None = None  # None = clean all folders
-
-
-class VideoFileRequest(BaseModel):
-    filename: str
-
-
 class ExecuteRequest(BaseModel):
     command: str
