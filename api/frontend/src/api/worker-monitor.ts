@@ -7,6 +7,7 @@ export interface MonitorPoint {
   cpu_raw: number;
   cpu_ema: number;
   cpu_effective: number;
+  threshold: number;
   active: number;
   active_src: 'api' | 'redis';
   containers?: string[];

@@ -6,6 +6,8 @@ import { Header } from '@/components/Header'
 import { CpuChart } from '@/components/CpuChart'
 import { ContainerCpuChart } from '@/components/ContainerCpuChart'
 import { ActiveContainersSection } from '@/components/ActiveContainersSection'
+import { ServerHealthCards } from '@/components/ServerHealthCards'
+import { MultiServerCpuChart } from '@/components/MultiServerCpuChart'
 import { PageAside } from 'advi-ui'
 import {
   LayoutDashboard,
@@ -134,6 +136,12 @@ const DashboardPage = () => {
             </div>
           )}
 
+          <ServerHealthCards
+            servers={servers}
+            selectedServer={selectedServer}
+            onSelect={setSelectedServer}
+          />
+
           {/* Summary cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
@@ -230,6 +238,8 @@ const DashboardPage = () => {
           </section>
 
           <CpuChart metrics={metrics} loading={monitorLoading} />
+
+          <MultiServerCpuChart servers={servers} />
 
           <ContainerCpuChart metrics={metrics} loading={monitorLoading} />
 

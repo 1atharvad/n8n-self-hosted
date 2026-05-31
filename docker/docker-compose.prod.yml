@@ -124,6 +124,7 @@ services:
       SERVER_ID: ${SERVER_ID:-main}
       N8N_BASE_URL: http://n8n:5678
       N8N_API_KEY: ${N8N_API_KEY:-}
+      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-35}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc:/host/proc:ro

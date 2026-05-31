@@ -58,6 +58,7 @@ EWMA_ALPHA_UP = _env_float("EWMA_ALPHA_UP", 0.5)
 EWMA_ALPHA_DOWN = _env_float("EWMA_ALPHA_DOWN", 0.1)
 COMPOSE_PROJECT = _env_str("COMPOSE_PROJECT_NAME", "n8n-automation")
 SERVER_ID = _env_str("SERVER_ID", socket.gethostname())
+CPU_GATE_THRESHOLD = _env_int("CPU_GATE_THRESHOLD", 65)
 
 BULL_ACTIVE_KEY = "bull:jobs:active"
 REDIS_KEY = f"worker-monitor:metrics:{SERVER_ID}"
@@ -215,6 +216,7 @@ def run():
                 "cpu_raw": cpu_raw,
                 "cpu_ema": cpu_ema,
                 "cpu_effective": cpu_effective,
+                "threshold": CPU_GATE_THRESHOLD,
                 "active": active,
                 "active_src": active_src,
                 "containers": containers,

@@ -117,14 +117,15 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
 
-              {/* Scale-up threshold reference */}
-              <ReferenceLine
-                yAxisId="cpu"
-                y={65}
-                stroke="hsl(var(--muted-foreground))"
-                strokeDasharray="4 4"
-                label={{ value: 'threshold', fontSize: 9, fill: 'hsl(var(--muted-foreground))', position: 'insideTopLeft' }}
-              />
+              {latest?.threshold !== undefined && (
+                <ReferenceLine
+                  yAxisId="cpu"
+                  y={latest.threshold}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="4 4"
+                  label={{ value: `threshold (${latest.threshold}%)`, fontSize: 9, fill: 'hsl(var(--muted-foreground))', position: 'insideTopLeft' }}
+                />
+              )}
 
               {/* CPU EMA — filled area */}
               <Area
