@@ -22,7 +22,7 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("ADMIN_SECRET_KEY", "change-me-in-production"))
 
 for router in all_routers:
-    app.include_router(router)
+    app.include_router(router, dependencies=[Depends(verify_api_key)])
 
 @app.get('/health', dependencies=[Depends(verify_api_key)])
 async def health():

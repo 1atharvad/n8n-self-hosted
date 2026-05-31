@@ -4,9 +4,7 @@ import os
 import time
 
 import redis.asyncio as aioredis
-from fastapi import APIRouter, Depends, HTTPException, Query
-
-from routers.utils import verify_api_key
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/cpu-gate", tags=["CPU Gate"])
 
@@ -113,12 +111,12 @@ async def _sample() -> dict:
     return _sample_local()
 
 
-@router.get("", dependencies=[Depends(verify_api_key)])
+@router.get("")
 async def get_cpu():
     return await _sample()
 
 
-@router.get("/wait", dependencies=[Depends(verify_api_key)])
+@router.get("/wait")
 async def wait_until_ready(
     timeout: int = Query(
         default=300,
@@ -139,7 +137,7 @@ async def wait_until_ready(
         await asyncio.sleep(min(30, remaining))
 
 
-@router.get("/reset", dependencies=[Depends(verify_api_key)])
+@router.get("/reset")
 async def reset_ema():
     """Reset the local EMA fallback state."""
     global _local_ema, _local_samples

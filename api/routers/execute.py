@@ -1,12 +1,11 @@
 import subprocess
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from schemas import ExecuteRequest
-from .utils import verify_api_key
 
-router = APIRouter(tags=["File Management"], dependencies=[Depends(verify_api_key)])
+router = APIRouter(tags=["File Management"])
 
 
 @router.post('/execute')
