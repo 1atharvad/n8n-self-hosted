@@ -164,6 +164,9 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY}
       CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-65}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SERVER_ID: ${SERVER_ID:-dev}
     expose:
       - "9374"
     volumes:

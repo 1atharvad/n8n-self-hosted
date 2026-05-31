@@ -75,6 +75,9 @@ services:
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       API_KEY: ${API_KEY}
       CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-65}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: 6379
+      SERVER_ID: ${SERVER_ID}
     expose:
       - "9374"
     volumes:

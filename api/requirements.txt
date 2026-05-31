@@ -19,5 +19,6 @@ ruff>=0.0.337
 black>=24.12.0
 isort>=6.5.5
 minio
+redis[asyncio]
 faster-whisper
 webrtcvad-wheels
