@@ -23,7 +23,7 @@ export const authedFetch = async (url: string, options: RequestInit = {}): Promi
 
   if (res.status === 401) {
     clearToken()
-    window.location.href = '/logs/login'
+    window.location.href = '/admin/login'
     throw new Error('Unauthorized')
   }
 

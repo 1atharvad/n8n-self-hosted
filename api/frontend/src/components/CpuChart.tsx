@@ -45,8 +45,8 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
   const latest = metrics[metrics.length - 1];
 
   return (
-    <section className="bg-card border border-border rounded-lg overflow-hidden mb-6">
-      <div className="px-6 py-4 border-b border-border flex items-start justify-between">
+    <section className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="px-6 py-5 border-b border-border flex items-start justify-between">
         <div>
           <h2 className="text-sm font-semibold">Worker monitor — CPU & queue</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -61,7 +61,7 @@ export const CpuChart = ({ metrics, loading }: CpuChartProps) => {
         )}
       </div>
 
-      <div className="px-4 py-4" style={{ height: 300 }}>
+      <div className="px-6 py-5" style={{ height: 300 }}>
         {chartData.length === 0 ? (
           <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
             {loading ? 'Loading…' : 'No autoscaler data yet'}

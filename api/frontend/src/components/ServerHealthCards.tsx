@@ -1,5 +1,6 @@
 import type { MonitorPoint } from '@/api/worker-monitor';
 import { cn } from '@/lib/utils';
+import { Server } from 'lucide-react';
 
 interface ServerHealthCardsProps {
   servers: Record<string, MonitorPoint[]>;
@@ -20,7 +21,7 @@ export const ServerHealthCards = ({ servers, selectedServer, onSelect }: ServerH
   if (names.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {names.map((name) => {
         const points = servers[name];
         const latest = points[points.length - 1];
@@ -32,44 +33,56 @@ export const ServerHealthCards = ({ servers, selectedServer, onSelect }: ServerH
         const hot = latest.cpu_effective >= latest.threshold;
         const isSelected = name === selectedServer;
 
+        const accentBorder = stale
+          ? 'border-t-destructive'
+          : warn
+          ? 'border-t-yellow-400'
+          : 'border-t-green-400';
+
+        const statusDot = stale
+          ? 'bg-destructive'
+          : warn
+          ? 'bg-yellow-400'
+          : 'bg-green-400';
+
         return (
           <button
             key={name}
             onClick={() => onSelect(name)}
             className={cn(
-              'text-left bg-card border rounded-lg px-4 py-3 transition-colors hover:border-primary/60',
+              'text-left bg-card border border-t-2 rounded-2xl px-6 py-6 flex flex-col gap-5 transition-colors hover:border-primary/60',
+              accentBorder,
               isSelected ? 'border-primary' : 'border-border',
-              stale && 'border-destructive/50',
             )}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium truncate max-w-[75%]">{name}</span>
-              <span
-                className={cn(
-                  'h-2 w-2 rounded-full shrink-0',
-                  stale ? 'bg-destructive' : warn ? 'bg-yellow-400' : 'bg-green-400',
-                )}
-              />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="p-1.5 rounded-lg bg-secondary shrink-0">
+                  <Server className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+                <span className="text-xs font-medium truncate">{name}</span>
+              </div>
+              <span className={cn('h-2 w-2 rounded-full shrink-0', statusDot)} />
             </div>
 
-            <div className="flex gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <p className="text-[10px] text-muted-foreground">CPU</p>
-                <p className={cn('text-base font-semibold tabular-nums', hot ? 'text-destructive' : 'text-primary')}>
+                <p className="text-[10px] text-muted-foreground mb-1">CPU</p>
+                <p className={cn('text-2xl font-bold tabular-nums leading-none', hot ? 'text-destructive' : 'text-primary')}>
                   {latest.cpu_effective.toFixed(1)}%
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground">Active</p>
-                <p className="text-base font-semibold tabular-nums text-green-400">{latest.active}</p>
+                <p className="text-[10px] text-muted-foreground mb-1">Active</p>
+                <p className="text-2xl font-bold tabular-nums leading-none text-green-400">{latest.active}</p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground">Gate</p>
-                <p className="text-base font-semibold tabular-nums text-muted-foreground">{latest.threshold}%</p>
+                <p className="text-[10px] text-muted-foreground mb-1">Gate</p>
+                <p className="text-2xl font-bold tabular-nums leading-none text-muted-foreground">{latest.threshold}%</p>
               </div>
             </div>
 
-            <p className={cn('text-[10px] mt-2', stale ? 'text-destructive' : 'text-muted-foreground')}>
+            <p className={cn('text-[10px]', stale ? 'text-destructive' : 'text-muted-foreground')}>
               {stale ? 'offline · ' : ''}{ageFmt(latest.ts)}
             </p>
           </button>

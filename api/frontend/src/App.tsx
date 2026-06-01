@@ -4,25 +4,27 @@ import LoginPage from '@/pages/LoginPage'
 import LogsPage from '@/pages/LogsPage'
 import SettingsPage from '@/pages/SettingsPage'
 import DashboardPage from '@/pages/DashboardPage'
+import PerformancePage from '@/pages/PerformancePage'
+import InfrastructurePage from '@/pages/InfrastructurePage'
 
 export default function App() {
   return (
-    <BrowserRouter basename="/logs">
+    <BrowserRouter basename="/admin">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <LogsPage />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/logs"
+          element={
+            <ProtectedRoute>
+              <LogsPage />
             </ProtectedRoute>
           }
         />
@@ -34,7 +36,23 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="/performance"
+          element={
+            <ProtectedRoute>
+              <PerformancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/infrastructure"
+          element={
+            <ProtectedRoute>
+              <InfrastructurePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   )

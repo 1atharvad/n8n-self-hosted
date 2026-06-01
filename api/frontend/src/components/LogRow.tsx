@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { LogEntry } from '@/types'
 import { LevelBadge } from '@/components/LevelBadge'
 import { cn } from '@/lib/utils'
@@ -30,28 +31,28 @@ const ROW_BG: Record<string, string> = {
   warn: 'bg-[#ffa657]/[0.05]',
 }
 
-export const LogRow = ({ entry }: { entry: LogEntry }) => {
+export const LogRow = memo(({ entry }: { entry: LogEntry }) => {
   const level = entry.level.toLowerCase()
   return (
     <div
       className={cn(
-        'flex gap-3 px-3 py-0.5 border-b border-border/40 items-start min-w-0 hover:bg-white/[0.02]',
+        'grid grid-cols-[11ch_15ch_5rem_1fr] gap-x-3 px-3 py-[2px] border-b border-border/40 items-start min-w-0 hover:bg-white/[0.02]',
         ROW_BG[level]
       )}
     >
-      <span className="text-muted-foreground text-[11px] shrink-0 pt-px min-w-[10ch]">
+      <span className="text-muted-foreground text-[11px] font-mono shrink-0 tabular-nums">
         {formatTs(entry.ts)}
       </span>
       <span
-        className="text-[11px] font-semibold shrink-0 pt-px min-w-[12ch] max-w-[20ch] truncate"
+        className="text-[11px] font-mono font-semibold truncate"
         style={{ color: containerColor(entry.container) }}
       >
         {entry.container}
       </span>
       <LevelBadge level={entry.level} />
-      <span className="flex-1 min-w-0 break-words whitespace-pre-wrap text-foreground leading-snug">
+      <span className="min-w-0 break-words whitespace-pre-wrap text-foreground text-[11px] leading-snug">
         {entry.message}
       </span>
     </div>
   )
-}
+})

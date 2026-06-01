@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -40,7 +40,7 @@ const tooltipStyle = {
 };
 
 export const ContainerCpuChart = ({ metrics, loading }: ContainerCpuChartProps) => {
-  const containerNames = React.useMemo(() => {
+  const containerNames = useMemo(() => {
     const names = new Set<string>();
     metrics.forEach((m) => {
       Object.keys(m.container_cpu ?? {}).forEach((n) => names.add(n));
@@ -61,15 +61,15 @@ export const ContainerCpuChart = ({ metrics, loading }: ContainerCpuChartProps) 
   const hasData = chartData.length > 0 && containerNames.length > 0;
 
   return (
-    <section className="bg-card border border-border rounded-lg overflow-hidden mb-6">
-      <div className="px-6 py-4 border-b border-border">
+    <section className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="px-6 py-5 border-b border-border">
         <h2 className="text-sm font-semibold">Per-container CPU usage</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
           CPU % per running container · last {metrics.length} polls
         </p>
       </div>
 
-      <div className="px-4 py-4" style={{ height: 300 }}>
+      <div className="px-6 py-5" style={{ height: 300 }}>
         {!hasData ? (
           <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
             {loading ? 'Loading…' : 'No container CPU data yet'}

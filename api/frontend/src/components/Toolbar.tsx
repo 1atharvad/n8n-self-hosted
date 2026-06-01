@@ -41,7 +41,7 @@ export const Toolbar = () => {
   const setLimit = useLogStore((s) => s.setLimit)
 
   return (
-    <div className="flex flex-wrap gap-2 px-3 py-2 bg-card border-b border-border items-center shrink-0">
+    <div className="flex flex-col px-3 py-1.5 bg-card border-b border-border shrink-0 gap-1.5">
       <MultiSelect
         placeholder="All containers"
         options={labels.map((l) => ({ value: l, label: l }))}
@@ -49,26 +49,28 @@ export const Toolbar = () => {
         onChange={setContainers}
         className="w-full"
       />
-      <Select options={LEVEL_OPTIONS} value={filters.level} onChange={setLevel} />
-      <Select
-        options={RANGE_OPTIONS}
-        value={filters.range}
-        onChange={(v) => setRange(v as TimeRange)}
-      />
-      <Select
-        options={LIMIT_OPTIONS}
-        value={String(filters.limit)}
-        onChange={(v) => setLimit(Number(v))}
-      />
-
-      <SearchInput
-        defaultValue={filters.search}
-        placeholder="Search logs…"
-        debounce={400}
-        onSearch={setSearch}
-        onClear={() => setSearch('')}
-        className="flex-1 min-w-[160px]"
-      />
+      <div className="flex gap-1.5 items-center">
+        <Select options={LEVEL_OPTIONS} value={filters.level} onChange={setLevel} />
+        <Select
+          options={RANGE_OPTIONS}
+          value={filters.range}
+          onChange={(v) => setRange(v as TimeRange)}
+        />
+        <Select
+          options={LIMIT_OPTIONS}
+          value={String(filters.limit)}
+          onChange={(v) => setLimit(Number(v))}
+        />
+        <div className="h-4 w-px bg-border shrink-0" />
+        <SearchInput
+          defaultValue={filters.search}
+          placeholder="Search logs…"
+          debounce={400}
+          onSearch={setSearch}
+          onClear={() => setSearch('')}
+          className="flex-1 min-w-[160px]"
+        />
+      </div>
     </div>
   )
 }

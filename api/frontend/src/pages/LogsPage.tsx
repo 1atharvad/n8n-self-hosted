@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLogStore } from '@/store/useLogStore';
 import { Header } from '@/components/Header';
 import { Toolbar } from '@/components/Toolbar';
 import { LogTable } from '@/components/LogTable';
 import { StatusBar } from '@/components/StatusBar';
 import { ErrorBanner } from '@/components/ErrorBanner';
-import { PageAside } from 'advi-ui';
-import { Settings, LayoutDashboard, ScrollText } from 'lucide-react';
+import { AppSidebar } from '@/components/AppSidebar';
+import { useNavSections } from '@/hooks/useNavSections';
 
 export default function LogsPage() {
   const loadLabels = useLogStore((s) => s.loadLabels);
@@ -15,8 +14,8 @@ export default function LogsPage() {
   const stopStream = useLogStore((s) => s.stopStream);
   const filters = useLogStore((s) => s.filters);
 
-  const navigate = useNavigate();
-  const [asideOpen, setAsideOpen] = useState(true);
+  const [asideOpen, setAsideOpen] = useState(false);
+  const navSections = useNavSections('logs');
 
   useEffect(() => {
     loadLabels();
@@ -29,31 +28,10 @@ export default function LogsPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
-      <Header />
+      <Header title="Logs" showLogControls />
 
       <div className="flex flex-1 overflow-hidden">
-        <PageAside
-          open={asideOpen}
-          onToggle={() => setAsideOpen((v) => !v)}
-          items={[
-            {
-              icon: <ScrollText className="h-4 w-4" />,
-              label: 'Logs',
-              onClick: () => navigate('/'),
-              active: true,
-            },
-            {
-              icon: <LayoutDashboard className="h-4 w-4" />,
-              label: 'Dashboard',
-              onClick: () => navigate('/dashboard'),
-            },
-            {
-              icon: <Settings className="h-4 w-4" />,
-              label: 'Settings',
-              onClick: () => navigate('/settings'),
-            },
-          ]}
-        />
+        <AppSidebar open={asideOpen} onToggle={() => setAsideOpen((v) => !v)} sections={navSections} />
 
         <div className="flex flex-col flex-1 overflow-hidden">
           <Toolbar />

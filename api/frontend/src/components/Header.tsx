@@ -1,14 +1,17 @@
 import { type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLogStore } from '@/store/useLogStore'
 import { Button } from 'advi-ui'
-import { Pause, Play } from 'lucide-react'
+import { Pause, Play, Activity } from 'lucide-react'
 
 interface HeaderProps {
   title?: string
   actions?: ReactNode
+  showLogControls?: boolean
 }
 
-export const Header = ({ title, actions }: HeaderProps) => {
+export const Header = ({ title, actions, showLogControls = false }: HeaderProps) => {
+  const navigate = useNavigate()
   const loading = useLogStore((s) => s.loading)
   const lastRefresh = useLogStore((s) => s.lastRefresh)
   const logs = useLogStore((s) => s.logs)
@@ -16,28 +19,32 @@ export const Header = ({ title, actions }: HeaderProps) => {
   const togglePause = useLogStore((s) => s.togglePause)
 
   return (
-    <header className="flex items-center justify-between px-4 py-2.5 bg-card border-b border-border shrink-0">
+    <header className="flex items-center justify-between px-4 bg-card border-b border-border shrink-0 min-h-[52px]">
       <div className="flex items-center gap-2.5">
-        <span className="text-lg text-primary leading-none">◈</span>
-        <span className="font-bold text-[15px] tracking-wide">Admin Panel</span>
-        {title ? (
+        <Activity className="h-4 w-4 text-primary shrink-0" />
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="font-semibold text-sm tracking-wide hover:text-primary transition-colors"
+        >
+          Admin Panel
+        </button>
+        {title && (
           <>
-            <span className="text-muted-foreground text-[15px]">/</span>
-            <span className="text-[15px] text-muted-foreground">{title}</span>
+            <span className="text-muted-foreground text-sm">/</span>
+            <span className="text-sm text-muted-foreground">{title}</span>
           </>
-        ) : (
-          lastRefresh && (
-            <span className="text-[11px] text-muted-foreground">
-              {loading ? 'Refreshing…' : `Updated ${lastRefresh.toLocaleTimeString()}`}
-            </span>
-          )
+        )}
+        {lastRefresh && (
+          <span className="text-[11px] text-muted-foreground">
+            {loading ? 'Refreshing…' : `Updated ${lastRefresh.toLocaleTimeString()}`}
+          </span>
         )}
       </div>
 
       <div className="flex items-center gap-2">
         {actions !== undefined ? (
           actions
-        ) : (
+        ) : showLogControls ? (
           <>
             <span className="text-xs text-muted-foreground">{logs.length} entries</span>
             <Button variant={paused ? 'destructive' : 'outline'} size="sm" onClick={togglePause}>
@@ -54,7 +61,7 @@ export const Header = ({ title, actions }: HeaderProps) => {
               )}
             </Button>
           </>
-        )}
+        ) : null}
       </div>
     </header>
   )

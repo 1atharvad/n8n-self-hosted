@@ -8,6 +8,7 @@ export default {
         mono: ["'JetBrains Mono'", "'Fira Code'", "'Cascadia Code'", 'ui-monospace', 'monospace'],
         raleway: ['Raleway', 'sans-serif'],
         unbounded: ['Unbounded', 'sans-serif'],
+        jakarta: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
         border:      'hsl(var(--border))',

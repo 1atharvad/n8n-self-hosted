@@ -27,6 +27,8 @@ interface LogStore {
 
 let _cleanup: (() => void) | null = null;
 let _streamGen = 0;
+let _buffer: import('@/types').LogEntry[] = [];
+let _flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useLogStore = create<LogStore>((set, get) => ({
   logs: [],
@@ -80,15 +82,23 @@ export const useLogStore = create<LogStore>((set, get) => ({
     if (get().paused || gen !== _streamGen) return;
     set({ streamConnected: true });
 
+    const flush = () => {
+      _flushTimer = null;
+      if (_buffer.length === 0) return;
+      const entries = _buffer.splice(0);
+      set((s) => {
+        const next = [...s.logs, ...entries];
+        return { logs: next.length > 2000 ? next.slice(-2000) : next, lastRefresh: new Date() };
+      });
+    };
+
     _cleanup = openLogStream(
       get().filters,
       sinceNs,
       (entry) => {
         if (gen !== _streamGen || get().paused) return;
-        set((s) => {
-          const next = [...s.logs, entry];
-          return { logs: next.length > 2000 ? next.slice(-2000) : next, lastRefresh: new Date() };
-        });
+        _buffer.push(entry);
+        if (!_flushTimer) _flushTimer = setTimeout(flush, 80);
       },
       () => {
         if (gen !== _streamGen) return;
@@ -101,6 +111,8 @@ export const useLogStore = create<LogStore>((set, get) => ({
   stopStream: () => {
     _cleanup?.();
     _cleanup = null;
+    if (_flushTimer) { clearTimeout(_flushTimer); _flushTimer = null; }
+    _buffer.splice(0);
     set({ streamConnected: false });
   },
 

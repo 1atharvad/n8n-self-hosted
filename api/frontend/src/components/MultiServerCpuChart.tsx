@@ -64,15 +64,15 @@ export const MultiServerCpuChart = ({ servers }: MultiServerCpuChartProps) => {
   );
 
   return (
-    <section className="bg-card border border-border rounded-lg overflow-hidden mb-6">
-      <div className="px-6 py-4 border-b border-border">
+    <section className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="px-6 py-5 border-b border-border">
         <h2 className="text-sm font-semibold">All servers — CPU EMA</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
           CPU EMA overlay across {names.length} servers · last 30 min
         </p>
       </div>
 
-      <div className="px-4 py-4" style={{ height: 280 }}>
+      <div className="px-6 py-5" style={{ height: 300 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 4, right: 12, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

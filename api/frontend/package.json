@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
+    "@tanstack/react-virtual": "^3.13.26",
     "advi-ui": "^0.1.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Button, Input } from 'advi-ui'
+import { LayoutDashboard } from 'lucide-react'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -17,7 +18,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(username.trim(), password)
-      navigate('/')
+      navigate('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
       setPassword('')
@@ -31,10 +32,12 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="bg-card border border-border rounded-lg p-8 shadow-2xl">
           {/* Brand */}
-          <div className="flex items-center gap-2.5 mb-8">
-            <span className="text-2xl text-primary leading-none">◈</span>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <LayoutDashboard className="h-5 w-5 text-primary" />
+            </div>
             <div>
-              <p className="font-bold text-[15px] tracking-wide leading-none">Log Viewer</p>
+              <p className="font-bold text-[15px] tracking-wide leading-none">Admin Panel</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">Sign in to continue</p>
             </div>
           </div>
