@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Also block phones in landscape — width passes 600px but height is too small to use */
+@media (orientation: landscape) and (max-height: 500px) {
+  .screen-guard { display: flex !important; }
+}
+
 
 @layer base {
   * {
@@ -14,6 +19,34 @@
 
   #root {
     @apply flex flex-col h-screen;
+  }
+
+  // Sidebar — always dark chrome regardless of page theme
+  aside {
+    --border: 215 13% 21%;
+    --foreground: 213 31% 91%;
+    --muted-foreground: 215 10% 55%;
+    --secondary: 215 14% 19%;
+    --primary: 173 80% 40%;
+    background-color: hsl(var(--chrome)) !important;
+    font-size: 0.875rem;
+  }
+
+  // Header — always dark chrome regardless of page theme
+  header.dark {
+    --border: 215 13% 21%;
+    --foreground: 213 31% 91%;
+    --muted-foreground: 215 10% 55%;
+    --primary: 173 80% 40%;
+  }
+
+  // Darker input/select borders in light mode
+  .light input,
+  .light select,
+  .light textarea,
+  .light [role="combobox"],
+  .light [data-slot="input"] {
+    border-color: hsl(173 28% 42%) !important;
   }
 
   // Custom scrollbar

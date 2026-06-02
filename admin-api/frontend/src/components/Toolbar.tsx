@@ -41,7 +41,7 @@ export const Toolbar = () => {
   const setLimit = useLogStore((s) => s.setLimit)
 
   return (
-    <div className="flex flex-col px-3 py-1.5 bg-card border-b border-border shrink-0 gap-1.5">
+    <div className="flex flex-col px-4 py-4 bg-card border-b border-border shrink-0 gap-2.5">
       <MultiSelect
         placeholder="All containers"
         options={labels.map((l) => ({ value: l, label: l }))}

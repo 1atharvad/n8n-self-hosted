@@ -3,7 +3,7 @@ n8n worker monitor.
 
 Polls host CPU, the n8n execution API (with Redis fallback), and running Docker
 containers, then pushes a snapshot to Redis under worker-monitor:metrics:<server>.
-The logs-api reads these snapshots and serves them to the dashboard.
+The admin-api reads these snapshots and serves them to the dashboard.
 
 Active job count prefers the n8n REST API over Bull's Redis list because Bull
 retains stale entries when jobs are stopped ungracefully.

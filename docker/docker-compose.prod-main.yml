@@ -129,7 +129,7 @@ services:
     depends_on:
       - n8n
       - minio
-      - logs-api
+      - admin-api
       - frontend
     networks:
       - baota_net
@@ -151,31 +151,40 @@ services:
     networks:
       - baota_net
 
-  logs-api:
-    build: ${HOST_PROJECT_DIR}/logs-api
-    container_name: logs-api
+  admin-api:
+    build: ${HOST_PROJECT_DIR}/admin-api
+    container_name: admin-api
     restart: unless-stopped
     expose:
       - "8080"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      ADMIN_DB_PATH: /app/data/admin.db
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
       LOGS_ADMIN_USERNAME: ${LOGS_ADMIN_USERNAME:-admin}
       LOGS_ADMIN_PASSWORD: ${LOGS_ADMIN_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      N8N_BASE_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY:-}
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ${HOST_PROJECT_DIR}/admin-api-data:/app/data
     depends_on:
-      - postgres
       - redis
+      - postgres
     networks:
       - baota_net
 
   frontend:
-    build: ${HOST_PROJECT_DIR}/api/frontend
+    build: ${HOST_PROJECT_DIR}/admin-api/frontend
     container_name: frontend
     restart: unless-stopped
     expose:

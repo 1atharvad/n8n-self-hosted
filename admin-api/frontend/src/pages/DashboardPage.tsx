@@ -5,7 +5,7 @@ import { Header } from '@/components/Header';
 import { BentoStatCard } from '@/components/BentoStatCard';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useNavSections } from '@/hooks/useNavSections';
-import { AlertCircle, AlertTriangle, ScrollText, Server, Database, Settings } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ScrollText, Server, Database, Settings, GitBranch } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -31,13 +31,10 @@ const DashboardPage = () => {
   const { data, loading, error, range, setRange, load } = useDashboardStore();
   const [asideOpen, setAsideOpen] = useState(false);
   const navSections = useNavSections('dashboard');
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    const id = setInterval(() => load(), 30_000);
+    const id = setInterval(load, 30_000);
     return () => clearInterval(id);
   }, [load]);
 
@@ -64,7 +61,7 @@ const DashboardPage = () => {
       <div className="flex flex-1 overflow-hidden">
         <AppSidebar open={asideOpen} onToggle={() => setAsideOpen((v) => !v)} sections={navSections} />
 
-        <main className="flex-1 overflow-y-auto px-6 py-6">
+        <main className="flex-1 overflow-y-auto px-10 py-8">
           {error && (
             <div className="mb-4 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
@@ -85,6 +82,7 @@ const DashboardPage = () => {
               <BentoStatCard label="Total logs" value={summary?.total ?? '—'} icon={<ScrollText className="h-4 w-4" />} accent="border-t-blue-500" iconBg="bg-blue-500/10" iconColor="text-blue-500" loading={loading && !data} />
               <BentoStatCard label="Active containers" value={containers.length} icon={<Server className="h-4 w-4" />} accent="border-t-teal-500" iconBg="bg-teal-500/10" iconColor="text-teal-500" loading={loading && !data} />
             </div>
+
 
             {/* Log volume chart */}
             <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col">
@@ -126,9 +124,10 @@ const DashboardPage = () => {
             </div>
 
             {/* Services */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { icon: <ScrollText className="h-4 w-4" />, iconBg: 'bg-blue-500/10', iconColor: 'text-blue-500', name: 'Log Viewer', description: 'Live streaming logs from all containers with filtering, search, and level controls.', onClick: () => navigate('/logs') },
+                { icon: <GitBranch className="h-4 w-4" />, iconBg: 'bg-violet-500/10', iconColor: 'text-violet-500', name: 'Workflows', description: 'n8n workflow status, active/inactive toggle, and recent execution history.', onClick: () => navigate('/workflows') },
                 { icon: <Database className="h-4 w-4" />, iconBg: 'bg-teal-500/10', iconColor: 'text-teal-500', name: 'DB Admin', description: 'Browse tables, inspect records, and manage your database via sqladmin.', onClick: () => { window.location.href = '/api/core/db-admin/'; } },
                 { icon: <Settings className="h-4 w-4" />, iconBg: 'bg-amber-400/10', iconColor: 'text-amber-400', name: 'Settings', description: 'Container visibility, password management, and user administration.', onClick: () => navigate('/settings') },
               ].map((s) => (

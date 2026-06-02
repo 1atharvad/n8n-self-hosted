@@ -168,6 +168,10 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SERVER_ID: ${SERVER_ID:-dev}
+      N8N_BASE_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY:-}
+      ADMIN_API_URL: http://admin-api:8080
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-}
     expose:
       - "9374"
     volumes:
@@ -212,39 +216,52 @@ services:
     networks:
       - baota_net
 
-  logs-api:
-    build: ${HOST_PROJECT_DIR}/logs-api
-    container_name: logs-api
+  admin-api:
+    build: ${HOST_PROJECT_DIR}/admin-api
+    container_name: admin-api
     restart: unless-stopped
+    command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
     expose:
       - "8080"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      ADMIN_DB_PATH: /app/data/admin.db
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
       LOGS_ADMIN_USERNAME: ${LOGS_ADMIN_USERNAME:-admin}
       LOGS_ADMIN_PASSWORD: ${LOGS_ADMIN_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      N8N_BASE_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY:-}
+      INTERNAL_SECRET: ${INTERNAL_SECRET:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-}
+      DEV_DOTENV_PATH: /workspace/.env
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ${HOST_PROJECT_DIR}/admin-api:/app
+      - ${HOST_PROJECT_DIR}/admin-api-data:/app/data
+      - ${HOST_PROJECT_DIR}/.env:/workspace/.env
     depends_on:
-      - postgres
       - redis
+      - postgres
     networks:
       - baota_net
 
   frontend:
     build:
-      context: ${HOST_PROJECT_DIR}/api/frontend
+      context: ${HOST_PROJECT_DIR}/admin-api/frontend
       dockerfile: Dockerfile.dev
     container_name: frontend
     restart: unless-stopped
     expose:
       - "5173"
     volumes:
-      - ${HOST_PROJECT_DIR}/api/frontend:/app
+      - ${HOST_PROJECT_DIR}/admin-api/frontend:/app
       - /app/node_modules
     networks:
       - baota_net
@@ -261,7 +278,7 @@ services:
       - n8n
       - fastapi
       - minio
-      - logs-api
+      - admin-api
       - frontend
     networks:
       - baota_net

@@ -5,27 +5,42 @@ import { create } from 'zustand'
 // For viewer users, allowed_containers from the JWT is the enforced limit.
 const SETTINGS_KEY = 'app_settings'
 
+type Theme = 'dark' | 'light' | 'system'
+
 interface Settings {
   visibleContainers: string[]
+  theme: Theme
 }
 
 interface SettingsStore extends Settings {
   setVisibleContainers: (containers: string[]) => void
+  setTheme: (theme: Theme) => void
 }
 
 function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
-    if (raw) return JSON.parse(raw) as Settings
+    if (raw) return { theme: 'dark', ...JSON.parse(raw) } as Settings
   } catch {}
-  return { visibleContainers: [] }
+  return { visibleContainers: [], theme: 'dark' }
 }
 
-export const useSettingsStore = create<SettingsStore>((set) => ({
+function saveSettings(settings: Settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+}
+
+export const useSettingsStore = create<SettingsStore>((set, get) => ({
   ...loadSettings(),
 
   setVisibleContainers: (visibleContainers) => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ visibleContainers }))
+    const next = { ...get(), visibleContainers }
+    saveSettings(next)
     set({ visibleContainers })
+  },
+
+  setTheme: (theme) => {
+    const next = { ...get(), theme }
+    saveSettings(next)
+    set({ theme })
   },
 }))

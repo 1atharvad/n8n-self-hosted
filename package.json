@@ -31,8 +31,11 @@
     "docker:prod-worker": "npm run docker-update-images && npm run docker-down:prod-worker && rm -rf loki-data/* && npm run docker-up:prod-worker",
     "docker-update": "docker pull n8nio/n8n && npm run docker-down:prod && npm run docker-up:prod",
     "docker-rm-cache": "docker container prune -f && docker image prune -a -f && docker volume prune -f && docker builder prune -a -f",
-    "pull-workflows": "sh sh_files/backup_n8n_workflows.sh",
-    "push-workflows": "sh sh_files/upload_n8n_workflows.sh"
+    "pull-workflows": "bash sh_files/backup_n8n_workflows.sh",
+    "pull-workflows:force": "bash sh_files/backup_n8n_workflows.sh --force",
+    "pull-workflows:commit": "bash sh_files/backup_n8n_workflows.sh --commit",
+    "pull-workflows:force-commit": "bash sh_files/backup_n8n_workflows.sh --force --commit",
+    "push-workflows": "bash sh_files/upload_n8n_workflows.sh"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

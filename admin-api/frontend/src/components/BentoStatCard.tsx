@@ -20,7 +20,7 @@ export const BentoStatCard = ({ label, value, icon, accent, iconBg, iconColor, l
           <span className={iconColor}>{icon}</span>
         </div>
       </div>
-      <span className="text-3xl font-bold tabular-nums tracking-tight font-mono">
+      <span className={cn('text-3xl font-bold tabular-nums tracking-tight font-mono', iconColor)}>
         {loading ? <span className="text-muted-foreground text-2xl">—</span> : value.toLocaleString()}
       </span>
     </div>

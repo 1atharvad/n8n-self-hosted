@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +12,7 @@ from auth.security import (
     verify_password,
 )
 from db.crud import (
+    create_audit_log,
     create_user,
     delete_user,
     get_user_by_id,
@@ -21,8 +22,9 @@ from db.crud import (
 )
 from db.database import get_session
 from db.models import User
+from limiter import limiter
 
-router = APIRouter()
+router = APIRouter(tags=["Auth"])
 
 # ── Request / Response schemas ────────────────────────────────────────────────
 
@@ -67,17 +69,22 @@ def user_dict(user: User) -> dict:
 
 
 @router.post("/login")
+@limiter.limit("10/minute")
 async def login(
+    request: Request,
     body: LoginRequest,
     session: AsyncSession = Depends(get_session),
 ):
+    ip = request.client.host if request.client else None
     user = await get_user_by_username(session, body.username)
     if not user or not user.is_active or not verify_password(body.password, user.hashed_password):
+        await create_audit_log(session, action="login_failed", target_name=body.username, ip_address=ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
         )
     token = create_access_token(user)
+    await create_audit_log(session, action="login", actor_id=str(user.id), actor_name=user.username, ip_address=ip)
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -95,6 +102,7 @@ async def me(current_user: User = Depends(get_current_user)):
 
 @router.post("/change-password")
 async def change_password(
+    request: Request,
     body: ChangePasswordRequest,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
@@ -104,7 +112,9 @@ async def change_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect current password",
         )
+    ip = request.client.host if request.client else None
     await update_user(session, current_user, password=body.new_password)
+    await create_audit_log(session, action="password_changed", actor_id=str(current_user.id), actor_name=current_user.username, ip_address=ip)
     return {"ok": True}
 
 
@@ -122,8 +132,9 @@ async def get_users(
 
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 async def create_new_user(
+    request: Request,
     body: CreateUserRequest,
-    _admin: User = Depends(require_admin),
+    admin: User = Depends(require_admin),
     session: AsyncSession = Depends(get_session),
 ):
     existing = await get_user_by_username(session, body.username)
@@ -139,17 +150,20 @@ async def create_new_user(
         role=body.role,
         allowed_containers=body.allowed_containers,
     )
+    ip = request.client.host if request.client else None
+    await create_audit_log(session, action="user_created", actor_id=str(admin.id), actor_name=admin.username, target_name=body.username, detail=body.role, ip_address=ip)
     return user_dict(user)
 
 
 @router.patch("/users/{user_id}")
 async def update_existing_user(
+    request: Request,
     user_id: uuid.UUID,
     body: UpdateUserRequest,
     admin: User = Depends(require_admin),
     session: AsyncSession = Depends(get_session),
 ):
-    user = await get_user_by_id(session, user_id)
+    user = await get_user_by_id(session, str(user_id))
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
@@ -166,6 +180,18 @@ async def update_existing_user(
     elif body.allowed_containers is not None:
         new_containers = body.allowed_containers
 
+    changes: list[str] = []
+    if body.role is not None and body.role != user.role:
+        changes.append(f"role→{body.role}")
+    if body.is_active is not None and body.is_active != user.is_active:
+        changes.append(f"active→{body.is_active}")
+    if body.password:
+        changes.append("password_reset")
+    if body.clear_container_restriction:
+        changes.append("containers→all")
+    elif body.allowed_containers is not None:
+        changes.append(f"containers→{','.join(body.allowed_containers) or 'none'}")
+
     user = await update_user(
         session,
         user,
@@ -174,22 +200,37 @@ async def update_existing_user(
         is_active=body.is_active,
         password=body.password,
     )
+    ip = request.client.host if request.client else None
+    if changes:
+        await create_audit_log(
+            session,
+            action="user_updated",
+            actor_id=str(admin.id),
+            actor_name=admin.username,
+            target_name=user.username,
+            detail="; ".join(changes),
+            ip_address=ip,
+        )
     return user_dict(user)
 
 
 @router.delete("/users/{user_id}")
 async def delete_existing_user(
+    request: Request,
     user_id: uuid.UUID,
     admin: User = Depends(require_admin),
     session: AsyncSession = Depends(get_session),
 ):
-    if user_id == admin.id:
+    if str(user_id) == admin.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cannot delete your own account",
         )
-    user = await get_user_by_id(session, user_id)
+    user = await get_user_by_id(session, str(user_id))
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    ip = request.client.host if request.client else None
+    deleted_name = user.username
     await delete_user(session, user)
+    await create_audit_log(session, action="user_deleted", actor_id=str(admin.id), actor_name=admin.username, target_name=deleted_name, ip_address=ip)
     return {"ok": True}

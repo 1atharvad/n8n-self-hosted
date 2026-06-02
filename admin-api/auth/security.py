@@ -1,5 +1,4 @@
 import os
-import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -70,12 +69,7 @@ async def get_current_user(
 
     from db.crud import get_user_by_id
 
-    try:
-        user_id = uuid.UUID(user_id_str)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-
-    user = await get_user_by_id(session, user_id)
+    user = await get_user_by_id(session, user_id_str)
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive"

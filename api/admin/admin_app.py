@@ -1,4 +1,8 @@
+import asyncio
+import json
 import os
+
+import httpx
 from contextlib import asynccontextmanager
 
 from markupsafe import Markup, escape
@@ -11,6 +15,72 @@ from starlette.requests import Request
 
 from .database import async_engine, sync_engine
 from .models import JobLink, Mp4List
+
+_ADMIN_API_URL = os.getenv("ADMIN_API_URL", "http://admin-api:8080")
+_INTERNAL_SECRET = os.getenv("INTERNAL_SECRET", "")
+
+# Fields too large / irrelevant to include in audit detail
+_SKIP_AUDIT_FIELDS = {"job_description", "script", "experience_required", "skills_required", "audio_file_name", "script_added"}
+
+
+def _model_snapshot(model) -> str:
+    """Compact JSON of a model's non-large fields."""
+    data = {
+        k: v for k, v in vars(model).items()
+        if not k.startswith("_") and k not in _SKIP_AUDIT_FIELDS
+    }
+    return json.dumps(data, default=str)
+
+
+def _diff_snapshot(model, new_data: dict) -> str | None:
+    """Compact JSON of changed fields: {field: {from: old, to: new}}."""
+    changes = {}
+    for key, new_val in new_data.items():
+        if key in _SKIP_AUDIT_FIELDS:
+            continue
+        old_val = getattr(model, key, None)
+        if old_val != new_val:
+            changes[key] = {"from": old_val, "to": new_val}
+    return json.dumps(changes, default=str) if changes else None
+
+
+def _audit(
+    action: str,
+    target: str | None = None,
+    detail: str | None = None,
+    ip_address: str | None = None,
+) -> None:
+    """Fire-and-forget audit event to admin-api.
+
+    Swallows all exceptions intentionally — audit failures must never block
+    SQLAdmin model saves/deletes.
+    """
+    if not _INTERNAL_SECRET:
+        return
+    async def _post():
+        try:
+            async with httpx.AsyncClient(timeout=3) as client:
+                await client.post(
+                    f"{_ADMIN_API_URL}/internal/audit",
+                    json={
+                        "action": action,
+                        "actor_name": "sqladmin",
+                        "target_name": target,
+                        "detail": detail,
+                        "ip_address": ip_address,
+                    },
+                    headers={"X-Internal-Secret": _INTERNAL_SECRET},
+                )
+        except Exception:
+            pass
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            asyncio.ensure_future(_post())
+        else:
+            loop.run_until_complete(_post())
+    except Exception:
+        pass
 
 
 class AdminAuth(AuthenticationBackend):
@@ -165,6 +235,19 @@ def init_admin(app):
             "script": lambda m, _: Markup('<div style="white-space: pre-wrap; max-width: 100%">{}</div>').format(escape(m.script or "")),
         }
 
+        async def on_model_change(self, data, model, is_created, request):
+            if not is_created:
+                request.state.joblink_diff = _diff_snapshot(model, data)
+
+        async def after_model_change(self, data, model, is_created, request):
+            ip = request.client.host if request.client else None
+            detail = _model_snapshot(model) if is_created else getattr(request.state, "joblink_diff", None)
+            _audit("create" if is_created else "update", target=f"joblink#{model.id}", detail=detail, ip_address=ip)
+
+        async def after_model_delete(self, model, request):
+            ip = request.client.host if request.client else None
+            _audit("delete", target=f"joblink#{model.id}", detail=_model_snapshot(model), ip_address=ip)
+
     # Mp4List admin
     class Mp4ListAdmin(ModelView, model=Mp4List):
         icon = "fa-solid fa-film"
@@ -174,6 +257,19 @@ def init_admin(app):
         column_searchable_list = [Mp4List.mp4_name, Mp4List.status]
         column_sortable_list = [Mp4List.date, Mp4List.id]
         column_filters = [MultiValueFilter(Mp4List.date), AllUniqueStringValuesFilter(Mp4List.video_type)]
+
+        async def on_model_change(self, data, model, is_created, request):
+            if not is_created:
+                request.state.mp4_diff = _diff_snapshot(model, data)
+
+        async def after_model_change(self, data, model, is_created, request):
+            ip = request.client.host if request.client else None
+            detail = _model_snapshot(model) if is_created else getattr(request.state, "mp4_diff", None)
+            _audit("create" if is_created else "update", target=f"mp4#{model.id}", detail=detail, ip_address=ip)
+
+        async def after_model_delete(self, model, request):
+            ip = request.client.host if request.client else None
+            _audit("delete", target=f"mp4#{model.id}", detail=_model_snapshot(model), ip_address=ip)
 
     # Register views
     admin.add_view(JobLinkAdmin)

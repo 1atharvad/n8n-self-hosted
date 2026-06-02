@@ -1,8 +1,10 @@
 /* Custom dark theme — loaded after advi-ui so these always win */
 :root,
-.dark {
+.dark,
+html:not(.light) {
   --background:   215 28% 7%;
   --foreground:   213 31% 91%;
+  --chrome:       218 32% 10%;
 
   --card:         215 25% 11%;
   --card-foreground: 213 31% 91%;
@@ -28,6 +30,39 @@
   --border:       215 13% 21%;
   --input:        215 13% 21%;
   --ring:         173 80% 40%;
+
+  --radius: 0.5rem;
+}
+
+.light {
+  /* teal-tinted light — bg ≈ #edf8f6, card white */
+  --background:   174 40% 96%;
+  --foreground:   180 30% 10%;
+
+  --card:         0 0% 100%;
+  --card-foreground: 180 30% 10%;
+
+  --popover:      0 0% 100%;
+  --popover-foreground: 180 30% 10%;
+
+  --primary:      173 72% 30%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary:    174 32% 90%;
+  --secondary-foreground: 174 24% 20%;
+
+  --muted:        174 32% 90%;
+  --muted-foreground: 173 20% 38%;
+
+  --accent:       174 32% 90%;
+  --accent-foreground: 180 30% 10%;
+
+  --destructive:  0 64% 48%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:       173 26% 48%;
+  --input:        0 0% 100%;
+  --ring:         173 72% 30%;
 
   --radius: 0.5rem;
 }

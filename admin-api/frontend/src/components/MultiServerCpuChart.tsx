@@ -74,7 +74,7 @@ export const MultiServerCpuChart = ({ servers }: MultiServerCpuChartProps) => {
 
       <div className="px-6 py-5" style={{ height: 300 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 4, right: 12, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 4, right: 40, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
 
             <XAxis

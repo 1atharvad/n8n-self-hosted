@@ -19,7 +19,7 @@ export const Header = ({ title, actions, showLogControls = false }: HeaderProps)
   const togglePause = useLogStore((s) => s.togglePause)
 
   return (
-    <header className="flex items-center justify-between px-4 bg-card border-b border-border shrink-0 min-h-[52px]">
+    <header className="dark text-foreground flex items-center justify-between px-4 bg-[hsl(var(--chrome))] border-b border-border shrink-0 min-h-[52px]">
       <div className="flex items-center gap-2.5">
         <Activity className="h-4 w-4 text-primary shrink-0" />
         <button
