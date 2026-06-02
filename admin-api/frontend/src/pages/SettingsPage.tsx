@@ -122,7 +122,7 @@ export default function SettingsPage() {
     } else {
       setShowValues((prev) => {
         const next = new Set(prev);
-        next.has(key) ? next.delete(key) : next.add(key);
+        if (next.has(key)) { next.delete(key); } else { next.add(key); }
         return next;
       });
     }
@@ -140,17 +140,6 @@ export default function SettingsPage() {
     setEditDraft({});
     setSaveError(null);
     setConfirmDeleteKey(null);
-  };
-
-  // in edit mode: clicking a masked input reveals and drafts the value
-  const handleEditInputClick = async (key: string) => {
-    if (editDraft[key] !== undefined || fetchingKeys.has(key)) return;
-    try {
-      const value = await fetchValue(key);
-      setEditDraft((prev) => ({ ...prev, [key]: value }));
-    } catch {
-      // ignore; user can retry
-    }
   };
 
   const handleSave = async () => {
@@ -187,21 +176,6 @@ export default function SettingsPage() {
       setDeployResult({ ok: false, msg: e instanceof Error ? e.message : 'Deploy failed' });
     } finally {
       setSaving(false);
-      setDeploying(false);
-      deployTimerRef.current = setTimeout(() => setDeployResult(null), 6000);
-    }
-  };
-
-  const handleDeploy = async () => {
-    setDeploying(true);
-    setDeployResult(null);
-    if (deployTimerRef.current) clearTimeout(deployTimerRef.current);
-    try {
-      const res = await deployEnv();
-      setDeployResult({ ok: true, msg: `${res.pushed} secrets pushed — deploy triggered.` });
-    } catch (e) {
-      setDeployResult({ ok: false, msg: e instanceof Error ? e.message : 'Deploy failed' });
-    } finally {
       setDeploying(false);
       deployTimerRef.current = setTimeout(() => setDeployResult(null), 6000);
     }
@@ -657,6 +631,13 @@ export default function SettingsPage() {
                     {saveError && (
                       <div className="mx-5 my-3 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive shrink-0">
                         <AlertCircle className="h-4 w-4 shrink-0" />{saveError}
+                      </div>
+                    )}
+
+                    {/* Deploy result */}
+                    {deployResult && (
+                      <div className={`mx-5 my-3 flex items-center gap-2 rounded-md border px-3 py-2 text-xs shrink-0 ${deployResult.ok ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-destructive/40 bg-destructive/10 text-destructive'}`}>
+                        <AlertCircle className="h-4 w-4 shrink-0" />{deployResult.msg}
                       </div>
                     )}
 

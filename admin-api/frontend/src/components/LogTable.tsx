@@ -5,12 +5,14 @@ import { LogRow } from '@/components/LogRow'
 import { ArrowDown } from 'lucide-react'
 
 export const LogTable = () => {
+  'use no memo';
   const logs = useLogStore((s) => s.logs)
   const autoScroll = useLogStore((s) => s.autoScroll)
   const setAutoScroll = useLogStore((s) => s.setAutoScroll)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: logs.length,
     getScrollElement: () => containerRef.current,
@@ -23,6 +25,7 @@ export const LogTable = () => {
     if (autoScroll && logs.length > 0) {
       virtualizer.scrollToIndex(logs.length - 1, { align: 'end' })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs.length, autoScroll])
 
   const onScroll = () => {

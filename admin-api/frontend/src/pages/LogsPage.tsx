@@ -24,6 +24,7 @@ export default function LogsPage() {
   useEffect(() => {
     void startStream();
     return () => stopStream();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   return (

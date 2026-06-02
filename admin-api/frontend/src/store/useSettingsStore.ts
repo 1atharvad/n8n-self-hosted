@@ -17,17 +17,17 @@ interface SettingsStore extends Settings {
   setTheme: (theme: Theme) => void
 }
 
-function loadSettings(): Settings {
+const loadSettings = (): Settings => {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY)
-    if (raw) return { theme: 'dark', ...JSON.parse(raw) } as Settings
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) return { theme: 'dark', ...JSON.parse(raw) } as Settings;
   } catch {}
-  return { visibleContainers: [], theme: 'dark' }
-}
+  return { visibleContainers: [], theme: 'dark' };
+};
 
-function saveSettings(settings: Settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
-}
+const saveSettings = (settings: Settings) => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+};
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   ...loadSettings(),

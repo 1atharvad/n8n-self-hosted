@@ -48,10 +48,6 @@ const fmtDuration = (ms: number | null): string => {
 const fmtExecDate = (iso: string): string =>
   new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-const fmtChartDate = (date: string): string => {
-  const [y, m, d] = date.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString([], { month: 'short', day: 'numeric' });
-};
 
 const LINE_COLORS = ['#8b5cf6', '#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -187,6 +183,7 @@ const FolderLineChart = ({
         setData(buildFolderChartData(raw, workflows, days, g));
       })
       .catch(() => setData(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days, idsKey]);
 
   const hasData = Array.isArray(data) && data.some((d) => workflows.some((wf) => (d[wf.name] as number) > 0));
@@ -305,9 +302,9 @@ const WorkflowChart = ({
           contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 11 }}
           labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600, marginBottom: 2 }}
           itemStyle={{ color: 'hsl(var(--muted-foreground))' }}
-          labelFormatter={(iso: string) => `Ran at ${fmtExecDate(iso)}`}
-          formatter={(value: number, _name: string, props: { payload?: WorkflowExecution & { durationSec: number } }) => [
-            `${value}s — ${props.payload?.status ?? ''}`,
+          labelFormatter={(iso) => `Ran at ${fmtExecDate(String(iso ?? ''))}`}
+          formatter={(value, _name, props: { payload?: WorkflowExecution & { durationSec: number } }) => [
+            `${value ?? 0}s — ${props.payload?.status ?? ''}`,
             'Duration',
           ]}
         />
@@ -559,10 +556,12 @@ const WorkflowsPage = () => {
   const [historyState, setHistoryState] = useState<{ wf: N8nWorkflow; executions: WorkflowExecution[] } | null>(null);
   const requested = useRef<Set<string>>(new Set());
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, []);
   useEffect(() => {
     const id = setInterval(load, 30_000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

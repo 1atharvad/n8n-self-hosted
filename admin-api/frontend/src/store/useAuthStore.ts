@@ -5,23 +5,23 @@ import type { AuthUser } from '@/types'
 
 const USER_KEY = 'logs_user'
 
-function loadStoredUser(): AuthUser | null {
+const loadStoredUser = (): AuthUser | null => {
   try {
-    const raw = localStorage.getItem(USER_KEY)
-    return raw ? (JSON.parse(raw) as AuthUser) : null
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
   } catch {
-    return null
+    return null;
   }
-}
+};
 
-function isTokenExpired(token: string): boolean {
+const isTokenExpired = (token: string): boolean => {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.exp * 1000 < Date.now()
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
   } catch {
-    return true
+    return true;
   }
-}
+};
 
 interface AuthStore {
   token: string | null

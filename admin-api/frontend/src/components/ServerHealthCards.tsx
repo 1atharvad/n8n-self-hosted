@@ -1,3 +1,4 @@
+import React from 'react';
 import type { MonitorPoint } from '@/api/worker-monitor';
 import { cn } from '@/lib/utils';
 import { Server } from 'lucide-react';
@@ -7,6 +8,8 @@ interface ServerHealthCardsProps {
   selectedServer: string | null;
   onSelect: (name: string) => void;
 }
+
+const getAgeSec = (ts: number) => Date.now() / 1000 - ts;
 
 const ageFmt = (ts: number): string => {
   const sec = Math.floor(Date.now() / 1000 - ts);
@@ -27,7 +30,7 @@ export const ServerHealthCards = ({ servers, selectedServer, onSelect }: ServerH
         const latest = points[points.length - 1];
         if (!latest) return null;
 
-        const ageSec = Date.now() / 1000 - latest.ts;
+        const ageSec = getAgeSec(latest.ts);
         const stale = ageSec > 90;
         const warn = ageSec > 60;
         const hot = latest.cpu_effective >= latest.threshold;
