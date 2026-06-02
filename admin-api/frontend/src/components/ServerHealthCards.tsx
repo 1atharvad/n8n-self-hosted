@@ -1,4 +1,3 @@
-import React from 'react';
 import type { MonitorPoint } from '@/api/worker-monitor';
 import { cn } from '@/lib/utils';
 import { Server } from 'lucide-react';

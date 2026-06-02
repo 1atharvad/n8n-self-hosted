@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ScrollText, Cpu, Network, Database, Settings, GitBranch, ShieldCheck, BarChart2 } from 'lucide-react';
 import type { SidebarSection } from '@/components/AppSidebar';

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend,
@@ -241,7 +241,7 @@ const FolderLineChart = ({
               contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 11 }}
               labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600, marginBottom: 4 }}
               itemStyle={{ color: 'hsl(var(--muted-foreground))' }}
-              labelFormatter={(v: string) => fmtBucket(v, granularity)}
+              labelFormatter={(v) => fmtBucket(String(v ?? ''), granularity)}
             />
             <Legend wrapperStyle={{ fontSize: 10, paddingTop: 6 }} />
             {workflows.map((wf, i) => (

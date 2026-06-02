@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ShieldCheck, User, Clock3, AlertCircle, RefreshCw, Search, Monitor, FileDown, Braces, X, MoreHorizontal, Eye } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { AppSidebar } from '@/components/AppSidebar';
