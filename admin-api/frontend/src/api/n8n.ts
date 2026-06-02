@@ -1,6 +1,6 @@
 import { authedFetch } from './client';
 
-const BASE = '/api/logs/n8n';
+const BASE = '/api/admin/n8n';
 
 export interface N8nStats {
   available: boolean;
@@ -135,7 +135,7 @@ export const removeWorkflowFolder = async (workflowId: string): Promise<void> =>
 export interface AuditLogResponse { logs: AuditEntry[]; total: number; events_24h: number; }
 
 export const fetchAuditLog = async (limit = 100): Promise<AuditLogResponse> => {
-  const res = await authedFetch(`/api/logs/audit?limit=${limit}`);
+  const res = await authedFetch(`/api/admin/audit?limit=${limit}`);
   if (!res.ok) throw new Error(`Audit log fetch failed: ${res.status}`);
   return res.json();
 };

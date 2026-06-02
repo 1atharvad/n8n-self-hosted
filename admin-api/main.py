@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     await async_engine.dispose()
 
 
-app = FastAPI(root_path='/api/logs', lifespan=lifespan)
+app = FastAPI(root_path='/api/admin', lifespan=lifespan)
 app.state.limiter = limiter
 
 @app.exception_handler(RateLimitExceeded)

@@ -1,6 +1,6 @@
 import { authedFetch } from './client';
 
-const BASE = '/api/logs/env';
+const BASE = '/api/admin/env';
 
 export interface EnvVarKey {
   key: string;

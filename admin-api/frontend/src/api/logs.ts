@@ -1,7 +1,7 @@
 import type { Filters, LogEntry } from '@/types'
 import { authedFetch, getToken } from './client'
 
-const BASE = '/api/logs'
+const BASE = '/api/admin'
 
 export const fetchLabels = async (): Promise<string[]> => {
   const res = await authedFetch(`${BASE}/labels`)

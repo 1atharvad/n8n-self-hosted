@@ -1,7 +1,7 @@
 import type { AuthUser, CreateUserRequest, LoginResponse, UpdateUserRequest } from '@/types'
 import { authedFetch } from './client'
 
-const BASE = '/api/logs/auth'
+const BASE = '/api/admin/auth'
 
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
   const res = await fetch(`${BASE}/login`, {

@@ -1,6 +1,6 @@
 import { authedFetch } from './client'
 
-const BASE = '/api/logs'
+const BASE = '/api/admin'
 
 export interface DashboardSummary {
   total: number

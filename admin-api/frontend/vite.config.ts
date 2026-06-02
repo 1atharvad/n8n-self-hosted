@@ -15,10 +15,10 @@ export default defineConfig({
     //   path: '/logs/',
     // },
     proxy: {
-      '/api/logs': {
+      '/api/admin': {
         target: 'http://admin-api:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/logs/, ''),
+        rewrite: (path) => path.replace(/^\/api\/admin/, ''),
       },
     },
   },
