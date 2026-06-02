@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:18:56.292Z",
+  "createdAt": "2026-04-23T02:50:01.719Z",
+  "id": "7Nx6lwYZ4Vb8vD8v",
   "name": "Text to Voice Converter",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -207,15 +213,6 @@
       "name": "Stop and Error"
     }
   ],
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "text": "It was 7 minutes after midnight. The dog was lying on the grass in the middle of the lawn in front of Mrs Shears’ house. Its eyes were closed. It looked as if it was running on its side, the way dogs run when they think they are chasing a cat in a dream."
-        }
-      }
-    ]
-  },
   "connections": {
     "Request Test to Audio Conversion": {
       "main": [
@@ -298,7 +295,6 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -306,12 +302,24 @@
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": -1
   },
-  "versionId": "bdab2878-4482-4ae3-907f-34bf6c85c6a4",
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "7Nx6lwYZ4Vb8vD8v",
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "text": "It was 7 minutes after midnight. The dog was lying on the grass in the middle of the lawn in front of Mrs Shears’ house. Its eyes were closed. It looked as if it was running on its side, the way dogs run when they think they are chasing a cat in a dream."
+        }
+      }
+    ]
+  },
+  "versionId": "bdab2878-4482-4ae3-907f-34bf6c85c6a4",
+  "activeVersionId": null,
+  "versionCounter": 20,
+  "triggerCount": 0,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -320,10 +328,34 @@
       "name": "Sub-Workflow"
     },
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:50:01.719Z",
+      "createdAt": "2026-04-23T02:50:01.719Z",
+      "role": "workflow:owner",
+      "workflowId": "7Nx6lwYZ4Vb8vD8v",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 06fb7d76",
+    "description": ""
+  },
+  "folder": "Youtube Stream (JNN)"
 }

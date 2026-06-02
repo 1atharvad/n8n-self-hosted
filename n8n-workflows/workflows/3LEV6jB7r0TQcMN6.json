@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:17:02.127Z",
+  "createdAt": "2026-04-23T02:49:59.443Z",
+  "id": "3LEV6jB7r0TQcMN6",
   "name": "Job Video Error Handling",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -104,7 +110,6 @@
       }
     }
   ],
-  "pinData": {},
   "connections": {
     "Error Trigger": {
       "main": [
@@ -162,17 +167,20 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "60a04d4e-ca46-489e-9a4a-56fb13137c45",
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "3LEV6jB7r0TQcMN6",
+  "pinData": {},
+  "versionId": "60a04d4e-ca46-489e-9a4a-56fb13137c45",
+  "activeVersionId": null,
+  "versionCounter": 8,
+  "triggerCount": 0,
   "tags": [
     {
       "updatedAt": "2026-02-07T17:04:35.300Z",
@@ -181,10 +189,34 @@
       "name": "Error Handler"
     },
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:49:59.443Z",
+      "createdAt": "2026-04-23T02:49:59.443Z",
+      "role": "workflow:owner",
+      "workflowId": "3LEV6jB7r0TQcMN6",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
 }

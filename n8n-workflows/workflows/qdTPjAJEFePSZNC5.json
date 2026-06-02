@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:11:03.939Z",
+  "createdAt": "2026-04-23T02:50:03.984Z",
+  "id": "qdTPjAJEFePSZNC5",
   "name": "Youtube Video Upload",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -2217,7 +2223,6 @@
       "name": "Job Scrape Error"
     }
   ],
-  "pinData": {},
   "connections": {
     "If": {
       "main": [
@@ -2895,7 +2900,6 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -2907,12 +2911,16 @@
     "timeSavedMode": "fixed",
     "timeSavedPerExecution": 40
   },
-  "versionId": "d88e2ce5-2dc4-4e39-88d6-1cea52ba27dc",
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "qdTPjAJEFePSZNC5",
+  "pinData": {},
+  "versionId": "d88e2ce5-2dc4-4e39-88d6-1cea52ba27dc",
+  "activeVersionId": null,
+  "versionCounter": 61,
+  "triggerCount": 0,
   "tags": [
     {
       "updatedAt": "2026-02-04T18:01:27.216Z",
@@ -2921,10 +2929,34 @@
       "name": "Main-Workflow"
     },
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:50:03.984Z",
+      "createdAt": "2026-04-23T02:50:03.984Z",
+      "role": "workflow:owner",
+      "workflowId": "qdTPjAJEFePSZNC5",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
 }

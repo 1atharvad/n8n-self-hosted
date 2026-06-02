@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-17T01:24:02.011Z",
+  "createdAt": "2026-04-23T02:49:58.300Z",
+  "id": "3CV8vOr3daIHXK6X",
   "name": "Script Generator",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -37,8 +43,8 @@
               "name": "date"
             },
             {
-              "name": "test_mode",
-              "type": "boolean"
+              "name": "num_of_jobs",
+              "type": "number"
             },
             {
               "name": "maxCount",
@@ -476,39 +482,11 @@
     },
     {
       "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "value": "job_listing",
-          "mode": "list",
-          "cachedResultName": "job_listing"
-        },
-        "table": {
-          "__rl": true,
-          "value": "job_links",
-          "mode": "list",
-          "cachedResultName": "job_links"
-        },
-        "where": {
-          "values": [
-            {
-              "column": "date",
-              "value": "={{ $json.date }}"
-            },
-            {
-              "column": "video_created",
-              "value": "false"
-            }
-          ]
-        },
-        "sort": {
-          "values": [
-            {
-              "column": "id"
-            }
-          ]
-        },
-        "options": {}
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM job_listing.job_links\nWHERE date = $1\n  AND video_created = false\nORDER BY id ASC\nLIMIT $2;",
+        "options": {
+          "queryReplacement": "={{ $json.date }},{{ $json.num_of_jobs }}"
+        }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
@@ -932,17 +910,6 @@
       }
     }
   ],
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "date": "2025-08-22",
-          "test_mode": true,
-          "maxCount": 99999
-        }
-      }
-    ]
-  },
   "connections": {
     "Loop Over Items1": {
       "main": [
@@ -1242,7 +1209,6 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -1250,24 +1216,62 @@
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": -1
   },
-  "versionId": "0fd6a0c8-cbf6-4078-b636-cfa03af4df87",
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "3CV8vOr3daIHXK6X",
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "date": "2025-08-22",
+          "num_of_jobs": 10,
+          "maxCount": 99999
+        }
+      }
+    ]
+  },
+  "versionId": "5f78be36-1f7e-412c-99b4-d8e55933d2fb",
+  "activeVersionId": null,
+  "versionCounter": 18,
+  "triggerCount": 0,
   "tags": [
+    {
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
+    },
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
       "createdAt": "2025-09-26T07:16:33.839Z",
       "id": "ens6dG0mnb19cVTi",
       "name": "Sub-Workflow"
-    },
-    {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
-      "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:49:58.300Z",
+      "createdAt": "2026-04-23T02:49:58.300Z",
+      "role": "workflow:owner",
+      "workflowId": "3CV8vOr3daIHXK6X",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
 }

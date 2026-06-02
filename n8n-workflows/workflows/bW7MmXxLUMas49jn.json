@@ -1,0 +1,63 @@
+{
+  "updatedAt": "2026-04-26T05:21:04.860Z",
+  "createdAt": "2026-04-26T05:20:45.825Z",
+  "id": "bW7MmXxLUMas49jn",
+  "name": "My workflow 2",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "3da9458a-fc46-4544-a499-61b3cf5b5ad8",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2961e090-f9ce-4a4d-8ee2-fdba3c8f4ac7",
+      "name": "Webhook",
+      "webhookId": "3da9458a-fc46-4544-a499-61b3cf5b5ad8"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "2ccaee9a-619f-4959-abc4-366d077c9e24",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-26T05:20:45.825Z",
+      "createdAt": "2026-04-26T05:20:45.825Z",
+      "role": "workflow:owner",
+      "workflowId": "bW7MmXxLUMas49jn",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
+}

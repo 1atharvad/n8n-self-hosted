@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:10:03.715Z",
+  "createdAt": "2026-04-28T18:12:32.549Z",
+  "id": "cls465MeDCQ5kLdb",
   "name": "Cleanup & Reset Database",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -87,7 +93,6 @@
       "name": "Schedule Trigger (at 9PM)"
     }
   ],
-  "pinData": {},
   "connections": {
     "When clicking ‘Execute workflow’": {
       "main": [
@@ -134,22 +139,47 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
   "versionId": "94545aac-c271-4bca-b895-d2afc919f456",
-  "meta": {
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
-  },
-  "id": "cls465MeDCQ5kLdb",
+  "activeVersionId": null,
+  "versionCounter": 52,
+  "triggerCount": 0,
   "tags": [
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-28T18:12:32.549Z",
+      "createdAt": "2026-04-28T18:12:32.549Z",
+      "role": "workflow:owner",
+      "workflowId": "cls465MeDCQ5kLdb",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
 }

@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:17:57.917Z",
+  "createdAt": "2026-04-23T02:49:57.137Z",
+  "id": "2Kbv7D61qx6QiovN",
   "name": "Job Scrapper",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -1259,20 +1265,6 @@
       }
     }
   ],
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "scrape_by_weekday": false,
-          "job_portal": "LinkedIn",
-          "weekday": "Monday",
-          "pages_scrapped": 0,
-          "num_of_jobs": 10,
-          "additional_date": 0
-        }
-      }
-    ]
-  },
   "connections": {
     "Split Out": {
       "main": [
@@ -1683,7 +1675,6 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -1693,12 +1684,29 @@
     "saveDataSuccessExecution": "all",
     "timeSavedMode": "fixed"
   },
-  "versionId": "487bde70-3506-48ad-85be-1b4a1c289285",
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "2Kbv7D61qx6QiovN",
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "scrape_by_weekday": false,
+          "job_portal": "LinkedIn",
+          "weekday": "Monday",
+          "pages_scrapped": 0,
+          "num_of_jobs": 10,
+          "additional_date": 0
+        }
+      }
+    ]
+  },
+  "versionId": "487bde70-3506-48ad-85be-1b4a1c289285",
+  "activeVersionId": null,
+  "versionCounter": 32,
+  "triggerCount": 0,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -1707,10 +1715,34 @@
       "name": "Sub-Workflow"
     },
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:49:57.137Z",
+      "createdAt": "2026-04-23T02:49:57.137Z",
+      "role": "workflow:owner",
+      "workflowId": "2Kbv7D61qx6QiovN",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version ebfec423",
+    "description": ""
+  },
+  "folder": "Youtube Stream (JNN)"
 }

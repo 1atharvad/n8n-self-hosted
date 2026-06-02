@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:13:48.664Z",
+  "createdAt": "2026-04-23T02:50:02.851Z",
+  "id": "HmMxxv4eZOZGzrOl",
   "name": "Video Creation",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -656,130 +662,6 @@
       "name": "Stop and Error1"
     }
   ],
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "template_slide": 0,
-          "old_text": {
-            "company_name": "{{COMPANY_NAME}}",
-            "position": "{{POSITION}}",
-            "location": "{{LOCATION}}",
-            "experience": "{{EXPERIENCE}}",
-            "skills": "{{SKILLS}}",
-            "job_type": "{{JOB_TYPE}}",
-            "link": "{{LINK}}"
-          },
-          "jobs": [
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner - Computer Science - French - Remote - Global",
-              "location": "Idaho, United States",
-              "experience": "Not specified",
-              "skills": "Data Partner, Computer Science, French language proficiency, Remote work capability",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060677",
-              "audio_file": "6f8fc98f-4503-4897-b939-587fda922d12.wav"
-            },
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner – Computer Science - Remote - North America",
-              "location": "Georgia, United States",
-              "experience": "Not specified",
-              "skills": "Not specified",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-%E2%80%93-computer-science-remote-north-america-at-telus-digital-4303082277",
-              "audio_file": "41416608-033c-4082-816c-d33e2cb62959.wav"
-            },
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner - Computer Science - French - Remote - Global",
-              "location": "Georgia, United States",
-              "experience": "Not specified",
-              "skills": "Computer Science, French language proficiency",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060674",
-              "audio_file": "6cfdfce0-77ef-437d-9416-72dd51abe077.wav"
-            },
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner - Chemistry - Remote - North America",
-              "location": "Wyoming, United States",
-              "experience": "Not specified",
-              "skills": "Data analysis, partner management, chemistry knowledge",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-chemistry-remote-north-america-at-telus-digital-4303080418",
-              "audio_file": "c6f28537-6ae5-44a3-bde8-78516b315d2e.wav"
-            },
-            {
-              "company_name": "Centene Corporation",
-              "position": "Data Analyst II Healthcare Analytics",
-              "location": "Arizona, United States",
-              "experience": "2+ years of experience in data analysis or related field",
-              "skills": "Data analysis, SQL, Excel, healthcare analytics, problem-solving skills",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/data-analyst-ii-healthcare-analytics-at-centene-corporation-4303074270",
-              "audio_file": "573c946e-0656-4391-9472-87298f1b3d44.wav"
-            },
-            {
-              "company_name": "Mercor",
-              "position": "Data Science Manager",
-              "location": "United States",
-              "experience": "5+ years experience in data science or related field",
-              "skills": "Data science, machine learning, leadership, project management",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/data-science-manager-at-mercor-4298981936",
-              "audio_file": "500c9b9d-a8c4-4d2d-908e-54381c9d5369.wav"
-            },
-            {
-              "company_name": "Humana",
-              "position": "Senior Business Intelligence Engineer",
-              "location": "Arkansas, United States",
-              "experience": "Senior level experience in Business Intelligence or related field",
-              "skills": "Business Intelligence, Data Analysis, SQL, Data Visualization, ETL processes",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/senior-business-intelligence-engineer-at-humana-4301406340",
-              "audio_file": "6f819a92-e7c8-4cb3-ac43-7474275a19bc.wav"
-            },
-            {
-              "company_name": "Dacha Corp",
-              "position": "Cyber Warfare Technician",
-              "location": "Stockton, KS",
-              "experience": "Not specified",
-              "skills": "Not specified",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/cyber-warfare-technician-at-dacha-corp-4303058031",
-              "audio_file": "997bec8a-e5ed-4e7b-a977-856a687a8e1e.wav"
-            },
-            {
-              "company_name": "HIRESIGMA",
-              "position": "Senior Machine Learning Engineer",
-              "location": "United States",
-              "experience": "5-8 years",
-              "skills": "Machine learning, Python, data analysis, deep learning frameworks",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/senior-machine-learning-engineer-at-hiresigma-4302765507",
-              "audio_file": "569c4dbb-7eea-453d-b093-8767eac0c169.wav"
-            },
-            {
-              "company_name": "Basis",
-              "position": "Full Stack Engineer",
-              "location": "United States",
-              "experience": "Mid-level (3-5 years)",
-              "skills": "Full Stack Development, JavaScript, React, Node.js, SQL, REST APIs",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/full-stack-engineer-at-basis-4302769551",
-              "audio_file": "8b0d693c-60a7-4c71-97e8-31dddbfb28dc.wav"
-            }
-          ],
-          "date": "2025-08-20",
-          "batch_size": 5,
-          "initial_point": 0,
-          "epoch": 1
-        }
-      }
-    ]
-  },
   "connections": {
     "When Executed by Another Workflow": {
       "main": [
@@ -1098,7 +980,6 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -1109,11 +990,138 @@
     "availableInMCP": false,
     "timeSavedPerExecution": 7
   },
-  "versionId": "083d19ab-43d5-4508-bd6a-174586eb1388",
+  "staticData": null,
   "meta": {
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "HmMxxv4eZOZGzrOl",
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "template_slide": 0,
+          "old_text": {
+            "company_name": "{{COMPANY_NAME}}",
+            "position": "{{POSITION}}",
+            "location": "{{LOCATION}}",
+            "experience": "{{EXPERIENCE}}",
+            "skills": "{{SKILLS}}",
+            "job_type": "{{JOB_TYPE}}",
+            "link": "{{LINK}}"
+          },
+          "jobs": [
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner - Computer Science - French - Remote - Global",
+              "location": "Idaho, United States",
+              "experience": "Not specified",
+              "skills": "Data Partner, Computer Science, French language proficiency, Remote work capability",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060677",
+              "audio_file": "6f8fc98f-4503-4897-b939-587fda922d12.wav"
+            },
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner – Computer Science - Remote - North America",
+              "location": "Georgia, United States",
+              "experience": "Not specified",
+              "skills": "Not specified",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-%E2%80%93-computer-science-remote-north-america-at-telus-digital-4303082277",
+              "audio_file": "41416608-033c-4082-816c-d33e2cb62959.wav"
+            },
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner - Computer Science - French - Remote - Global",
+              "location": "Georgia, United States",
+              "experience": "Not specified",
+              "skills": "Computer Science, French language proficiency",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060674",
+              "audio_file": "6cfdfce0-77ef-437d-9416-72dd51abe077.wav"
+            },
+            {
+              "company_name": "TELUS Digital",
+              "position": "Data Partner - Chemistry - Remote - North America",
+              "location": "Wyoming, United States",
+              "experience": "Not specified",
+              "skills": "Data analysis, partner management, chemistry knowledge",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/data-partner-chemistry-remote-north-america-at-telus-digital-4303080418",
+              "audio_file": "c6f28537-6ae5-44a3-bde8-78516b315d2e.wav"
+            },
+            {
+              "company_name": "Centene Corporation",
+              "position": "Data Analyst II Healthcare Analytics",
+              "location": "Arizona, United States",
+              "experience": "2+ years of experience in data analysis or related field",
+              "skills": "Data analysis, SQL, Excel, healthcare analytics, problem-solving skills",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/data-analyst-ii-healthcare-analytics-at-centene-corporation-4303074270",
+              "audio_file": "573c946e-0656-4391-9472-87298f1b3d44.wav"
+            },
+            {
+              "company_name": "Mercor",
+              "position": "Data Science Manager",
+              "location": "United States",
+              "experience": "5+ years experience in data science or related field",
+              "skills": "Data science, machine learning, leadership, project management",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/data-science-manager-at-mercor-4298981936",
+              "audio_file": "500c9b9d-a8c4-4d2d-908e-54381c9d5369.wav"
+            },
+            {
+              "company_name": "Humana",
+              "position": "Senior Business Intelligence Engineer",
+              "location": "Arkansas, United States",
+              "experience": "Senior level experience in Business Intelligence or related field",
+              "skills": "Business Intelligence, Data Analysis, SQL, Data Visualization, ETL processes",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/senior-business-intelligence-engineer-at-humana-4301406340",
+              "audio_file": "6f819a92-e7c8-4cb3-ac43-7474275a19bc.wav"
+            },
+            {
+              "company_name": "Dacha Corp",
+              "position": "Cyber Warfare Technician",
+              "location": "Stockton, KS",
+              "experience": "Not specified",
+              "skills": "Not specified",
+              "job_type": "Not specified",
+              "link": "https://www.linkedin.com/jobs/view/cyber-warfare-technician-at-dacha-corp-4303058031",
+              "audio_file": "997bec8a-e5ed-4e7b-a977-856a687a8e1e.wav"
+            },
+            {
+              "company_name": "HIRESIGMA",
+              "position": "Senior Machine Learning Engineer",
+              "location": "United States",
+              "experience": "5-8 years",
+              "skills": "Machine learning, Python, data analysis, deep learning frameworks",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/senior-machine-learning-engineer-at-hiresigma-4302765507",
+              "audio_file": "569c4dbb-7eea-453d-b093-8767eac0c169.wav"
+            },
+            {
+              "company_name": "Basis",
+              "position": "Full Stack Engineer",
+              "location": "United States",
+              "experience": "Mid-level (3-5 years)",
+              "skills": "Full Stack Development, JavaScript, React, Node.js, SQL, REST APIs",
+              "job_type": "Full-time",
+              "link": "https://www.linkedin.com/jobs/view/full-stack-engineer-at-basis-4302769551",
+              "audio_file": "8b0d693c-60a7-4c71-97e8-31dddbfb28dc.wav"
+            }
+          ],
+          "date": "2025-08-20",
+          "batch_size": 5,
+          "initial_point": 0,
+          "epoch": 1
+        }
+      }
+    ]
+  },
+  "versionId": "083d19ab-43d5-4508-bd6a-174586eb1388",
+  "activeVersionId": null,
+  "versionCounter": 39,
+  "triggerCount": 0,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -1122,10 +1130,34 @@
       "name": "Sub-Workflow"
     },
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:50:02.851Z",
+      "createdAt": "2026-04-23T02:50:02.851Z",
+      "role": "workflow:owner",
+      "workflowId": "HmMxxv4eZOZGzrOl",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version af3d36f0",
+    "description": ""
+  },
+  "folder": "Youtube Stream (JNN)"
 }

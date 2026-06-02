@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-17T02:06:34.135Z",
+  "createdAt": "2026-04-26T02:52:36.883Z",
+  "id": "h1kQfLNxCB994HE2",
   "name": "Instagram Video Upload",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -73,7 +79,7 @@
           "mappingMode": "defineBelow",
           "value": {
             "weekday": "={{ $('Input Parameters').item.json.weekday }}",
-            "pages_scrapped": "={{ (() => {\n  const maxEpoch = $('Input Parameters').item.json.maxEpoch;\n  const list = $('Input Parameters').item.json.job_portal_list;\n  const epoch = $('Get current epoch').item.json.epoch;\n  const index = epoch % Math.floor(maxEpoch / list.length);\n\n  return index == 0\n    ? 0\n    : $('Get current epoch').item.json.pages_scrapped;\n})() }}",
+            "pages_scrapped": "={{ $('Get current epoch').item.json.pages_scrapped }}",
             "num_of_jobs": "={{ max($('Input Parameters').item.json.video_count, 10) }}",
             "scrape_by_weekday": false,
             "job_portal": "={{ (() => {\n  const maxEpoch = $('Input Parameters').item.json.maxEpoch;\n  const list = $('Input Parameters').item.json.job_portal_list;\n  const epoch = $('Get current epoch').item.json.epoch;\n  const index = Math.floor(epoch / Math.floor(maxEpoch / list.length));\n  return list[index];\n})() }}",
@@ -172,8 +178,7 @@
             "date": "={{ $('Input Parameters').first().json.date }}",
             "batch_size": "={{ $('Input Parameters').first().json.batch_size }}",
             "initial_point": "={{ $json.initial_point }}",
-            "epoch": "={{ $('Get current epoch').first().json.epoch }}",
-            "template_file": "={{ $json.template_file }}"
+            "epoch": "={{ $('Get current epoch').first().json.epoch }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -185,16 +190,6 @@
               "display": true,
               "canBeUsedToMatch": true,
               "type": "number",
-              "removed": false
-            },
-            {
-              "id": "template_file",
-              "displayName": "template_file",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
               "removed": false
             },
             {
@@ -324,6 +319,12 @@
               "name": "template_file",
               "value": "job_news_template_instagram.pptx",
               "type": "string"
+            },
+            {
+              "id": "c20c57a7-4e7e-4ca3-90c7-0461ea9fd1fa",
+              "name": "video_type",
+              "value": "yt-ch1",
+              "type": "string"
             }
           ]
         },
@@ -379,7 +380,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        496,
+        1168,
         240
       ],
       "id": "5fb050bb-4fa6-400a-8da5-3f3b09e3d4ee",
@@ -1161,7 +1162,8 @@
             "date": "={{ $now.format('yyyy-MM-dd') }}",
             "start_time": "={{ $now.format('HH:mm') }}",
             "status": "running",
-            "execution_id": "={{ $execution.id }}"
+            "execution_id": "={{ $execution.id }}",
+            "video_type": "={{ $('Input Parameters').item.json.video_type }}"
           },
           "matchingColumns": [
             "id"
@@ -1259,6 +1261,36 @@
             {
               "id": "status",
               "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "num_of_jobs",
+              "displayName": "num_of_jobs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "video_type",
+              "displayName": "video_type",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1951,32 +1983,11 @@
     },
     {
       "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "value": "job_listing",
-          "mode": "list",
-          "cachedResultName": "job_listing"
-        },
-        "table": {
-          "__rl": true,
-          "value": "mp4_list",
-          "mode": "list",
-          "cachedResultName": "mp4_list"
-        },
-        "where": {
-          "values": [
-            {
-              "column": "date",
-              "value": "={{ $('Input Parameters').item.json.date }}"
-            },
-            {
-              "column": "end_time",
-              "condition": "IS NULL"
-            }
-          ]
-        },
-        "options": {}
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM job_listing.mp4_list\nWHERE date = $1\n  AND video_type = $2\n  AND status = 'failed'\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('Input Parameters').item.json.date }},{{ $('Input Parameters').item.json.video_type }}"
+        }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
@@ -1997,10 +2008,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "WITH ordered AS (\n  SELECT\n    id,\n    status,\n    pages_scrapped,\n    ROW_NUMBER() OVER (ORDER BY id ASC) AS rn\n  FROM job_listing.mp4_list\n  WHERE date = $1\n)\nSELECT\n  CASE \n    WHEN COUNT(*) = 0 THEN 1\n    ELSE COALESCE(\n      (SELECT rn FROM ordered WHERE status = 'failed' ORDER BY rn LIMIT 1),\n      COUNT(*)\n    )\n  END AS epoch,\n  COALESCE(\n    (\n      SELECT pages_scrapped\n      FROM ordered\n      ORDER BY id DESC\n      LIMIT 1\n    ),\n    0\n  ) AS pages_scrapped\nFROM ordered;",
+        "query": "WITH ordered AS (\n  SELECT\n    id,\n    status,\n    pages_scrapped,\n    job_id,\n    num_of_jobs,\n    video_type,\n    date,\n    ROW_NUMBER() OVER (PARTITION BY video_type ORDER BY id ASC) AS rn\n  FROM job_listing.mp4_list\n  WHERE date = $1\n),\ntype_first_failed AS (\n  SELECT \n    MIN(rn) AS failed_rn,\n    MIN(job_id) FILTER (WHERE status = 'failed') AS failed_job_id\n  FROM ordered\n  WHERE status = 'failed' AND video_type = $2\n),\ntype_base AS (\n  SELECT COUNT(*) AS total_rows \n  FROM ordered\n  WHERE video_type = $2\n),\nglobal_last_row AS (\n  -- Changed: Look at ALL dates, not just $1\n  SELECT \n    job_id,\n    num_of_jobs,\n    pages_scrapped\n  FROM job_listing.mp4_list\n  WHERE date <= $1  -- All dates up to and including query date\n  ORDER BY id DESC\n  LIMIT 1\n)\nSELECT\n  CASE\n    WHEN (SELECT total_rows FROM type_base) = 0 THEN 1\n    WHEN (SELECT failed_rn FROM type_first_failed) IS NOT NULL \n      THEN (SELECT failed_rn FROM type_first_failed)\n    ELSE (SELECT total_rows FROM type_base) + 1\n  END AS epoch,\n  \n  COALESCE((SELECT pages_scrapped FROM global_last_row), 0) AS pages_scrapped,\n  \n  CASE\n    WHEN (SELECT total_rows FROM type_base) = 0 THEN \n      COALESCE(\n        (SELECT job_id FROM global_last_row) + (SELECT num_of_jobs FROM global_last_row),\n        1\n      )\n    WHEN (SELECT failed_rn FROM type_first_failed) IS NOT NULL \n      THEN (SELECT failed_job_id FROM type_first_failed)\n    ELSE COALESCE(\n      (SELECT job_id FROM global_last_row) + (SELECT num_of_jobs FROM global_last_row),\n      1\n    )\n  END AS job_id;",
         "options": {
           "connectionTimeout": 30,
-          "queryReplacement": "={{ $json.date }}"
+          "queryReplacement": "={{ $json.date }},{{ $json.video_type }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
@@ -2065,10 +2076,10 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT COUNT(*) AS video_count\nFROM job_listing.job_links\nWHERE\n  date = $1 AND\n  video_created = FALSE;",
+        "query": "SELECT COUNT(*) AS video_count\nFROM job_listing.job_links\nWHERE date = $1\n  AND id >= $2\n  AND video_created = FALSE;",
         "options": {
           "connectionTimeout": 30,
-          "queryReplacement": "={{ $('Input Parameters').item.json.date }}"
+          "queryReplacement": "={{ $('Input Parameters').item.json.date }},{{ $('Get current epoch').item.json.job_id }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
@@ -2130,9 +2141,80 @@
           "name": "Unnamed credential"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "79411c80-361f-4bd5-af88-51d5a292e724",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        240
+      ],
+      "id": "14d83e54-6203-47f1-b2ac-64ec85c0068d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM job_listing.job_links\nWHERE date=$1\n  AND (audio_added=false OR script_added=false)\n  AND video_created=false\nORDER BY id ASC\nLIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $('Input Parameters').item.json.date }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        720,
+        240
+      ],
+      "id": "16285019-0258-43db-8bcc-4b85cfe4b46f",
+      "name": "Extract Job Openings",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "shW2iHfLRrHL9cFY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        240
+      ],
+      "id": "e53ceafd-cf0f-4ebd-9c07-a2c1d44d8cb8",
+      "name": "Wait 10 sec",
+      "webhookId": "941a9d16-993f-4404-917f-68798491412c"
     }
   ],
-  "pinData": {},
   "connections": {
     "If": {
       "main": [
@@ -2546,7 +2628,7 @@
       "main": [
         [
           {
-            "node": "Script Generator Output",
+            "node": "Wait 10 sec",
             "type": "main",
             "index": 0
           }
@@ -2750,9 +2832,48 @@
           }
         ]
       ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Script Generator Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Script Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job Openings": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 sec": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Openings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -2764,24 +2885,52 @@
     "timeSavedMode": "fixed",
     "timeSavedPerExecution": 40
   },
-  "versionId": "37976535-7417-4802-a0aa-78a68b72d105",
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "h1kQfLNxCB994HE2",
+  "pinData": {},
+  "versionId": "497c36dd-0979-4219-bdd8-fc2ac3eb5935",
+  "activeVersionId": null,
+  "versionCounter": 83,
+  "triggerCount": 0,
   "tags": [
+    {
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
+    },
     {
       "updatedAt": "2026-02-04T18:01:27.216Z",
       "createdAt": "2026-02-04T18:01:27.216Z",
       "id": "EOGY9r6938d9uT4V",
       "name": "Main-Workflow"
-    },
-    {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
-      "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-26T02:52:36.883Z",
+      "createdAt": "2026-04-26T02:52:36.883Z",
+      "role": "workflow:owner",
+      "workflowId": "h1kQfLNxCB994HE2",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
 }

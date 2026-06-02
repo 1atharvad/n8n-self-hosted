@@ -1,0 +1,102 @@
+{
+  "updatedAt": "2026-04-23T02:51:47.675Z",
+  "createdAt": "2025-09-26T07:38:05.356Z",
+  "id": "UcKhrAMSsKWjcpAp",
+  "name": "Save Global Variables",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -128
+      ],
+      "id": "29e039e7-7ae4-481c-9e2e-51358913d5ad",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "executionIdMode": "custom",
+        "customExecutionId": "job_posting",
+        "operation": "set",
+        "values": {
+          "keyValuePair": [
+            {
+              "name": "api_url",
+              "value": "https://local.atharvadevasthali.com/api/core"
+            },
+            {
+              "name": "stream_key",
+              "value": "cggc-7t6t-rchh-3s8z-dfv2"
+            },
+            {
+              "name": "stream_api_key",
+              "value": "656e1d62-9357-4d88-a1fd-bd623d103fed"
+            }
+          ]
+        }
+      },
+      "type": "CUSTOM.Workflow Variables",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -128
+      ],
+      "id": "1c5a7d3a-b3c5-448b-8611-651a9ac3011f",
+      "name": "Workflow Variables"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Workflow Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "66bbba11-fd57-477b-9073-3c2516f0d8e1",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:50:05.160Z",
+      "createdAt": "2026-04-23T02:50:05.160Z",
+      "role": "workflow:owner",
+      "workflowId": "UcKhrAMSsKWjcpAp",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "folder": "Youtube Stream (JNN)"
+}

@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-05-16T22:11:33.613Z",
+  "createdAt": "2026-04-23T02:50:00.599Z",
+  "id": "66MHT0z3zhiYgblm",
   "name": "Combine Videos",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -509,21 +515,6 @@
       "name": "Code in JavaScript"
     }
   ],
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "video_file_name": [
-            "slide-1.mp4"
-          ],
-          "output_file_name": "pseudo_slide-01-05",
-          "epoch": 6,
-          "include_intro_outro": false,
-          "include_epoch_in_output": true
-        }
-      }
-    ]
-  },
   "connections": {
     "Compile Final Video": {
       "main": [
@@ -748,7 +739,6 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -759,11 +749,29 @@
     "executionTimeout": -1,
     "availableInMCP": false
   },
-  "versionId": "a0883c0d-bf16-459c-a5d5-8e70d5e0761d",
+  "staticData": null,
   "meta": {
-    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
   },
-  "id": "66MHT0z3zhiYgblm",
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "video_file_name": [
+            "slide-1.mp4"
+          ],
+          "output_file_name": "pseudo_slide-01-05",
+          "epoch": 6,
+          "include_intro_outro": false,
+          "include_epoch_in_output": true
+        }
+      }
+    ]
+  },
+  "versionId": "a0883c0d-bf16-459c-a5d5-8e70d5e0761d",
+  "activeVersionId": null,
+  "versionCounter": 173,
+  "triggerCount": 0,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -772,10 +780,34 @@
       "name": "Sub-Workflow"
     },
     {
-      "name": "F-JNN",
-      "id": "uRLukwQ6lXVe1ia9",
       "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z"
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
-  ]
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T02:50:00.599Z",
+      "createdAt": "2026-04-23T02:50:00.599Z",
+      "role": "workflow:owner",
+      "workflowId": "66MHT0z3zhiYgblm",
+      "projectId": "r4FxHAXU5mmnE4p2",
+      "project": {
+        "updatedAt": "2026-04-23T00:46:33.004Z",
+        "createdAt": "2026-04-23T00:44:53.719Z",
+        "id": "r4FxHAXU5mmnE4p2",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 7d5b5946",
+    "description": ""
+  },
+  "folder": "Youtube Stream (JNN)"
 }
