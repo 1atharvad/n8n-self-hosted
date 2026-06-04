@@ -148,6 +148,42 @@ async def list_vars(
     return {"vars": [{"key": v.key, "updated_at": v.updated_at.isoformat() if v.updated_at else None} for v in vars_]}
 
 
+# ── GitHub Actions runs endpoint ─────────────────────────────────────────────
+
+@router.get("/runs")
+@limiter.limit("30/minute")
+async def get_workflow_runs(
+    request: Request,
+    _admin: User = Depends(require_admin),
+    per_page: int = 10,
+):
+    if not _GITHUB_TOKEN or not _GITHUB_REPO:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="GITHUB_TOKEN or GITHUB_REPO not configured")
+    async with httpx.AsyncClient(timeout=15, headers=_gh_headers()) as client:
+        resp = await client.get(
+            f"{_GH_BASE}/repos/{_GITHUB_REPO}/actions/workflows/{_WORKFLOW_FILE}/runs",
+            params={"per_page": min(per_page, 25)},
+        )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"GitHub API error: {resp.text}")
+    data = resp.json()
+    runs = [
+        {
+            "id": r["id"],
+            "run_number": r["run_number"],
+            "status": r["status"],
+            "conclusion": r["conclusion"],
+            "event": r["event"],
+            "created_at": r["created_at"],
+            "updated_at": r["updated_at"],
+            "html_url": r["html_url"],
+            "actor": r["actor"]["login"] if r.get("actor") else None,
+        }
+        for r in data.get("workflow_runs", [])
+    ]
+    return {"runs": runs}
+
+
 @router.get("/{key}")
 @limiter.limit("60/minute")
 async def get_var(
@@ -164,6 +200,38 @@ async def get_var(
     return {"key": var.key, "value": _dec(var.value), "updated_at": var.updated_at.isoformat() if var.updated_at else None}
 
 
+async def _push_secret_to_github(key: str, value: str) -> None:
+    """Encrypt and upsert a single secret to the GitHub environment. No-op in dev mode."""
+    if _DEV_DOTENV_PATH or not _GITHUB_TOKEN or not _GITHUB_REPO:
+        return
+    async with httpx.AsyncClient(timeout=30, headers=_gh_headers()) as client:
+        pk_resp = await client.get(
+            f"{_GH_BASE}/repos/{_GITHUB_REPO}/environments/{_GITHUB_ENV}/secrets/public-key"
+        )
+        if pk_resp.status_code != 200:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"GitHub public key fetch failed: {pk_resp.text}")
+        pk_data = pk_resp.json()
+        encrypted = _encrypt_secret(pk_data["key"], value)
+        resp = await client.put(
+            f"{_GH_BASE}/repos/{_GITHUB_REPO}/environments/{_GITHUB_ENV}/secrets/{key}",
+            json={"encrypted_value": encrypted, "key_id": pk_data["key_id"]},
+        )
+        if resp.status_code not in (201, 204):
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"GitHub secret push failed: {resp.text}")
+
+
+async def _delete_secret_from_github(key: str) -> None:
+    """Delete a secret from the GitHub environment. No-op in dev mode or if not configured."""
+    if _DEV_DOTENV_PATH or not _GITHUB_TOKEN or not _GITHUB_REPO:
+        return
+    async with httpx.AsyncClient(timeout=30, headers=_gh_headers()) as client:
+        resp = await client.delete(
+            f"{_GH_BASE}/repos/{_GITHUB_REPO}/environments/{_GITHUB_ENV}/secrets/{key}"
+        )
+        if resp.status_code not in (204, 404):
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"GitHub secret delete failed: {resp.text}")
+
+
 @router.put("/{key}")
 async def upsert_var(
     request: Request,
@@ -177,6 +245,8 @@ async def upsert_var(
     var = await set_env_var(session, key, _enc(body.value))
     if _DEV_DOTENV_PATH:
         _write_dotenv(_DEV_DOTENV_PATH, {key: body.value})
+    else:
+        await _push_secret_to_github(key, body.value)
     await create_audit_log(session, action="env_var_set", actor_id=str(admin.id), actor_name=admin.username, target_name=key, detail="updated" if existing else "created", ip_address=ip)
     return {"key": var.key, "updated_at": var.updated_at.isoformat() if var.updated_at else None}
 
@@ -194,6 +264,8 @@ async def remove_var(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Key not found")
     if _DEV_DOTENV_PATH:
         _remove_from_dotenv(_DEV_DOTENV_PATH, key)
+    else:
+        await _delete_secret_from_github(key)
     await create_audit_log(session, action="env_var_deleted", actor_id=str(admin.id), actor_name=admin.username, target_name=key, detail="removed from store", ip_address=ip)
 
 
@@ -210,10 +282,10 @@ async def deploy(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No environment variables to deploy")
 
     ip = request.client.host if request.client else None
-    plain_vars = {v.key: _dec(v.value) for v in vars_}
 
-    # Dev mode: write directly to the mounted .env file instead of pushing to GitHub
+    # Dev mode: write all vars to the mounted .env file and return
     if _DEV_DOTENV_PATH:
+        plain_vars = {v.key: _dec(v.value) for v in vars_}
         try:
             _write_dotenv(_DEV_DOTENV_PATH, plain_vars)
         except OSError as exc:
@@ -226,41 +298,12 @@ async def deploy(
             detail=f"{len(vars_)} vars written to {_DEV_DOTENV_PATH}",
             ip_address=ip,
         )
-        return {"ok": True, "pushed": len(vars_)}
+        return {"ok": True}
 
     if not _GITHUB_TOKEN or not _GITHUB_REPO:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="GITHUB_TOKEN or GITHUB_REPO not configured")
 
     async with httpx.AsyncClient(timeout=30, headers=_gh_headers()) as client:
-        # Fetch the environment's public key for secret encryption
-        pk_resp = await client.get(
-            f"{_GH_BASE}/repos/{_GITHUB_REPO}/environments/{_GITHUB_ENV}/secrets/public-key"
-        )
-        if pk_resp.status_code != 200:
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"GitHub public key fetch failed: {pk_resp.text}")
-
-        pk_data = pk_resp.json()
-        key_id = pk_data["key_id"]
-        public_key_b64 = pk_data["key"]
-
-        # Push every var as an environment secret
-        failed: list[str] = []
-        for var in vars_:
-            encrypted = _encrypt_secret(public_key_b64, plain_vars[var.key])
-            resp = await client.put(
-                f"{_GH_BASE}/repos/{_GITHUB_REPO}/environments/{_GITHUB_ENV}/secrets/{var.key}",
-                json={"encrypted_value": encrypted, "key_id": key_id},
-            )
-            if resp.status_code not in (201, 204):
-                failed.append(var.key)
-
-        if failed:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to push secrets: {', '.join(failed)}",
-            )
-
-        # Trigger workflow_dispatch
         dispatch_resp = await client.post(
             f"{_GH_BASE}/repos/{_GITHUB_REPO}/actions/workflows/{_WORKFLOW_FILE}/dispatches",
             json={"ref": "main"},
@@ -273,7 +316,7 @@ async def deploy(
         action="env_deployed",
         actor_id=str(admin.id),
         actor_name=admin.username,
-        detail=f"{len(vars_)} secrets pushed to {_GITHUB_ENV}",
+        detail="workflow_dispatch triggered",
         ip_address=ip,
     )
-    return {"ok": True, "pushed": len(vars_)}
+    return {"ok": True}

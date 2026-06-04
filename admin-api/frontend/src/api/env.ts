@@ -36,7 +36,26 @@ export const deleteEnvVar = async (key: string): Promise<void> => {
   await authedFetch(`${BASE}/${encodeURIComponent(key)}`, { method: 'DELETE' });
 };
 
-export const deployEnv = async (): Promise<{ pushed: number }> => {
+export const deployEnv = async (): Promise<{ ok: boolean }> => {
   const res = await authedFetch(`${BASE}/deploy`, { method: 'POST' });
-  return res.json() as Promise<{ pushed: number }>;
+  return res.json() as Promise<{ ok: boolean }>;
+};
+
+export interface WorkflowRun {
+  id: number;
+  run_number: number;
+  status: 'queued' | 'in_progress' | 'completed';
+  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | null;
+  event: string;
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+  actor: string | null;
+}
+
+export const fetchWorkflowRuns = async (perPage = 10): Promise<WorkflowRun[]> => {
+  const res = await authedFetch(`${BASE}/runs?per_page=${perPage}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail ?? `GitHub runs fetch failed (${res.status})`);
+  return (data.runs ?? []) as WorkflowRun[];
 };

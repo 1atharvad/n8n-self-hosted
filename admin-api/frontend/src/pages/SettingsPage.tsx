@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { fetchEnvVars, fetchEnvVarValue, setEnvVar, deleteEnvVar, deployEnv } from '@/api/env';
-import type { EnvVarKey } from '@/api/env';
+import { fetchEnvVars, fetchEnvVarValue, setEnvVar, deleteEnvVar, deployEnv, fetchWorkflowRuns } from '@/api/env';
+import type { EnvVarKey, WorkflowRun } from '@/api/env';
 
 type Tab = 'personal' | 'containers' | 'users' | 'environment';
 
@@ -73,6 +73,10 @@ export default function SettingsPage() {
   const [deployResult, setDeployResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const deployTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [runs, setRuns] = useState<WorkflowRun[]>([]);
+  const [runsLoading, setRunsLoading] = useState(false);
+  const [runsError, setRunsError] = useState<string | null>(null);
+
   // import modal
   const [showSaveDropdown, setShowSaveDropdown] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -94,9 +98,18 @@ export default function SettingsPage() {
       .finally(() => setEnvLoading(false));
   }, []);
 
+  const loadRuns = useCallback(() => {
+    setRunsLoading(true);
+    setRunsError(null);
+    fetchWorkflowRuns()
+      .then((r) => { setRuns(r); })
+      .catch((e: Error) => setRunsError(e.message))
+      .finally(() => setRunsLoading(false));
+  }, []);
+
   useEffect(() => {
-    if (activeTab === 'environment') loadEnvVars();
-  }, [activeTab, loadEnvVars]);
+    if (activeTab === 'environment') { loadEnvVars(); loadRuns(); }
+  }, [activeTab, loadEnvVars, loadRuns]);
 
   const fetchValue = async (key: string): Promise<string> => {
     if (revealedValues[key] !== undefined) return revealedValues[key];
@@ -169,9 +182,10 @@ export default function SettingsPage() {
       }
       exitEditMode();
       setDeploying(true);
-      const res = await deployEnv();
-      setDeployResult({ ok: true, msg: `${res.pushed} secrets pushed — deploy triggered.` });
+      await deployEnv();
+      setDeployResult({ ok: true, msg: 'Deploy triggered — workflow running.' });
       loadEnvVars();
+      setTimeout(() => loadRuns(), 3000);
     } catch (e) {
       setDeployResult({ ok: false, msg: e instanceof Error ? e.message : 'Deploy failed' });
     } finally {
@@ -563,6 +577,7 @@ export default function SettingsPage() {
                 !searchQuery || v.key.toLowerCase().includes(searchQuery.toLowerCase())
               );
               return (
+                <>
                 <section className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
 
                   {/* Card header — matches other tabs' header pattern */}
@@ -844,6 +859,65 @@ export default function SettingsPage() {
                       </div>
                     )}
                 </section>
+
+                {/* GitHub Actions runs */}
+                <section className="bg-card border border-border rounded-xl overflow-hidden mt-4 shrink-0">
+                  <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-semibold text-foreground">GitHub Actions</h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">Recent deploy workflow runs</p>
+                    </div>
+                    <button
+                      onClick={loadRuns}
+                      disabled={runsLoading}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                    >
+                      {runsLoading ? 'Refreshing…' : 'Refresh'}
+                    </button>
+                  </div>
+                  <div className="divide-y divide-border/60">
+                    {runsLoading && runs.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-muted-foreground">Loading…</div>
+                    ) : runsError ? (
+                      <div className="py-8 text-center text-xs text-destructive px-4">{runsError}</div>
+                    ) : runs.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-muted-foreground">No runs found.</div>
+                    ) : runs.map((run) => {
+                      const isRunning = run.status !== 'completed';
+                      const badge = isRunning
+                        ? { label: run.status === 'in_progress' ? 'Running' : 'Queued', cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' }
+                        : run.conclusion === 'success'
+                        ? { label: 'Success', cls: 'bg-green-500/15 text-green-400 border-green-500/30' }
+                        : run.conclusion === 'failure'
+                        ? { label: 'Failed', cls: 'bg-destructive/15 text-destructive border-destructive/30' }
+                        : { label: run.conclusion ?? 'Cancelled', cls: 'bg-secondary text-muted-foreground border-border' };
+                      return (
+                        <a
+                          key={run.id}
+                          href={run.html_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-5 py-3 hover:bg-secondary/40 transition-colors group"
+                        >
+                          <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                          <span className="text-xs text-foreground font-medium">
+                            #{run.run_number}
+                          </span>
+                          <span className="text-xs text-muted-foreground capitalize">{run.event.replace('_', ' ')}</span>
+                          {run.actor && (
+                            <span className="text-xs text-muted-foreground/60">by {run.actor}</span>
+                          )}
+                          <span className="ml-auto text-[10px] text-muted-foreground/50 shrink-0">
+                            {new Date(run.created_at).toLocaleString()}
+                          </span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </section>
+                </>
               );
             })()}
 

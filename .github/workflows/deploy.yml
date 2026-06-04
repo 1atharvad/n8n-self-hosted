@@ -28,7 +28,7 @@ jobs:
 
           echo "$SECRETS_JSON" | jq -r '
             to_entries
-            | map(select(.key != "github_token" and .key != "CONTABO_SSH_KEY" and .key != "CONTABO_IP" and (.value | type == "string")))
+            | map(select(.key != "CONTABO_SSH_KEY" and .key != "CONTABO_IP" and (.value | type == "string")))
             | map("\(.key)=\(.value)")
             | .[]
           ' > .env
