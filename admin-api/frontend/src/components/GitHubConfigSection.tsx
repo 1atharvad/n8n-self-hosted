@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, Github, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Button, Input } from 'advi-ui';
 import { saveGitHubConfig, fetchGitHubToken } from '@/api/env';

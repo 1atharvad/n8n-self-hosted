@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchWorkflowRuns, fetchGitHubConfig } from '@/api/env';
 import type { WorkflowRun, GitHubConfig } from '@/api/env';
 import { GitHubActionsSection } from '@/components/GitHubActionsSection';

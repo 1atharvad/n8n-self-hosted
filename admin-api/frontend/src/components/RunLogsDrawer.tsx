@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle2, XCircle, Circle, Loader2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';

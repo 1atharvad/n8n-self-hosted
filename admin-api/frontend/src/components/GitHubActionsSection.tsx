@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckCircle2, XCircle, Loader2, Clock, RefreshCw, ChevronRight, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { WorkflowRun } from '@/api/env';
