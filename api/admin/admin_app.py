@@ -1,15 +1,15 @@
 import asyncio
 import json
 import os
-
-import httpx
 from contextlib import asynccontextmanager
 
+import httpx
 from markupsafe import Markup, escape
 from sqladmin import Admin, BaseView, ModelView, expose
 from sqladmin.authentication import AuthenticationBackend, login_required
 from sqladmin.filters import AllUniqueStringValuesFilter
-from sqlalchemy import func, select as sa_select
+from sqlalchemy import func
+from sqlalchemy import select as sa_select
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
@@ -20,13 +20,21 @@ _ADMIN_API_URL = os.getenv("ADMIN_API_URL", "http://admin-api:8080")
 _INTERNAL_SECRET = os.getenv("INTERNAL_SECRET", "")
 
 # Fields too large / irrelevant to include in audit detail
-_SKIP_AUDIT_FIELDS = {"job_description", "script", "experience_required", "skills_required", "audio_file_name", "script_added"}
+_SKIP_AUDIT_FIELDS = {
+    "job_description",
+    "script",
+    "experience_required",
+    "skills_required",
+    "audio_file_name",
+    "script_added",
+}
 
 
 def _model_snapshot(model) -> str:
     """Compact JSON of a model's non-large fields."""
     data = {
-        k: v for k, v in vars(model).items()
+        k: v
+        for k, v in vars(model).items()
         if not k.startswith("_") and k not in _SKIP_AUDIT_FIELDS
     }
     return json.dumps(data, default=str)
@@ -57,6 +65,7 @@ def _audit(
     """
     if not _INTERNAL_SECRET:
         return
+
     async def _post():
         try:
             async with httpx.AsyncClient(timeout=3) as client:
@@ -73,6 +82,7 @@ def _audit(
                 )
         except Exception:
             pass
+
     try:
         loop = asyncio.get_event_loop()
         if loop.is_running():
@@ -123,7 +133,9 @@ class SettingsView(BaseView):
 
         info = {
             "python_version": sys.version.split()[0],
-            "environment": os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "development")),
+            "environment": os.getenv(
+                "APP_ENV", os.getenv("ENVIRONMENT", "development")
+            ),
             "sqladmin_version": pkg_version("sqladmin"),
             "db": db_info,
         }
@@ -140,16 +152,21 @@ class CustomAdmin(Admin):
             for view in self._views:
                 if not isinstance(view, ModelView):
                     continue
-                count = session.scalar(sa_select(func.count()).select_from(view.model))
-                stats.append({
-                    "name": view.name,
-                    "icon": getattr(view, "icon", "fa-solid fa-table"),
-                    "count": count,
-                    "identity": view.identity,
-                })
+                count = session.scalar(
+                    sa_select(func.count()).select_from(view.model)
+                )
+                stats.append(
+                    {
+                        "name": view.name,
+                        "icon": getattr(view, "icon", "fa-solid fa-table"),
+                        "count": count,
+                        "identity": view.identity,
+                    }
+                )
         return await self.templates.TemplateResponse(
             request, "sqladmin/index.html", {"model_stats": stats}
         )
+
 
 _TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "src", "templates")
 
@@ -161,6 +178,7 @@ class MultiValueFilter(AllUniqueStringValuesFilter):
         if not value:
             return query
         from sqladmin.filters import get_column_obj
+
         column_obj = get_column_obj(self.column, model)
         values = [v.strip() for v in value.split(",") if v.strip()]
         if not values:
@@ -171,20 +189,31 @@ class MultiValueFilter(AllUniqueStringValuesFilter):
 
 
 def _get_filter_options(filter_obj):
-    from sqlalchemy.orm import Session
     from sqladmin.filters import get_column_obj
+    from sqlalchemy.orm import Session
+
     model = getattr(filter_obj.column, "class_", None)
     column_obj = get_column_obj(filter_obj.column, model)
     with Session(sync_engine) as session:
-        rows = session.execute(sa_select(column_obj).distinct().order_by(column_obj.desc())).all()
+        rows = session.execute(
+            sa_select(column_obj).distinct().order_by(column_obj.desc())
+        ).all()
         return [str(r[0]) for r in rows if r[0] is not None]
 
 
 def _remove_filter_value(request, param_name, value_to_remove):
     current = request.query_params.get(param_name, "")
-    remaining = [v.strip() for v in current.split(",") if v.strip() and v.strip() != value_to_remove]
+    remaining = [
+        v.strip()
+        for v in current.split(",")
+        if v.strip() and v.strip() != value_to_remove
+    ]
     if remaining:
-        return str(request.url.include_query_params(**{param_name: ",".join(remaining)}))
+        return str(
+            request.url.include_query_params(
+                **{param_name: ",".join(remaining)}
+            )
+        )
     return str(request.url.remove_query_params(param_name))
 
 
@@ -197,15 +226,25 @@ def init_admin(app):
     app.router.lifespan_context = lifespan
 
     # Create Admin instance
-    auth_backend = AdminAuth(secret_key=os.getenv("ADMIN_SECRET_KEY", "change-me-in-production"))
-    admin = CustomAdmin(app, sync_engine, base_url="/db-admin", templates_dir=_TEMPLATES_DIR, authentication_backend=auth_backend)
+    auth_backend = AdminAuth(
+        secret_key=os.getenv("ADMIN_SECRET_KEY", "change-me-in-production")
+    )
+    admin = CustomAdmin(
+        app,
+        sync_engine,
+        base_url="/db-admin",
+        templates_dir=_TEMPLATES_DIR,
+        authentication_backend=auth_backend,
+    )
 
     # Expose a url_for that includes the app's root_path prefix so nginx routes it correctly
     _root = app.root_path
     admin.templates.env.globals["main_url_for"] = (
         lambda name, **kw: _root + str(app.url_path_for(name, **kw))
     )
-    admin.templates.env.globals["admin_logout_url"] = _root + "/db-admin/logout"
+    admin.templates.env.globals["admin_logout_url"] = (
+        _root + "/db-admin/logout"
+    )
     admin.templates.env.globals["remove_filter_value"] = _remove_filter_value
     admin.templates.env.globals["get_filter_options"] = _get_filter_options
 
@@ -228,11 +267,20 @@ def init_admin(app):
             JobLink.location,
         ]
         column_sortable_list = [JobLink.date, JobLink.id]
-        column_filters = [MultiValueFilter(JobLink.date), AllUniqueStringValuesFilter(JobLink.video_type)]
+        column_filters = [
+            MultiValueFilter(JobLink.date),
+            AllUniqueStringValuesFilter(JobLink.video_type),
+        ]
         column_formatters_detail = {
-            "skills_required": lambda m, _: Markup('<div style="white-space: pre-wrap; max-width: 100%">{}</div>').format(escape(m.skills_required or "")),
-            "job_description": lambda m, _: Markup('<div style="white-space: pre-wrap; max-width: 100%">{}</div>').format(escape(m.job_description or "")),
-            "script": lambda m, _: Markup('<div style="white-space: pre-wrap; max-width: 100%">{}</div>').format(escape(m.script or "")),
+            "skills_required": lambda m, _: Markup(
+                '<div style="white-space: pre-wrap; max-width: 100%">{}</div>'
+            ).format(escape(m.skills_required or "")),
+            "job_description": lambda m, _: Markup(
+                '<div style="white-space: pre-wrap; max-width: 100%">{}</div>'
+            ).format(escape(m.job_description or "")),
+            "script": lambda m, _: Markup(
+                '<div style="white-space: pre-wrap; max-width: 100%">{}</div>'
+            ).format(escape(m.script or "")),
         }
 
         async def on_model_change(self, data, model, is_created, request):
@@ -241,12 +289,26 @@ def init_admin(app):
 
         async def after_model_change(self, data, model, is_created, request):
             ip = request.client.host if request.client else None
-            detail = _model_snapshot(model) if is_created else getattr(request.state, "joblink_diff", None)
-            _audit("create" if is_created else "update", target=f"joblink#{model.id}", detail=detail, ip_address=ip)
+            detail = (
+                _model_snapshot(model)
+                if is_created
+                else getattr(request.state, "joblink_diff", None)
+            )
+            _audit(
+                "create" if is_created else "update",
+                target=f"joblink#{model.id}",
+                detail=detail,
+                ip_address=ip,
+            )
 
         async def after_model_delete(self, model, request):
             ip = request.client.host if request.client else None
-            _audit("delete", target=f"joblink#{model.id}", detail=_model_snapshot(model), ip_address=ip)
+            _audit(
+                "delete",
+                target=f"joblink#{model.id}",
+                detail=_model_snapshot(model),
+                ip_address=ip,
+            )
 
     # Mp4List admin
     class Mp4ListAdmin(ModelView, model=Mp4List):
@@ -256,7 +318,10 @@ def init_admin(app):
         ]
         column_searchable_list = [Mp4List.mp4_name, Mp4List.status]
         column_sortable_list = [Mp4List.date, Mp4List.id]
-        column_filters = [MultiValueFilter(Mp4List.date), AllUniqueStringValuesFilter(Mp4List.video_type)]
+        column_filters = [
+            MultiValueFilter(Mp4List.date),
+            AllUniqueStringValuesFilter(Mp4List.video_type),
+        ]
 
         async def on_model_change(self, data, model, is_created, request):
             if not is_created:
@@ -264,12 +329,26 @@ def init_admin(app):
 
         async def after_model_change(self, data, model, is_created, request):
             ip = request.client.host if request.client else None
-            detail = _model_snapshot(model) if is_created else getattr(request.state, "mp4_diff", None)
-            _audit("create" if is_created else "update", target=f"mp4#{model.id}", detail=detail, ip_address=ip)
+            detail = (
+                _model_snapshot(model)
+                if is_created
+                else getattr(request.state, "mp4_diff", None)
+            )
+            _audit(
+                "create" if is_created else "update",
+                target=f"mp4#{model.id}",
+                detail=detail,
+                ip_address=ip,
+            )
 
         async def after_model_delete(self, model, request):
             ip = request.client.host if request.client else None
-            _audit("delete", target=f"mp4#{model.id}", detail=_model_snapshot(model), ip_address=ip)
+            _audit(
+                "delete",
+                target=f"mp4#{model.id}",
+                detail=_model_snapshot(model),
+                ip_address=ip,
+            )
 
     # Register views
     admin.add_view(JobLinkAdmin)

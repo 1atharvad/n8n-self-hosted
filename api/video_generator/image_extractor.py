@@ -53,7 +53,15 @@ class ImageExtractor:
         self.job_store[job_id] = {"status": status}
         return job_id, self.job_store.get(job_id)
 
-    def extract_slides(self, file_name, start_slide, end_slide, total_slides, epoch: int | None = None, video_type: str | None = None):
+    def extract_slides(
+        self,
+        file_name,
+        start_slide,
+        end_slide,
+        total_slides,
+        epoch: int | None = None,
+        video_type: str | None = None,
+    ):
         """
         Extract a range of slides from a PowerPoint presentation and save them
         as PNG images.
@@ -90,8 +98,16 @@ class ImageExtractor:
                 }
         """
         try:
-            epoch_folder = f"{video_type}-epoch_{epoch}" if video_type else f"epoch_{epoch}"
-            slide_dir = Path(SLIDE_IMG_FILES_DIR, epoch_folder) if epoch else SLIDE_IMG_FILES_DIR
+            epoch_folder = (
+                f"{video_type}-epoch_{epoch}"
+                if video_type
+                else f"epoch_{epoch}"
+            )
+            slide_dir = (
+                Path(SLIDE_IMG_FILES_DIR, epoch_folder)
+                if epoch
+                else SLIDE_IMG_FILES_DIR
+            )
             if slide_dir.exists():
                 shutil.rmtree(slide_dir)
             slide_dir.mkdir(parents=True, exist_ok=True)

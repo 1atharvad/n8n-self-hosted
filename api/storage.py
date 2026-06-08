@@ -1,8 +1,12 @@
 import os
-from minio import Minio
-from minio.error import S3Error
 
-MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT", "http://minio:9000").replace("http://", "").replace("https://", "")
+from minio import Minio
+
+MINIO_ENDPOINT = (
+    os.environ.get("MINIO_ENDPOINT", "http://minio:9000")
+    .replace("http://", "")
+    .replace("https://", "")
+)
 MINIO_ACCESS_KEY = os.environ.get("MINIO_ROOT_USER", "minioadmin")
 MINIO_SECRET_KEY = os.environ.get("MINIO_ROOT_PASSWORD", "")
 MINIO_BUCKET = os.environ.get("MINIO_BUCKET_NAME", "n8n-binary-data")
@@ -21,16 +25,33 @@ def ensure_bucket() -> None:
         client.make_bucket(MINIO_BUCKET)
 
 
-def upload_file(object_name: str, file_path: str, content_type: str = "application/octet-stream") -> str:
+def upload_file(
+    object_name: str,
+    file_path: str,
+    content_type: str = "application/octet-stream",
+) -> str:
     ensure_bucket()
-    client.fput_object(MINIO_BUCKET, object_name, file_path, content_type=content_type)
+    client.fput_object(
+        MINIO_BUCKET, object_name, file_path, content_type=content_type
+    )
     return object_name
 
 
-def upload_bytes(object_name: str, data: bytes, content_type: str = "application/octet-stream") -> str:
+def upload_bytes(
+    object_name: str,
+    data: bytes,
+    content_type: str = "application/octet-stream",
+) -> str:
     import io
+
     ensure_bucket()
-    client.put_object(MINIO_BUCKET, object_name, io.BytesIO(data), length=len(data), content_type=content_type)
+    client.put_object(
+        MINIO_BUCKET,
+        object_name,
+        io.BytesIO(data),
+        length=len(data),
+        content_type=content_type,
+    )
     return object_name
 
 
@@ -40,7 +61,10 @@ def download_file(object_name: str, dest_path: str) -> None:
 
 def get_presigned_url(object_name: str, expires_hours: int = 24) -> str:
     from datetime import timedelta
-    return client.presigned_get_object(MINIO_BUCKET, object_name, expires=timedelta(hours=expires_hours))
+
+    return client.presigned_get_object(
+        MINIO_BUCKET, object_name, expires=timedelta(hours=expires_hours)
+    )
 
 
 def delete_file(object_name: str) -> None:

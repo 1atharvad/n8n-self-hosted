@@ -19,7 +19,9 @@ _redis: aioredis.Redis | None = None
 def _get_redis() -> aioredis.Redis:
     global _redis
     if _redis is None:
-        _redis = aioredis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+        _redis = aioredis.Redis(
+            host=REDIS_HOST, port=REDIS_PORT, decode_responses=True
+        )
     return _redis
 
 
@@ -37,7 +39,9 @@ async def _latest_snapshot() -> dict | None:
             raw = await r.lindex(key, 0)
             if raw:
                 snapshots.append(json.loads(raw))
-        return max(snapshots, key=lambda s: s.get("ts", 0)) if snapshots else None
+        return (
+            max(snapshots, key=lambda s: s.get("ts", 0)) if snapshots else None
+        )
     except Exception:
         return None
 
@@ -66,7 +70,9 @@ def _local_cpu() -> float:
     return round((1 - (i2 - i1) / delta) * 100, 1) if delta else 0.0
 
 
-def _build_result(cpu_raw: float, cpu_ema: float, warmed_up: bool, source: str) -> dict:
+def _build_result(
+    cpu_raw: float, cpu_ema: float, warmed_up: bool, source: str
+) -> dict:
     cpu_effective = round(max(cpu_ema, cpu_raw), 1)
     return {
         "cpu_raw": cpu_raw,
@@ -93,7 +99,9 @@ def _sample_local() -> dict:
     elif cpu_raw > _local_ema:
         _local_ema = EWMA_ALPHA_UP * cpu_raw + (1 - EWMA_ALPHA_UP) * _local_ema
     else:
-        _local_ema = EWMA_ALPHA_DOWN * cpu_raw + (1 - EWMA_ALPHA_DOWN) * _local_ema
+        _local_ema = (
+            EWMA_ALPHA_DOWN * cpu_raw + (1 - EWMA_ALPHA_DOWN) * _local_ema
+        )
     _local_ema = round(_local_ema, 1)
     _local_samples += 1
     return _build_result(cpu_raw, _local_ema, _local_samples >= 5, "local")
@@ -133,7 +141,10 @@ async def wait_until_ready(
             return result
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise HTTPException(status_code=408, detail=f"CPU did not drop below {THRESHOLD}% within {timeout}s")
+            raise HTTPException(
+                status_code=408,
+                detail=f"CPU did not drop below {THRESHOLD}% within {timeout}s",
+            )
         await asyncio.sleep(min(30, remaining))
 
 

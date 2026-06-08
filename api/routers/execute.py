@@ -16,9 +16,10 @@ async def execute_command(req: ExecuteRequest):
         capture_output=True,
         text=True,
     )
-    return JSONResponse({
-        "stdout": result.stdout,
-        "stderr": result.stderr,
-        "returnCode": result.returncode,
-    })
-
+    return JSONResponse(
+        {
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "returnCode": result.returncode,
+        }
+    )

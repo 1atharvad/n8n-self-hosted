@@ -3,7 +3,8 @@ import os
 import httpx
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from audio_manager import SpeechToText, TextToVoice as AudioTTS
+from audio_manager import SpeechToText
+from audio_manager import TextToVoice as AudioTTS
 from audio_manager.speech_to_text import VADStream
 
 router = APIRouter(tags=["Voice Chat"])

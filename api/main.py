@@ -15,17 +15,24 @@ app = FastAPI(root_path='/api/core')
 
 app.mount(
     "/admin-assets",
-    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "admin", "static")),
+    StaticFiles(
+        directory=os.path.join(os.path.dirname(__file__), "admin", "static")
+    ),
     name="admin-assets",
 )
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("ADMIN_SECRET_KEY", "change-me-in-production"))
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("ADMIN_SECRET_KEY", "change-me-in-production"),
+)
 
 for router in all_routers:
     app.include_router(router, dependencies=[Depends(verify_api_key)])
 
+
 @app.get('/health', dependencies=[Depends(verify_api_key)])
 async def health():
     return {"status": "ok"}
+
 
 init_admin(app)

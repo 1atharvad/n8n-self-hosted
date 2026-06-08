@@ -18,11 +18,7 @@ ASYNC_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD_E
 async_engine = create_async_engine(
     ASYNC_DATABASE_URL,
     echo=True,
-    connect_args={
-        "server_settings": {
-            "search_path": "job_listing"
-        }
-    }
+    connect_args={"server_settings": {"search_path": "job_listing"}},
 )
 
 async_session = sessionmaker(
@@ -34,7 +30,5 @@ SYNC_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD_E
 sync_engine = create_engine(
     SYNC_DATABASE_URL,
     echo=True,
-    connect_args={
-        "options": "-csearch_path=job_listing"
-    }
+    connect_args={"options": "-csearch_path=job_listing"},
 )

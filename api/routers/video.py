@@ -1,16 +1,23 @@
 from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-from schemas import CombineVideosRequest, ConvertMp4Request, ConvertToMp4Request
-from .utils import respond_job_status
+from schemas import (
+    CombineVideosRequest,
+    ConvertMp4Request,
+    ConvertToMp4Request,
+)
 from video_generator import VideoGenerator
+
+from .utils import respond_job_status
 
 router = APIRouter(tags=["Video Generator"])
 video = VideoGenerator()
 
 
 @router.post('/convert-to-mp4')
-async def convert_to_mp4(req: ConvertToMp4Request, background_tasks: BackgroundTasks):
+async def convert_to_mp4(
+    req: ConvertToMp4Request, background_tasks: BackgroundTasks
+):
     """
     Convert an image and audio file into an MP4 video in the background.
 
@@ -25,7 +32,13 @@ async def convert_to_mp4(req: ConvertToMp4Request, background_tasks: BackgroundT
         f'{req.image_file.split(".")[0]}-img', status='pending'
     )
     background_tasks.add_task(
-        video.convert_to_mp4, job_id, req.image_file, req.audio_file, req.epoch, req.video_type, req.upload_to_minio
+        video.convert_to_mp4,
+        job_id,
+        req.image_file,
+        req.audio_file,
+        req.epoch,
+        req.video_type,
+        req.upload_to_minio,
     )
     return JSONResponse(respond_job_status(job_id, job))
 
@@ -75,14 +88,18 @@ async def convert_mp4_to_mp4(req: ConvertMp4Request):
             - If failed: JSON object containing 'error' and optional 'stderr'
                 with HTTP 500 status.
     """
-    result = video.convert_mp4_to_mp4(req.video_file, req.upload_to_minio, req.video_type)
+    result = video.convert_mp4_to_mp4(
+        req.video_file, req.upload_to_minio, req.video_type
+    )
     if isinstance(result, dict) and "error" in result:
         return JSONResponse(content=result, status_code=500)
     return JSONResponse(content=result, status_code=200)
 
 
 @router.post('/combine-videos', tags=["Combine Videos"])
-async def combine_videos(req: CombineVideosRequest, background_tasks: BackgroundTasks):
+async def combine_videos(
+    req: CombineVideosRequest, background_tasks: BackgroundTasks
+):
     """
     Combines multiple MP4 video files into a single video in the background.
 
@@ -95,7 +112,12 @@ async def combine_videos(req: CombineVideosRequest, background_tasks: Background
     """
     job_id, job = video.set_job_status(req.video_file_name, status='pending')
     background_tasks.add_task(
-        video.combine_videos, req.video_file_name, req.video_files, req.epoch, req.video_type, req.upload_to_minio
+        video.combine_videos,
+        req.video_file_name,
+        req.video_files,
+        req.epoch,
+        req.video_type,
+        req.upload_to_minio,
     )
     return JSONResponse(respond_job_status(job_id, job))
 

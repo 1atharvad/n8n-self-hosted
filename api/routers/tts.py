@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from audio_manager import TextToVoice
 from schemas import TTSRequest
+
 from .utils import respond_job_status
 
 router = APIRouter(tags=["Text to Audio"])
@@ -10,7 +11,9 @@ ttv = TextToVoice()
 
 
 @router.post('/vtt-generate-audio-bytes')
-async def generate_tts_bytes(req: TTSRequest, background_tasks: BackgroundTasks):
+async def generate_tts_bytes(
+    req: TTSRequest, background_tasks: BackgroundTasks
+):
     """
     Creates a TTS job to convert text into audio bytes in the background.
 
@@ -22,7 +25,9 @@ async def generate_tts_bytes(req: TTSRequest, background_tasks: BackgroundTasks)
         Job status containing 'job_id' and current status.
     """
     job_id, job = ttv.set_job_status(status='pending')
-    background_tasks.add_task(ttv.generate_tts_job, job_id, req.text, req.voice)
+    background_tasks.add_task(
+        ttv.generate_tts_job, job_id, req.text, req.voice
+    )
     return JSONResponse(respond_job_status(job_id, job))
 
 

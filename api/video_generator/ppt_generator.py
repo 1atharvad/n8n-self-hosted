@@ -4,7 +4,8 @@ from pathlib import Path
 
 from pptx import Presentation
 
-from paths import ASSET_FILES_DIR, PPT_FILES_DIR as FILES_DIR
+from paths import ASSET_FILES_DIR
+from paths import PPT_FILES_DIR as FILES_DIR
 
 
 class PPTGenerator:

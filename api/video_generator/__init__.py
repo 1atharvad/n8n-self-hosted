@@ -4,11 +4,12 @@ from datetime import date
 from pathlib import Path
 
 import storage as minio_storage
+from audio_manager import TextToVoice
+from paths import AUDIO_FILES_DIR, VIDEO_FILES_DIR
+from paths import SLIDE_IMG_FILES_DIR as IMG_FILES_DIR
 
-from paths import AUDIO_FILES_DIR, SLIDE_IMG_FILES_DIR as IMG_FILES_DIR, VIDEO_FILES_DIR
 from .image_extractor import ImageExtractor
 from .ppt_generator import PPTGenerator
-from audio_manager import TextToVoice
 
 
 def _epoch_dir(epoch: int, video_type: str | None) -> str:
@@ -68,7 +69,15 @@ class VideoGenerator:
         self.job_store[job_id] = {"status": status}
         return job_id, self.job_store.get(job_id)
 
-    def convert_to_mp4(self, job_id: str, image_file: str, audio_file: str, epoch: int | None = None, video_type: str | None = None, upload_to_minio: bool = False):
+    def convert_to_mp4(
+        self,
+        job_id: str,
+        image_file: str,
+        audio_file: str,
+        epoch: int | None = None,
+        video_type: str | None = None,
+        upload_to_minio: bool = False,
+    ):
         """
         Creates a MP4 video by combining a static image and an audio track.
 
@@ -87,9 +96,17 @@ class VideoGenerator:
         try:
             video_file = f'{image_file.split(".")[0]}.mp4'
 
-            img_path = Path(IMG_FILES_DIR, _epoch_dir(epoch, video_type), image_file) if epoch else Path(IMG_FILES_DIR, image_file)
+            img_path = (
+                Path(IMG_FILES_DIR, _epoch_dir(epoch, video_type), image_file)
+                if epoch
+                else Path(IMG_FILES_DIR, image_file)
+            )
             audio_path = Path(AUDIO_FILES_DIR, audio_file)
-            out_dir = Path(VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else VIDEO_FILES_DIR
+            out_dir = (
+                Path(VIDEO_FILES_DIR, _epoch_dir(epoch, video_type))
+                if epoch
+                else VIDEO_FILES_DIR
+            )
             out_path = Path(out_dir, video_file)
             out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -150,16 +167,24 @@ class VideoGenerator:
             }
             if upload_to_minio:
                 object_name = _minio_video_path(video_type, video_file)
-                minio_storage.upload_file(object_name, str(out_path), content_type="video/mp4")
+                minio_storage.upload_file(
+                    object_name, str(out_path), content_type="video/mp4"
+                )
                 result["minio_object"] = object_name
-                result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                result["minio_url"] = minio_storage.get_presigned_url(
+                    object_name
+                )
                 out_path.unlink(missing_ok=True)
             self.job_store[job_id] = result
         except Exception as e:
             self.job_store[job_id] = {"status": "failed", "error": str(e)}
 
     @staticmethod
-    def convert_mp4_to_mp4(video_file: str, upload_to_minio: bool = False, video_type: str | None = None):
+    def convert_mp4_to_mp4(
+        video_file: str,
+        upload_to_minio: bool = False,
+        video_type: str | None = None,
+    ):
         """
         Re-encodes an MP4 video with standardized settings.
 
@@ -209,14 +234,25 @@ class VideoGenerator:
             result = {"video_file": str(input_path), "filename": video_file}
             if upload_to_minio:
                 object_name = _minio_video_path(video_type, video_file)
-                minio_storage.upload_file(object_name, str(input_path), content_type="video/mp4")
+                minio_storage.upload_file(
+                    object_name, str(input_path), content_type="video/mp4"
+                )
                 result["minio_object"] = object_name
-                result["minio_url"] = minio_storage.get_presigned_url(object_name)
+                result["minio_url"] = minio_storage.get_presigned_url(
+                    object_name
+                )
             return result
         except Exception as e:
             return {"error": str(e)}
 
-    def combine_videos(self, video_file_name: str, video_files: list, epoch: int | None = None, video_type: str | None = None, upload_to_minio: bool = False):
+    def combine_videos(
+        self,
+        video_file_name: str,
+        video_files: list,
+        epoch: int | None = None,
+        video_type: str | None = None,
+        upload_to_minio: bool = False,
+    ):
         """
         Combines multiple MP4 videos into a single file.
 
@@ -237,7 +273,11 @@ class VideoGenerator:
             - Updates job_store with job status and output details.
         """
         try:
-            src_dir = Path(VIDEO_FILES_DIR, _epoch_dir(epoch, video_type)) if epoch else VIDEO_FILES_DIR
+            src_dir = (
+                Path(VIDEO_FILES_DIR, _epoch_dir(epoch, video_type))
+                if epoch
+                else VIDEO_FILES_DIR
+            )
             list_file = Path(src_dir, "videos.txt")
             video_path = Path(src_dir, f"{video_file_name}.mp4")
             src_dir.mkdir(parents=True, exist_ok=True)
@@ -258,8 +298,12 @@ class VideoGenerator:
                     "filename": f"{video_file_name}.mp4",
                 }
                 if upload_to_minio:
-                    object_name = _minio_video_path(video_type, f"{video_file_name}.mp4")
-                    minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
+                    object_name = _minio_video_path(
+                        video_type, f"{video_file_name}.mp4"
+                    )
+                    minio_storage.upload_file(
+                        object_name, str(video_path), content_type="video/mp4"
+                    )
                     minio_url = minio_storage.get_presigned_url(object_name)
                     result["minio_object"] = object_name
                     result["minio_url"] = minio_url
@@ -315,8 +359,12 @@ class VideoGenerator:
                     "filename": f"{video_file_name}.mp4",
                 }
                 if upload_to_minio:
-                    object_name = _minio_video_path(video_type, f"{video_file_name}.mp4")
-                    minio_storage.upload_file(object_name, str(video_path), content_type="video/mp4")
+                    object_name = _minio_video_path(
+                        video_type, f"{video_file_name}.mp4"
+                    )
+                    minio_storage.upload_file(
+                        object_name, str(video_path), content_type="video/mp4"
+                    )
                     minio_url = minio_storage.get_presigned_url(object_name)
                     result["minio_object"] = object_name
                     result["minio_url"] = minio_url

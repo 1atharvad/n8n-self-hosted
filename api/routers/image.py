@@ -3,8 +3,9 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from paths import PPT_FILES_DIR
 from schemas import ExtractSlidesRequest, PPTRequest
-from .utils import respond_job_status
 from video_generator import ImageExtractor, PPTGenerator
+
+from .utils import respond_job_status
 
 router = APIRouter(tags=["Image Generator"])
 img_ext = ImageExtractor()
@@ -58,7 +59,9 @@ async def get_ppt_file(file_name: str):
 
 
 @router.post('/extract-slides')
-async def extract_slides(req: ExtractSlidesRequest, background_tasks: BackgroundTasks):
+async def extract_slides(
+    req: ExtractSlidesRequest, background_tasks: BackgroundTasks
+):
     """
     Extracts slides from a PowerPoint file as images in the background.
 
@@ -72,7 +75,13 @@ async def extract_slides(req: ExtractSlidesRequest, background_tasks: Background
     """
     _, job = img_ext.set_job_status(req.file_name, status='pending')
     background_tasks.add_task(
-        img_ext.extract_slides, req.file_name, req.start_slide, req.end_slide, req.total_slides, req.epoch, req.video_type
+        img_ext.extract_slides,
+        req.file_name,
+        req.start_slide,
+        req.end_slide,
+        req.total_slides,
+        req.epoch,
+        req.video_type,
     )
     return JSONResponse(respond_job_status(req.file_name, job))
 
