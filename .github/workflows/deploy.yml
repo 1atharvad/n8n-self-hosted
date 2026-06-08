@@ -12,14 +12,6 @@ on:
         description: 'Space-separated containers to restart (e.g. "admin-api frontend") or "all"'
         required: false
         default: 'all'
-      topology:
-        description: 'Deployment topology'
-        required: false
-        default: 'single'
-        type: choice
-        options:
-          - single
-          - multi
 
 env:
   SECRETS_JSON: ${{ toJSON(secrets) }}
@@ -141,6 +133,8 @@ jobs:
           echo "$CHANGED" | grep -q '^nginx/'     && MAIN_SVCS="$MAIN_SVCS nginx"
           echo "$CHANGED" | grep -q '^docker/'    && FULL=true
           echo "$CHANGED" | grep -q '^package'    && FULL=true
+          echo "$CHANGED" | grep -q '^ansible/'   && FULL=true
+          echo "$CHANGED" | grep -q '^sh_files/'  && FULL=true
 
           # Deduplicate and trim
           MAIN_SVCS=$(echo $MAIN_SVCS | tr ' ' '\n' | sort -u | xargs)
@@ -160,24 +154,7 @@ jobs:
             echo "topology=single" >> $GITHUB_OUTPUT
           else
             echo "topology=multi" >> $GITHUB_OUTPUT
-            # Dynamically generate workers inventory from comma-separated IPs
-            cat > ansible/inventory/multi/workers_dynamic.yml << 'YAML'
-all:
-  children:
-    workers:
-      vars:
-        ansible_user: root
-        ansible_ssh_private_key_file: ~/.ssh/id_ed25519
-        github_deploy_key_path: /root/.ssh/id_ed25519
-        compose_file: docker/docker-compose.prod-worker.yml
-      hosts:
-YAML
-            IFS=',' read -ra IPS <<< "$CONTABO_WORKER_IP"
-            for i in "${!IPS[@]}"; do
-              IP=$(echo "${IPS[$i]}" | xargs)
-              echo "        worker-$((i+1)):" >> ansible/inventory/multi/workers_dynamic.yml
-              echo "          ansible_host: $IP" >> ansible/inventory/multi/workers_dynamic.yml
-            done
+            bash sh_files/gen_workers_inventory.sh
           fi
 
       # ── Single ─────────────────────────────────────────────────────────────
@@ -189,7 +166,7 @@ YAML
         run: |
           ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
-            -e "services='${{ steps.changes.outputs.main_services }}'"
+            -e "services=${{ steps.changes.outputs.main_services }}"
 
       # ── Multi ──────────────────────────────────────────────────────────────
       - name: Deploy main (multi)
@@ -200,7 +177,7 @@ YAML
         run: |
           ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
-            -e "services='${{ steps.changes.outputs.main_services }}'"
+            -e "services=${{ steps.changes.outputs.main_services }}"
 
       - name: Deploy workers (multi)
         if: steps.topology.outputs.topology == 'multi'
@@ -209,4 +186,4 @@ YAML
         run: |
           ansible-playbook -i ansible/inventory/multi/workers_dynamic.yml ansible/playbooks/deploy.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
-            -e "worker_services='${{ steps.changes.outputs.worker_services }}'"
+            -e "worker_services=${{ steps.changes.outputs.worker_services }}"
