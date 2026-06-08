@@ -30,16 +30,28 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin-api/frontend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Lint frontend
         run: |
           cd admin-api/frontend
-          npm ci --prefer-offline
+          npm ci
           npm run lint
 
       - name: Lint API
         run: |
-          cd api
           pip install --quiet black isort ruff
+          cd api
           python -m isort --check .
           python -m black --check .
           python -m ruff check .
