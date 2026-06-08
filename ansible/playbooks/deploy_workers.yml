@@ -18,6 +18,8 @@
         HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down
         HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
       when: full_deploy | bool
+      async: 600
+      poll: 30
 
     - name: Targeted restart
       shell: |
