@@ -1,0 +1,13 @@
+all:
+  children:
+    workers:
+      vars:
+        ansible_user: root
+        ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+        github_deploy_key_path: /root/.ssh/id_ed25519
+        compose_file: docker/docker-compose.prod-worker.yml
+      hosts:
+        worker-1:
+          ansible_host: "{{ lookup('env', 'CONTABO_WORKER_1_IP') }}"
+        # worker-2:
+        #   ansible_host: "{{ lookup('env', 'CONTABO_WORKER_2_IP') }}"

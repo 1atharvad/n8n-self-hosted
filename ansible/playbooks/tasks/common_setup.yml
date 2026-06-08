@@ -1,0 +1,21 @@
+- name: Pull latest code
+  shell: |
+    cd {{ deploy_path }}
+    git fetch origin main
+    git reset --hard origin/main
+
+- name: Copy .env file
+  copy:
+    src: "{{ playbook_dir }}/../../../.env"
+    dest: "{{ deploy_path }}/.env"
+    mode: '0600'
+
+- name: Install node dependencies
+  shell: npm install
+  args:
+    chdir: "{{ deploy_path }}"
+
+- name: Run setup script (dirs, assets, custom n8n nodes)
+  shell: sh sh_files/setup_n8n_files.sh
+  args:
+    chdir: "{{ deploy_path }}"

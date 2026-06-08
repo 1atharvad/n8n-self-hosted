@@ -1,0 +1,120 @@
+- name: First-time server setup
+  hosts: all
+  become: true
+
+  vars:
+    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
+    repo_url: git@github.com:{{ lookup('env', 'GITHUB_REPO') }}.git
+
+  tasks:
+    - name: Install dependencies
+      apt:
+        name:
+          - git
+          - curl
+          - ca-certificates
+          - gnupg
+        state: present
+        update_cache: true
+
+    - name: Add Docker GPG key
+      shell: |
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Add Docker apt repository
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Install Node.js 20
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        apt install -y nodejs
+      args:
+        creates: /usr/bin/node
+
+    # ── SSH key for GitHub (deploy key) ────────────────────────────────────
+    - name: Generate SSH keypair for GitHub access
+      openssh_keypair:
+        path: "{{ github_deploy_key_path }}"
+        type: ed25519
+        comment: "deploy@{{ inventory_hostname }}"
+        force: false  # skip if key already exists
+
+    - name: Add GitHub to known_hosts
+      known_hosts:
+        name: github.com
+        key: "{{ lookup('pipe', 'ssh-keyscan github.com 2>/dev/null') }}"
+        path: /root/.ssh/known_hosts
+        state: present
+
+    - name: Read deploy public key
+      slurp:
+        src: "{{ github_deploy_key_path }}.pub"
+      register: deploy_pubkey
+
+    - name: Print deploy public key
+      debug:
+        msg: |
+          ============================================================
+          Add this deploy key to GitHub → Settings → Deploy keys:
+          {{ deploy_pubkey.content | b64decode | trim }}
+          ============================================================
+
+    # ── Repository ─────────────────────────────────────────────────────────
+    - name: Create deploy directory
+      file:
+        path: "{{ deploy_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ deploy_path }}"
+        version: main
+        accept_hostkey: true
+      ignore_errors: true
+      register: clone_result
+
+    - name: Warn if clone failed (deploy key may not be added to GitHub yet)
+      debug:
+        msg: |
+          ⚠ Clone failed — add the deploy key printed above to GitHub first,
+          then re-run: ansible-playbook -i <inventory> ansible/playbooks/setup.yml --tags clone
+      when: clone_result is failed
+
+    - name: Run setup script (dirs, assets, custom n8n nodes)
+      shell: sh sh_files/setup_n8n_files.sh
+      args:
+        chdir: "{{ deploy_path }}"
+      when: clone_result is succeeded
+
+    # ── CI public key → authorized_keys ────────────────────────────────────
+    - name: Add CI SSH public key to authorized_keys
+      authorized_key:
+        user: root
+        key: "{{ lookup('env', 'CI_SSH_PUBKEY') }}"
+        state: present
+      when: lookup('env', 'CI_SSH_PUBKEY') | length > 0

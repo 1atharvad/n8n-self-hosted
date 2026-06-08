@@ -1,0 +1,77 @@
+- name: Deploy to main / single
+  hosts: "{{ 'main' if 'main' in groups else 'all' }}"
+  become: true
+
+  vars:
+    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
+    full_deploy: false
+    services: ""
+
+  tasks:
+    - include_tasks: tasks/common_setup.yml
+
+    - name: Full deploy
+      shell: |
+        cd {{ deploy_path }}
+        docker pull n8nio/n8n
+        docker pull nginx:alpine
+        docker pull postgres:15
+        docker pull redis:7-alpine
+        docker pull minio/minio:latest
+        docker pull grafana/loki:latest
+        docker pull grafana/promtail:latest
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down
+        rm -rf loki-data/*
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+      when: full_deploy | bool
+
+    - name: Targeted restart
+      shell: |
+        cd {{ deploy_path }}
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up -d --build --no-deps {{ services }}
+      when:
+        - not (full_deploy | bool)
+        - services | length > 0
+
+    - name: Skip — no relevant changes
+      debug:
+        msg: "No container-relevant changes detected, skipping restart."
+      when:
+        - not (full_deploy | bool)
+        - services | length == 0
+
+- name: Deploy to workers
+  hosts: workers
+  become: true
+
+  vars:
+    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
+    full_deploy: false
+    worker_services: ""
+
+  tasks:
+    - include_tasks: tasks/common_setup.yml
+
+    - name: Full deploy
+      shell: |
+        cd {{ deploy_path }}
+        docker pull n8nio/n8n
+        docker pull grafana/promtail:latest
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+      when: full_deploy | bool
+
+    - name: Targeted restart
+      shell: |
+        cd {{ deploy_path }}
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up -d --build --no-deps {{ worker_services }}
+      when:
+        - not (full_deploy | bool)
+        - worker_services | length > 0
+
+    - name: Skip — no relevant changes
+      debug:
+        msg: "No worker-relevant changes detected, skipping restart."
+      when:
+        - not (full_deploy | bool)
+        - worker_services | length == 0

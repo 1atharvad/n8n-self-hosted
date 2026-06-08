@@ -20,7 +20,9 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 
-### Infrastructure & Security
+### Infrastructure & DevOps
+![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=flat-square&logo=ansible&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 
@@ -37,68 +39,144 @@
 - Image extraction and video processing
 - MP4 combining with streaming support
 
-🏗️ **Enterprise Architecture**
-- Docker containerization for scalability
-- Nginx reverse proxy for optimal routing
-- Secure tunnel access via Cloudflare
+🏗️ **Infrastructure**
+- Docker Compose orchestration (single-server and multi-server)
+- Ansible-based provisioning and deployment
+- GitHub Actions CI/CD with lint gates and targeted container restarts
+- Nginx reverse proxy + Cloudflare Tunnel for secure access
+- Admin panel for environment variable and deployment management
 
-## 🚀 Quick Start
+## 🚀 Local Development
 
 ```bash
-# Clone and setup
+# Clone repo
 git clone https://github.com/1atharvad/n8n-self-hosted.git
 cd n8n-self-hosted
 
-# Clone and setup in current directory
-git clone https://github.com/1atharvad/n8n-self-hosted.git .
-
-# To switch from root to user for the folders, and its sub folders
-find . -type f ! -name "*.ini" -exec chown 1000:1000 {} + 2>/dev/null
-find . -type d -exec chown 1000:1000 {} + 2>/dev/null
-
-# Install node
-sudo apt install nodejs npm -y
-
-# Install Docker Engine
-sudo apt update
-sudo apt install docker-ce docker-ce-cli containerd.io -y
-
-# Install required npm packages
+# Install dependencies
 npm install
 
-# Environment file
+# Set up environment
+cp .env.example .env
 nano .env
 
-# Setup files for n8n, installing custom nodes, adding required assets
-sh sh_files/setup_n8n_files.sh --clear-init
+# Start dev environment
+npm run docker:dev
 
-# Starting Docker
-npm run docker-up:prod
-
-# Stopping Docker
-npm run docker-down:prod
-
-# Pull workflows from n8n and commit to git
-npm run pull-workflows
-
-# Push local workflow files into n8n
-npm run push-workflows
-
-# Updating docker images
-npm run docker-update
+# Stop dev environment
+npm run docker-down:dev
 ```
+
+## 🖥️ Server Provisioning (first-time setup)
+
+Requires Ansible installed locally (`pip install ansible`).
+
+```bash
+# Provision a single server
+npm run ansible:setup:single
+
+# Provision multi-server (main + workers)
+npm run ansible:setup:multi
+```
+
+This installs Docker, Node.js, clones the repo, generates a GitHub deploy key, and sets up SSH access.
+
+After running, copy the printed deploy public key and add it to **GitHub → Settings → Deploy keys** (read-only). Then re-run with `--tags clone` to finish the repo clone:
+
+```bash
+ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/setup.yml --tags clone
+```
+
+## 🚢 Deployment
+
+### Automatic (GitHub Actions)
+Every push to `main` triggers the CI/CD pipeline:
+1. **Lint** — frontend ESLint + Python black/isort/ruff
+2. **Deploy** — Ansible deploys only the affected containers based on changed paths
+
+Manually trigger a full or targeted deploy from **GitHub → Actions → Run workflow**, choosing topology (`single` / `multi`) and optionally specific services.
+
+### Manual
+```bash
+# Deploy to single server
+npm run ansible:deploy:single
+
+# Deploy to all multi-server hosts
+npm run ansible:deploy:multi
+
+# Rollback
+npm run ansible:rollback:single
+npm run ansible:rollback:multi
+```
+
+### Deployment Topologies
+
+| Topology | Compose file | Use when |
+|---|---|---|
+| `single` | `docker-compose.prod.yml` | One server running everything |
+| `multi` — main | `docker-compose.prod-main.yml` | Dedicated main server (n8n, postgres, redis, nginx, minio, admin-api) |
+| `multi` — workers | `docker-compose.prod-worker.yml` | N worker servers (n8n-worker, fastapi, promtail) |
+
+Adding a new worker server: uncomment its entry in `ansible/inventory/multi/workers.yml` and add the IP as a GitHub secret.
+
+### Path-based targeted restarts (push events)
+
+| Changed path | Containers restarted |
+|---|---|
+| `admin-api/**` | `admin-api`, `frontend` (main) |
+| `api/**` | `fastapi` (workers) |
+| `processes/**` | `worker-monitor` (all) |
+| `nginx/**` | `nginx` reload (main) |
+| `docker/**`, `package*` | Full deploy (all) |
 
 ## 📁 Project Structure
 
 ```
-├── docker-compose.yml              # Service orchestration
-├── nginx/nginx.conf                # Reverse proxy config
-├── custom-n8n-nodes/               # TypeScript custom nodes
-├── api/                            # API services
-├── n8n-data/                       # Binary data storage
-├── n8n_files/                      # Data storage for FastAPI (audio_files, video_files, ppt_files, ppt_images, pdf_files)
-├── sh_files/                       # Shell scripts for running commands
+├── admin-api/                      # Admin panel (FastAPI + React)
+├── api/                            # Media processing FastAPI service
+├── ansible/
+│   ├── inventory/
+│   │   ├── single.yml              # Single-server inventory
+│   │   └── multi/
+│   │       ├── main.yml            # Main server inventory
+│   │       └── workers.yml         # Worker servers inventory
+│   └── playbooks/
+│       ├── setup.yml               # First-time server provisioning
+│       ├── deploy.yml              # Application deployment
+│       └── rollback.yml            # Rollback to previous commit
+├── docker/                         # Docker Compose files
+├── nginx/                          # Nginx configuration
+├── custom-n8n-nodes/               # TypeScript custom n8n nodes
+├── processes/                      # Worker monitor service
+├── sh_files/                       # Shell utility scripts
+├── n8n_files/                      # Runtime files (audio, video, ppt, pdf)
 └── .env                            # Environment variables
+```
+
+## 📋 Available Scripts
+
+```bash
+# Development
+npm run docker:dev              # Full dev cycle (down + up)
+npm run docker-up:dev           # Start dev containers
+npm run docker-down:dev         # Stop dev containers
+npm run docker-rm-cache         # Prune all Docker cache
+
+# Linting
+npm run lint:admin              # ESLint on admin-api frontend
+npm run lint:api                # black + isort + ruff on Python API
+
+# Ansible
+npm run ansible:setup:single    # Provision single server
+npm run ansible:setup:multi     # Provision all multi servers
+npm run ansible:deploy:single   # Deploy to single server
+npm run ansible:deploy:multi    # Deploy to all multi servers
+npm run ansible:rollback:single # Rollback single server
+npm run ansible:rollback:multi  # Rollback all multi servers
+
+# Workflows
+npm run pull-workflows          # Pull workflows from n8n → git
+npm run push-workflows          # Push local workflows → n8n
 ```
 
 ## 🔌 API Endpoints
@@ -119,66 +197,33 @@ npm run docker-update
 - `POST /convert-to-mp4` - Image + audio to MP4 (async)
 - `GET /convert-to-mp4-status/{job_id}` - Check conversion status
 - `POST /convert-mp4-to-mp4` - Re-encode an existing MP4
-- `POST /combine-videos` - Combine multiple videos (uploads to MinIO if enabled, removes local file)
+- `POST /combine-videos` - Combine multiple videos
 - `GET /combine-videos-status/{job_id}` - Check combine status
 - `GET /combine-videos-result/{job_id}` - Get combine result
 
 ### 📁 File Management
 > All endpoints require `X-API-Key` header.
 - `POST /cleanup` - Delete contents of specified n8n_files folders
-- `POST /copy-video` - Copy a video from n8n_files root into its epoch subfolder
+- `POST /copy-video` - Copy a video into its epoch subfolder
 
-## 💻 Development
+## 🏛️ Infrastructure Notes
 
-### Available Scripts
-```bash
-npm run build-n8n-nodes    # Build and deploy custom nodes
-npm run pip-install        # Install Python dependencies
-npm run add-pkg            # Add new Python package
-npm run docker-up:prod     # Build nodes and start services
-npm run docker-down:prod   # Stop all services
-npm run pull-workflows     # Pull workflows from n8n → commit to git (prompts for confirmation; use --force to skip)
-npm run push-workflows     # Push local workflow files → n8n (prompts for confirmation; use --force to skip)
-```
-
-### Custom Node Development
-Develop TypeScript nodes in `custom-n8n-nodes/` directory with full IntelliSense support and hot reloading.
-
-## 🏛️ Infrastructure
-
-### Database Configuration
-- **Local filesystem** for binary data management
-- **Alembic migrations** run automatically on container startup (`alembic upgrade head`)
-- On first deploy to an existing database, stamp the current state to skip re-running the initial migration:
+### Database
+- **Alembic migrations** run automatically on container startup
+- On first deploy to an existing database, stamp to skip initial migration:
   ```bash
   docker exec media-api alembic stamp head
   docker exec logs-api alembic stamp head
   ```
-- To add a schema change: update the model, then generate a migration:
-  ```bash
-  # inside the container or locally with DB access
-  alembic revision --autogenerate -m "describe change"
-  ```
 
-### Security & Access
-- **Cloudflare Tunnel** for secure web access
-- **SSL/HTTPS** termination at edge
-- **Environment-based** configuration management
-
-## 📊 Performance Metrics
-
-- **Background Processing**: Async job handling for media tasks
-- **Streaming Support**: HTTP range requests for large files
-- **Container Optimized**: Multi-stage Docker builds
-- **Auto-scaling**: Docker Compose orchestration
+### Adding environment variables
+Manage env vars through the **Admin Panel** → Environment tab. Changes trigger an automatic full deploy via GitHub Actions.
 
 ## ⚙️ Worker Autoscaler
 
 The `worker-autoscaler` container dynamically scales `n8n-worker` replicas based on host CPU and Redis queue depth.
 
 ### Algorithm: Asymmetric EWMA
-
-CPU smoothing uses an Exponentially Weighted Moving Average with different rates for rising vs falling CPU:
 
 ```
 if cpu_raw > cpu_ema:
@@ -187,37 +232,29 @@ else:
     cpu_ema = α_down × cpu_raw + (1 − α_down) × cpu_ema   # decays slowly after spike
 ```
 
-Defaults: `α_up = 0.5`, `α_down = 0.1`. This prevents a brief CPU drop (e.g. job finishing) from immediately making the EMA appear safe for scale-up.
+Defaults: `α_up = 0.5`, `α_down = 0.1`.
 
 ### Scaling Rules
 
-| Condition                                     | Action                         |
-| --------------------------------------------- | ------------------------------ |
-| `waiting > 0` and `ema < 65%` and `raw < 65%` | Scale up +1 worker             |
-| `max(ema, raw) > 88%` and `workers > min`     | Emergency scale down −1 worker |
-| Queue idle for 120s and `workers > min`       | Scale down −1 worker           |
+| Condition | Action |
+|---|---|
+| `waiting > 0` and `ema < 65%` and `raw < 65%` | Scale up +1 worker |
+| `max(ema, raw) > 88%` and `workers > min` | Emergency scale down −1 worker |
+| Queue idle for 120s and `workers > min` | Scale down −1 worker |
 
-### Configuration (env vars)
+### Configuration
 
-| Variable                    | Default | Description                             |
-| --------------------------- | ------- | --------------------------------------- |
-| `MIN_WORKERS`               | 1       | Minimum workers always running          |
-| `MAX_WORKERS`               | 4       | Maximum workers allowed                 |
-| `CPU_SCALE_UP_MAX`          | 65      | Scale up only if CPU below this %       |
-| `CPU_SCALE_DOWN_EMERGENCY`  | 88      | Force remove worker if CPU above this % |
-| `IDLE_BEFORE_SCALEDOWN_SEC` | 120     | Seconds idle before scaling down        |
-| `POLL_INTERVAL_SEC`         | 30      | Seconds between checks                  |
-| `COOLDOWN_SEC`              | 90      | Minimum gap between scale actions       |
-| `EWMA_ALPHA_UP`             | 0.5     | EMA weight when CPU is rising           |
-| `EWMA_ALPHA_DOWN`           | 0.1     | EMA weight when CPU is falling          |
-
-## 💡 Use Cases
-
-This platform excels at automating complex workflows involving:
-- **Content Creation**: Generate presentations and convert to videos
-- **Media Processing**: Batch audio/video operations
-- **Data Integration**: Connect multiple services seamlessly
-- **Custom Automation**: Build workflows with TypeScript nodes
+| Variable | Default | Description |
+|---|---|---|
+| `MIN_WORKERS` | 1 | Minimum workers always running |
+| `MAX_WORKERS` | 4 | Maximum workers allowed |
+| `CPU_SCALE_UP_MAX` | 65 | Scale up only if CPU below this % |
+| `CPU_SCALE_DOWN_EMERGENCY` | 88 | Force remove worker if CPU above this % |
+| `IDLE_BEFORE_SCALEDOWN_SEC` | 120 | Seconds idle before scaling down |
+| `POLL_INTERVAL_SEC` | 30 | Seconds between checks |
+| `COOLDOWN_SEC` | 90 | Minimum gap between scale actions |
+| `EWMA_ALPHA_UP` | 0.5 | EMA weight when CPU is rising |
+| `EWMA_ALPHA_DOWN` | 0.1 | EMA weight when CPU is falling |
 
 ---
 

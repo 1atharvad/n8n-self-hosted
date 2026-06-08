@@ -9,26 +9,30 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: 'Comma-separated containers to restart (e.g. "admin-api,frontend") or "all"'
+        description: 'Space-separated containers to restart (e.g. "admin-api frontend") or "all"'
         required: false
         default: 'all'
+      topology:
+        description: 'Deployment topology'
+        required: false
+        default: 'single'
+        type: choice
+        options:
+          - single
+          - multi
 
 env:
-  DEPLOY_PATH: /www/wwwroot/n8n.atharvadevasthali.com
-  COMPOSE_FILE: docker/docker-compose.prod.yml
   SECRETS_JSON: ${{ toJSON(secrets) }}
   VARS_JSON: ${{ toJSON(vars) }}
+  DEPLOY_PATH: /www/wwwroot/n8n.atharvadevasthali.com
 
 jobs:
-  deploy:
-    environment: production
+  lint:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,13 +60,35 @@ jobs:
           python -m black --check .
           python -m ruff check .
 
+  deploy:
+    needs: lint
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: pip install --quiet ansible
+
       - name: Generate .env file
         run: |
           rm -f .env
 
           echo "$SECRETS_JSON" | jq -r '
             to_entries
-            | map(select(.key != "github_token" and .key != "CONTABO_SSH_KEY" and .key != "CONTABO_IP" and (.value | type == "string")))
+            | map(select(
+                (.key | test("^(github_token|CONTABO_.*)$") | not)
+                and (.value | type == "string")
+              ))
             | map("\(.key)=\(.value)")
             | .[]
           ' > .env
@@ -79,109 +105,88 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.CONTABO_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.CONTABO_IP }} >> ~/.ssh/known_hosts
 
-      - name: Transfer .env file to Contabo
-        run: |
-          scp -i ~/.ssh/id_ed25519 .env root@${{ secrets.CONTABO_IP }}:${{ env.DEPLOY_PATH }}/.env
-
-      - name: Deploy app on Contabo
+      - name: Detect changes
+        id: changes
         env:
-          INPUT_SERVICES: ${{ github.event.inputs.services }}
           EVENT_NAME: ${{ github.event_name }}
+          INPUT_SERVICES: ${{ github.event.inputs.services }}
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.CONTABO_IP }} "
-            set -e
-
-            echo '--- Checking Docker ---'
-            if ! command -v docker >/dev/null 2>&1; then
-              apt update -y && apt install -y docker-ce docker-ce-cli containerd.io
-              systemctl enable docker && systemctl start docker
-            fi
-
-            echo '--- Pulling latest code ---'
-            cd $DEPLOY_PATH
-            git fetch origin main
-            git reset --hard origin/main
-
-            COMPOSE=\"HOST_PROJECT_DIR=\$(pwd) docker compose --env-file .env -f $COMPOSE_FILE\"
-
-            restart_services() {
-              local rebuild=\$1   # space-separated services to rebuild+restart
-              local reload=\$2    # space-separated services to restart only (no rebuild)
-
-              if [ -n \"\$rebuild\" ]; then
-                echo \"--- Rebuilding: \$rebuild ---\"
-                eval \$COMPOSE up -d --build --no-deps \$rebuild
-              fi
-              if [ -n \"\$reload\" ]; then
-                echo \"--- Restarting: \$reload ---\"
-                eval \$COMPOSE up -d --no-deps \$reload
-              fi
-            }
-
-            full_deploy() {
-              echo '--- Full deploy ---'
-              docker pull n8nio/n8n
-              docker pull nginx:alpine
-              docker pull postgres:15
-              docker pull redis:7-alpine
-              docker pull minio/minio:latest
-              docker pull grafana/loki:latest
-              docker pull grafana/promtail:latest
-              eval \$COMPOSE down
-              rm -rf loki-data/*
-              eval \$COMPOSE up --build -d
-            }
-
-            # ── workflow_dispatch: use the services input ──────────────────────
-            if [ \"$EVENT_NAME\" = \"workflow_dispatch\" ]; then
-              SERVICES=\"$INPUT_SERVICES\"
-              if [ -z \"\$SERVICES\" ] || [ \"\$SERVICES\" = \"all\" ]; then
-                full_deploy
-              else
-                echo \"--- Targeted restart: \$SERVICES ---\"
-                REBUILD=\"\"
-                RELOAD=\"\"
-                for svc in \$(echo \"\$SERVICES\" | tr ',' ' '); do
-                  case \"\$svc\" in
-                    nginx) RELOAD=\"\$RELOAD nginx\" ;;
-                    *) REBUILD=\"\$REBUILD \$svc\" ;;
-                  esac
-                done
-                restart_services \"\$REBUILD\" \"\$RELOAD\"
-              fi
-              echo '✅ Deployment complete!'
-              exit 0
-            fi
-
-            # ── push event: detect changed paths ──────────────────────────────
-            CHANGED=\$(git diff HEAD~1 HEAD --name-only 2>/dev/null || echo '')
-            echo \"--- Changed files ---\"
-            echo \"\$CHANGED\"
-
-            REBUILD=\"\"
-            RELOAD=\"\"
-            FULL=false
-
-            echo \"\$CHANGED\" | grep -q '^admin-api/' && REBUILD=\"\$REBUILD admin-api frontend\"
-            echo \"\$CHANGED\" | grep -q '^api/'       && REBUILD=\"\$REBUILD fastapi\"
-            echo \"\$CHANGED\" | grep -q '^processes/' && REBUILD=\"\$REBUILD worker-monitor\"
-            echo \"\$CHANGED\" | grep -q '^nginx/'     && RELOAD=\"\$RELOAD nginx\"
-            echo \"\$CHANGED\" | grep -q '^docker/'    && FULL=true
-            echo \"\$CHANGED\" | grep -q '^package'    && FULL=true
-
-            # Deduplicate
-            REBUILD=\$(echo \$REBUILD | tr ' ' '\n' | sort -u | tr '\n' ' ')
-            RELOAD=\$(echo \$RELOAD | tr ' ' '\n' | sort -u | tr '\n' ' ')
-
-            if [ \"\$FULL\" = true ]; then
-              full_deploy
-            elif [ -z \"\$REBUILD\" ] && [ -z \"\$RELOAD\" ]; then
-              echo '--- No container-relevant changes detected, skipping restart ---'
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            SERVICES="${INPUT_SERVICES:-all}"
+            if [ -z "$SERVICES" ] || [ "$SERVICES" = "all" ]; then
+              echo "full_deploy=true"  >> $GITHUB_OUTPUT
+              echo "main_services="   >> $GITHUB_OUTPUT
+              echo "worker_services=" >> $GITHUB_OUTPUT
             else
-              restart_services \"\$REBUILD\" \"\$RELOAD\"
+              echo "full_deploy=false"          >> $GITHUB_OUTPUT
+              echo "main_services=$SERVICES"    >> $GITHUB_OUTPUT
+              echo "worker_services=$SERVICES"  >> $GITHUB_OUTPUT
             fi
+            exit 0
+          fi
 
-            echo '✅ Deployment complete!'
-          "
+          # Push event: detect from changed paths
+          CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null || echo '')
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          MAIN_SVCS=""
+          WORKER_SVCS=""
+          FULL=false
+
+          echo "$CHANGED" | grep -q '^admin-api/' && MAIN_SVCS="$MAIN_SVCS admin-api frontend"
+          echo "$CHANGED" | grep -q '^api/'       && WORKER_SVCS="$WORKER_SVCS fastapi"
+          echo "$CHANGED" | grep -q '^processes/' && MAIN_SVCS="$MAIN_SVCS worker-monitor" && WORKER_SVCS="$WORKER_SVCS worker-monitor"
+          echo "$CHANGED" | grep -q '^nginx/'     && MAIN_SVCS="$MAIN_SVCS nginx"
+          echo "$CHANGED" | grep -q '^docker/'    && FULL=true
+          echo "$CHANGED" | grep -q '^package'    && FULL=true
+
+          # Deduplicate and trim
+          MAIN_SVCS=$(echo $MAIN_SVCS | tr ' ' '\n' | sort -u | xargs)
+          WORKER_SVCS=$(echo $WORKER_SVCS | tr ' ' '\n' | sort -u | xargs)
+
+          echo "full_deploy=$FULL"            >> $GITHUB_OUTPUT
+          echo "main_services=$MAIN_SVCS"     >> $GITHUB_OUTPUT
+          echo "worker_services=$WORKER_SVCS" >> $GITHUB_OUTPUT
+
+      # ── Single topology ────────────────────────────────────────────────────
+      - name: Deploy (single)
+        if: >-
+          ${{ (github.event_name == 'push' && vars.DEPLOY_TOPOLOGY != 'multi') ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.topology != 'multi') }}
+        env:
+          CONTABO_IP: ${{ secrets.CONTABO_IP }}
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+          MAIN_SERVICES: ${{ steps.changes.outputs.main_services }}
+          WORKER_SERVICES: ${{ steps.changes.outputs.worker_services }}
+        run: |
+          SERVICES=$(echo "$MAIN_SERVICES $WORKER_SERVICES" | tr ' ' '\n' | sort -u | xargs)
+          ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy.yml \
+            -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
+            -e "services=$SERVICES"
+
+      # ── Multi topology ─────────────────────────────────────────────────────
+      - name: Deploy main (multi)
+        if: >-
+          ${{ (github.event_name == 'push' && vars.DEPLOY_TOPOLOGY == 'multi') ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.topology == 'multi') }}
+        env:
+          CONTABO_MAIN_IP: ${{ secrets.CONTABO_MAIN_IP }}
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy.yml \
+            -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
+            -e "services=${{ steps.changes.outputs.main_services }}"
+
+      - name: Deploy workers (multi)
+        if: >-
+          ${{ (github.event_name == 'push' && vars.DEPLOY_TOPOLOGY == 'multi') ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.topology == 'multi') }}
+        env:
+          CONTABO_WORKER_1_IP: ${{ secrets.CONTABO_WORKER_1_IP }}
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          ansible-playbook -i ansible/inventory/multi/workers.yml ansible/playbooks/deploy.yml \
+            -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
+            -e "worker_services=${{ steps.changes.outputs.worker_services }}"
