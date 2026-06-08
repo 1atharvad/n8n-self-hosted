@@ -1,0 +1,44 @@
+# Static config — committed to repo, no secrets here.
+# Ansible appends these to .env on every deploy via common_setup.yml.
+# Change here → redeploy → all servers updated.
+
+# --- n8n ---
+N8N_PORT: "5678"
+N8N_PROTOCOL: https
+N8N_LISTEN_ADDRESS: 0.0.0.0
+N8N_SECURE_COOKIE: "false"
+N8N_TRUST_PROXY: "1"
+N8N_PROXY_HOPS: "2"
+N8N_BASIC_AUTH_ACTIVE: "true"
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+
+# --- database ---
+DB_TYPE: postgresdb
+DB_POSTGRESDB_HOST: postgres
+POSTGRES_PORT: "5432"
+POSTGRES_HOST: postgres
+
+# --- redis ---
+REDIS_HOST: redis
+REDIS_PORT: "6379"
+
+# --- internal service endpoints ---
+N8N_BASE_URL: "http://n8n:5678"
+MINIO_ENDPOINT: "http://minio:9000"
+ADMIN_API_URL: "http://admin-api:8080"
+
+# --- node / execution tuning ---
+NODE_OPTIONS: --max-old-space-size=4096
+EXECUTIONS_TIMEOUT: "10800"
+EXECUTIONS_DATA_MAX_AGE: "168"
+QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD: "3900000"
+QUEUE_BULL_MAX_STALLED_COUNT: "10"
+QUEUE_BULL_STALLED_INTERVAL: "300000"
+
+# --- optional defaults ---
+WORKER_MONITOR_POLL_SEC: "30"
+SERVER_ID: main
+CPU_GATE_THRESHOLD: "35"
+JWT_EXPIRE_HOURS: "24"
+LOGS_ADMIN_USERNAME: admin
+ADMIN_USERNAME: admin
