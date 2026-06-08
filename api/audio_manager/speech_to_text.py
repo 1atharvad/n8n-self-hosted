@@ -4,7 +4,6 @@ import io
 import tempfile
 import wave
 from pathlib import Path
-from typing import Optional
 
 import webrtcvad
 from faster_whisper import WhisperModel
@@ -19,7 +18,9 @@ SAMPLE_WIDTH = 2  # bytes per sample (16-bit)
 
 # VAD frame size — webrtcvad only accepts 10 / 20 / 30 ms frames
 FRAME_DURATION_MS = 30
-FRAME_BYTES = int(SAMPLE_RATE * FRAME_DURATION_MS / 1000) * SAMPLE_WIDTH  # 960 bytes
+FRAME_BYTES = (
+    int(SAMPLE_RATE * FRAME_DURATION_MS / 1000) * SAMPLE_WIDTH
+)  # 960 bytes
 
 # How many consecutive silent frames signal end of utterance (30ms × 20 = 600ms)
 NUM_PADDING_FRAMES = 20
@@ -41,11 +42,13 @@ class VADStream:
         # aggressiveness 0–3: higher filters out more non-speech
         self._vad = webrtcvad.Vad(aggressiveness)
         self._buf = b""
-        self._ring: collections.deque = collections.deque(maxlen=NUM_PADDING_FRAMES)
+        self._ring: collections.deque = collections.deque(
+            maxlen=NUM_PADDING_FRAMES
+        )
         self._voiced: list[bytes] = []
         self._triggered = False
 
-    def process(self, chunk: bytes) -> Optional[bytes]:
+    def process(self, chunk: bytes) -> bytes | None:
         """
         Feed a PCM chunk of any size.
         Returns complete utterance PCM when end-of-speech is detected, else None.
@@ -59,7 +62,10 @@ class VADStream:
             if not self._triggered:
                 self._ring.append((frame, is_speech))
                 voiced = sum(1 for _, s in self._ring if s)
-                if len(self._ring) > 0 and voiced / len(self._ring) >= SPEECH_RATIO:
+                if (
+                    len(self._ring) > 0
+                    and voiced / len(self._ring) >= SPEECH_RATIO
+                ):
                     self._triggered = True
                     self._voiced = [f for f, _ in self._ring]
                     self._ring.clear()
@@ -114,7 +120,9 @@ class SpeechToText:
             wf.writeframes(pcm)
         return buf.getvalue()
 
-    def transcribe(self, audio_bytes: bytes, language: str = DEFAULT_LANGUAGE) -> str:
+    def transcribe(
+        self, audio_bytes: bytes, language: str = DEFAULT_LANGUAGE
+    ) -> str:
         """Transcribe WAV / any ffmpeg-supported audio bytes to text."""
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             tmp.write(audio_bytes)
@@ -131,7 +139,9 @@ class SpeechToText:
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 
-    def transcribe_pcm(self, pcm: bytes, language: str = DEFAULT_LANGUAGE) -> str:
+    def transcribe_pcm(
+        self, pcm: bytes, language: str = DEFAULT_LANGUAGE
+    ) -> str:
         """Transcribe raw 16 kHz 16-bit mono PCM bytes to text."""
         return self.transcribe(self._pcm_to_wav(pcm), language)
 
@@ -140,21 +150,23 @@ class SpeechToText:
     ) -> str:
         """Non-blocking wrapper — runs in the default thread pool."""
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.transcribe_pcm, pcm, language)
+        return await loop.run_in_executor(
+            None, self.transcribe_pcm, pcm, language
+        )
 
 
 if __name__ == "__main__":
     try:
         import sounddevice as sd
-    except ImportError:
+    except ImportError as err:
         print("Run: pip install sounddevice")
-        raise SystemExit(1)
+        raise SystemExit(1) from err
 
     print(f"Loading Whisper model ({DEFAULT_MODEL})...")
     stt = SpeechToText()
     vad = VADStream()
 
-    utterance: Optional[bytes] = None
+    utterance: bytes | None = None
 
     def _callback(indata, frames, time, status):
         global utterance
@@ -163,7 +175,9 @@ if __name__ == "__main__":
             if result is not None:
                 utterance = result
 
-    print("Speak now — transcription starts automatically after you stop speaking...")
+    print(
+        "Speak now — transcription starts automatically after you stop speaking..."
+    )
     with sd.RawInputStream(
         samplerate=SAMPLE_RATE,
         channels=CHANNELS,

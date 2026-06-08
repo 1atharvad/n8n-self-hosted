@@ -2,8 +2,8 @@ import io
 import re
 import subprocess
 import uuid
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import numpy as np
 import soundfile as sf
@@ -11,7 +11,9 @@ from kokoro_onnx import Kokoro
 from pydantic import BaseModel
 from tqdm import tqdm
 
-from paths import AUDIO_FILES_DIR as FILES_DIR, TTS_MODEL_PATH as model_path, TTS_VOICES_PATH as voices_path
+from paths import AUDIO_FILES_DIR as FILES_DIR
+from paths import TTS_MODEL_PATH as MODEL_PATH
+from paths import TTS_VOICES_PATH as VOICES_PATH
 
 
 class TTSRequest(BaseModel):
@@ -50,7 +52,7 @@ class TextToVoice:
             cls._instance.connection = "Text To Voice"
             cls._instance.download_required_files()
             cls._instance.kokoro_tts = Kokoro(
-                model_path=str(model_path), voices_path=str(voices_path)
+                MODEL_PATH=str(MODEL_PATH), VOICES_PATH=str(VOICES_PATH)
             )
         return cls._instance
 
@@ -146,12 +148,12 @@ class TextToVoice:
         required_files = [
             {
                 'file_name': 'kokoro-v1.0.onnx',
-                'file_path': model_path,
+                'file_path': MODEL_PATH,
                 'download_url': "https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/kokoro-v1.0.onnx",
             },
             {
                 'file_name': 'voices-v1.0.bin',
-                'file_path': voices_path,
+                'file_path': VOICES_PATH,
                 'download_url': "https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/voices-v1.0.bin",
             },
         ]
@@ -232,7 +234,9 @@ class TextToVoice:
             chunks.append(current.strip())
         return chunks
 
-    def generate_tts_job(self, job_id: str, text: str, voice: str = "am_michael"):
+    def generate_tts_job(
+        self, job_id: str, text: str, voice: str = "am_michael"
+    ):
         """
         Generates a speech audio file from text using the TTS engine.
 
