@@ -3,7 +3,7 @@ name: n8n-automation
 services:
   n8n-worker:
     image: n8nio/n8n:latest
-    entrypoint: ["/bin/sh", "/sh_files/start-n8n-worker.sh"]
+    command: worker
     restart: unless-stopped
     environment:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
@@ -12,7 +12,6 @@ services:
       - N8N_RESTRICT_FILE_ACCESS_TO=
       - N8N_ALLOWED_READ_PATHS=/home/node/.n8n:/home/node/n8n_files:/sh_files:/tmp
       - N8N_ALLOWED_WRITE_PATHS=/home/node/.n8n:/home/node/n8n_files:/sh_files:/tmp
-      - N8N_COMMUNITY_PACKAGES=${N8N_COMMUNITY_PACKAGES}
       - DB_TYPE=${DB_TYPE}
       - DB_POSTGRESDB_HOST=${DB_POSTGRESDB_HOST}
       - DB_POSTGRESDB_PORT=${POSTGRES_PORT}
@@ -21,15 +20,15 @@ services:
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
-      - QUEUE_BULL_REDIS_PORT=6379
-      - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=3900000
-      - QUEUE_BULL_MAX_STALLED_COUNT=10
-      - QUEUE_BULL_STALLED_INTERVAL=300000
-      - EXECUTIONS_TIMEOUT=10800
+      - QUEUE_BULL_REDIS_PORT=${REDIS_PORT}
+      - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=${QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD}
+      - QUEUE_BULL_MAX_STALLED_COUNT=${QUEUE_BULL_MAX_STALLED_COUNT}
+      - QUEUE_BULL_STALLED_INTERVAL=${QUEUE_BULL_STALLED_INTERVAL}
+      - EXECUTIONS_TIMEOUT=${EXECUTIONS_TIMEOUT}
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
       - NODE_ENV=production
-      - NODE_OPTIONS=--max-old-space-size=4096
+      - NODE_OPTIONS=${NODE_OPTIONS}
     volumes:
       - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
       - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
@@ -47,13 +46,13 @@ services:
     restart: unless-stopped
     environment:
       REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT}
       COMPOSE_PROJECT_NAME: n8n-automation
-      POLL_INTERVAL_SEC: ${WORKER_MONITOR_POLL_SEC:-30}
+      POLL_INTERVAL_SEC: ${WORKER_MONITOR_POLL_SEC}
       SERVER_ID: ${SERVER_ID}
       N8N_BASE_URL: ${N8N_BASE_URL:-http://n8n:5678}
       N8N_API_KEY: ${N8N_API_KEY:-}
-      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-35}
+      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc:/host/proc:ro
@@ -70,14 +69,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_HOST: ${DB_POSTGRESDB_HOST}
-      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
       API_KEY: ${API_KEY}
-      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD:-35}
+      CPU_GATE_THRESHOLD: ${CPU_GATE_THRESHOLD}
       REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT}
       SERVER_ID: ${SERVER_ID}
       N8N_BASE_URL: ${N8N_BASE_URL:-http://n8n:5678}
       N8N_API_KEY: ${N8N_API_KEY:-}
