@@ -16,6 +16,7 @@
     "pip-install": "pip3.11 install -r requirements.txt",
     "add-pkg": "sh -c 'pip3.11 install \"$0\" && echo \"$(pip3.11 freeze | grep ^$0==)\" >> requirements.txt'",
     "lint:api": "cd api && ./venv/bin/python -m isort . && ./venv/bin/python -m black . && ./venv/bin/python -m ruff check .",
+    "lint:admin": "cd admin-api/frontend && npm run lint",
     "docker-up:dev": "sh sh_files/setup_n8n_files.sh && HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f docker/docker-compose.dev.yml up --build -d",
     "docker-up:prod": "sh sh_files/setup_n8n_files.sh && HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f docker/docker-compose.prod.yml up --build -d",
     "docker-up:prod-main": "sh sh_files/setup_n8n_files.sh && HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f docker/docker-compose.prod-main.yml up --build -d",

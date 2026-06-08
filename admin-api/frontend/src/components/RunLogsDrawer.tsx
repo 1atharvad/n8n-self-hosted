@@ -79,6 +79,7 @@ export const RunLogsDrawer = ({ run, onClose }: RunLogsDrawerProps) => {
     if (!isRunning) return;
     const t = setInterval(() => void loadJobs(run.id), 4000);
     return () => clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run?.id, isRunning, loadJobs]);
 
   useEffect(() => {
