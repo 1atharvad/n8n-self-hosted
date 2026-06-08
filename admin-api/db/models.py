@@ -36,6 +36,14 @@ class EnvVar(Base):
     updated_at = Column(DateTime(timezone=True), nullable=False, default=_now, onupdate=_now)
 
 
+class AppConfig(Base):
+    __tablename__ = "app_config"
+
+    key = Column(String(128), primary_key=True)
+    value = Column(String(4096), nullable=False)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=_now, onupdate=_now)
+
+
 class AuditLog(Base):
     __tablename__ = "audit_log"
 

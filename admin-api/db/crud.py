@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import hash_password
-from db.models import AuditLog, EnvVar, User
+from db.models import AppConfig, AuditLog, EnvVar, User
 
 
 async def get_user_by_username(session: AsyncSession, username: str) -> Optional[User]:
@@ -69,6 +69,28 @@ async def update_user(
 async def delete_user(session: AsyncSession, user: User) -> None:
     await session.delete(user)
     await session.commit()
+
+
+async def get_app_config(session: AsyncSession, key: str) -> Optional[str]:
+    row = await session.get(AppConfig, key)
+    return row.value if row else None
+
+
+async def set_app_config(session: AsyncSession, key: str, value: str) -> None:
+    existing = await session.get(AppConfig, key)
+    if existing:
+        existing.value = value
+        existing.updated_at = datetime.now(timezone.utc)
+    else:
+        session.add(AppConfig(key=key, value=value))
+    await session.commit()
+
+
+async def delete_app_config(session: AsyncSession, key: str) -> None:
+    existing = await session.get(AppConfig, key)
+    if existing:
+        await session.delete(existing)
+        await session.commit()
 
 
 async def get_env_var(session: AsyncSession, key: str) -> Optional[EnvVar]:
