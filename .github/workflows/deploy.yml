@@ -164,7 +164,7 @@ jobs:
           CONTABO_MAIN_IP: ${{ secrets.CONTABO_MAIN_IP }}
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
-          ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy.yml \
+          ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy_main.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
             -e "services=${{ steps.changes.outputs.main_services }}"
 
@@ -175,7 +175,7 @@ jobs:
           CONTABO_MAIN_IP: ${{ secrets.CONTABO_MAIN_IP }}
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
-          ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy.yml \
+          ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy_main.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
             -e "services=${{ steps.changes.outputs.main_services }}"
 
@@ -184,6 +184,6 @@ jobs:
         env:
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
-          ansible-playbook -i ansible/inventory/multi/workers_dynamic.yml ansible/playbooks/deploy.yml \
+          ansible-playbook -i ansible/inventory/multi/workers_dynamic.yml ansible/playbooks/deploy_workers.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
             -e "worker_services=${{ steps.changes.outputs.worker_services }}"

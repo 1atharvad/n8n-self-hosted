@@ -1,0 +1,35 @@
+- name: Deploy to workers
+  hosts: workers
+  become: true
+
+  vars:
+    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
+    full_deploy: false
+    worker_services: ""
+
+  tasks:
+    - include_tasks: tasks/common_setup.yml
+
+    - name: Full deploy
+      shell: |
+        cd {{ deploy_path }}
+        docker pull n8nio/n8n
+        docker pull grafana/promtail:latest
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+      when: full_deploy | bool
+
+    - name: Targeted restart
+      shell: |
+        cd {{ deploy_path }}
+        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up -d --build --no-deps {{ worker_services }}
+      when:
+        - not (full_deploy | bool)
+        - worker_services | length > 0
+
+    - name: Skip — no relevant changes
+      debug:
+        msg: "No worker-relevant changes detected, skipping restart."
+      when:
+        - not (full_deploy | bool)
+        - worker_services | length == 0
