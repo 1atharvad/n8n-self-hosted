@@ -30,6 +30,20 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Lint frontend
+        run: |
+          cd admin-api/frontend
+          npm ci --prefer-offline
+          npm run lint
+
+      - name: Lint API
+        run: |
+          cd api
+          pip install --quiet black isort ruff
+          python -m isort --check .
+          python -m black --check .
+          python -m ruff check .
+
       - name: Generate .env file
         run: |
           rm -f .env
