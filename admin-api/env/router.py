@@ -50,6 +50,7 @@ _GITHUB_ENV = os.getenv("GITHUB_ENV", "production")
 _WORKFLOW_FILE = os.getenv("GITHUB_WORKFLOW_FILE", "deploy.yml")
 _GH_BASE = "https://api.github.com"
 _DEV_DOTENV_PATH = os.getenv("DEV_DOTENV_PATH", "")
+_RESERVED_KEYS = {"github_token", "github_repo"}
 
 
 async def _get_github_config(session: AsyncSession) -> tuple[str, str]:
@@ -353,8 +354,9 @@ async def upsert_var(
     var = await set_env_var(session, key, _enc(body.value))
     if _DEV_DOTENV_PATH:
         _write_dotenv(_DEV_DOTENV_PATH, {key: body.value})
-    token, repo = await _get_github_config(session)
-    await _push_secret_to_github(key, body.value, token, repo)
+    else:
+        token, repo = await _get_github_config(session)
+        await _push_secret_to_github(key, body.value, token, repo)
     await create_audit_log(session, action="env_var_set", actor_id=str(admin.id), actor_name=admin.username, target_name=key, detail="updated" if existing else "created", ip_address=ip)
     return {"key": var.key, "updated_at": var.updated_at.isoformat() if var.updated_at else None}
 
@@ -372,8 +374,9 @@ async def remove_var(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Key not found")
     if _DEV_DOTENV_PATH:
         _remove_from_dotenv(_DEV_DOTENV_PATH, key)
-    token, repo = await _get_github_config(session)
-    await _delete_secret_from_github(key, token, repo)
+    else:
+        token, repo = await _get_github_config(session)
+        await _delete_secret_from_github(key, token, repo)
     await create_audit_log(session, action="env_var_deleted", actor_id=str(admin.id), actor_name=admin.username, target_name=key, detail="removed from store", ip_address=ip)
 
 

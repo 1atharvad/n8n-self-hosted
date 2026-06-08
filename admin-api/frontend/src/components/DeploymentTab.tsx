@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchWorkflowRuns, fetchGitHubConfig } from '@/api/env';
 import type { WorkflowRun, GitHubConfig } from '@/api/env';
 import { GitHubActionsSection } from '@/components/GitHubActionsSection';
@@ -13,7 +13,7 @@ export const DeploymentTab = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [runsError, setRunsError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [page, setPage] = useState(1);
+  const pageRef = useRef(1);
   const [selectedRun, setSelectedRun] = useState<WorkflowRun | null>(null);
 
   const isConfigured = Boolean(config?.token_set && config?.repo);
@@ -29,7 +29,7 @@ export const DeploymentTab = () => {
   const loadRuns = useCallback(() => {
     setRunsLoading(true);
     setRunsError(null);
-    setPage(1);
+    pageRef.current = 1;
     fetchWorkflowRuns(1)
       .then(({ runs: fetched, has_more }) => {
         setRuns(fetched);
@@ -40,17 +40,17 @@ export const DeploymentTab = () => {
   }, []);
 
   const loadMore = useCallback(() => {
-    const nextPage = page + 1;
+    const nextPage = pageRef.current + 1;
     setLoadingMore(true);
     fetchWorkflowRuns(nextPage)
       .then(({ runs: fetched, has_more }) => {
         setRuns((prev) => [...prev, ...fetched]);
         setHasMore(has_more);
-        setPage(nextPage);
+        pageRef.current = nextPage;
       })
       .catch((e: Error) => setRunsError(e.message))
       .finally(() => setLoadingMore(false));
-  }, [page]);
+  }, []);
 
   useEffect(() => { loadConfig(); }, [loadConfig]);
   useEffect(() => { if (isConfigured) loadRuns(); }, [isConfigured, loadRuns]);

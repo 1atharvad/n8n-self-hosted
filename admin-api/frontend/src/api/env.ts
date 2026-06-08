@@ -61,7 +61,9 @@ export interface GitHubConfig {
 
 export const fetchGitHubConfig = async (): Promise<GitHubConfig> => {
   const res = await authedFetch(`${BASE}/github-config`);
-  return res.json() as Promise<GitHubConfig>;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail ?? `GitHub config fetch failed (${res.status})`);
+  return data as GitHubConfig;
 };
 
 export const fetchGitHubToken = async (): Promise<string> => {
@@ -72,10 +74,14 @@ export const fetchGitHubToken = async (): Promise<string> => {
 };
 
 export const saveGitHubConfig = async (token?: string, repo?: string): Promise<void> => {
-  await authedFetch(`${BASE}/github-config`, {
+  const res = await authedFetch(`${BASE}/github-config`, {
     method: 'PUT',
     body: JSON.stringify({ token: token ?? null, repo: repo ?? null }),
   });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { detail?: string }).detail ?? `Save failed (${res.status})`);
+  }
 };
 
 export const fetchWorkflowRuns = async (page = 1, perPage = 10): Promise<{ runs: WorkflowRun[]; has_more: boolean }> => {

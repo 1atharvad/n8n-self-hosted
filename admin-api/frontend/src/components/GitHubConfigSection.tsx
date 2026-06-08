@@ -36,7 +36,9 @@ export const GitHubConfigSection = ({ config, onSaved }: GitHubConfigSectionProp
       const t = await fetchGitHubToken();
       setRevealedToken(t);
       setShowToken(true);
-    } catch { /* ignore */ } finally {
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to reveal token');
+    } finally {
       setFetchingToken(false);
     }
   };
