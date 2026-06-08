@@ -46,6 +46,7 @@ export interface WorkflowRun {
   run_number: number;
   status: 'queued' | 'in_progress' | 'completed';
   conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | null;
+  name: string;
   event: string;
   created_at: string;
   updated_at: string;
@@ -53,9 +54,64 @@ export interface WorkflowRun {
   actor: string | null;
 }
 
-export const fetchWorkflowRuns = async (perPage = 10): Promise<WorkflowRun[]> => {
-  const res = await authedFetch(`${BASE}/runs?per_page=${perPage}`);
+export interface GitHubConfig {
+  token_set: boolean;
+  repo: string;
+}
+
+export const fetchGitHubConfig = async (): Promise<GitHubConfig> => {
+  const res = await authedFetch(`${BASE}/github-config`);
+  return res.json() as Promise<GitHubConfig>;
+};
+
+export const fetchGitHubToken = async (): Promise<string> => {
+  const res = await authedFetch(`${BASE}/github-config/token`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail ?? 'Failed to fetch token');
+  return data.token as string;
+};
+
+export const saveGitHubConfig = async (token?: string, repo?: string): Promise<void> => {
+  await authedFetch(`${BASE}/github-config`, {
+    method: 'PUT',
+    body: JSON.stringify({ token: token ?? null, repo: repo ?? null }),
+  });
+};
+
+export const fetchWorkflowRuns = async (page = 1, perPage = 10): Promise<{ runs: WorkflowRun[]; has_more: boolean }> => {
+  const res = await authedFetch(`${BASE}/runs?per_page=${perPage}&page=${page}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail ?? `GitHub runs fetch failed (${res.status})`);
-  return (data.runs ?? []) as WorkflowRun[];
+  return { runs: (data.runs ?? []) as WorkflowRun[], has_more: data.has_more as boolean };
+};
+
+export interface WorkflowStep {
+  name: string;
+  status: 'queued' | 'in_progress' | 'completed';
+  conclusion: string | null;
+  number: number;
+}
+
+export interface WorkflowJob {
+  id: number;
+  name: string;
+  status: 'queued' | 'in_progress' | 'completed';
+  conclusion: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  steps: WorkflowStep[];
+}
+
+export const fetchRunJobs = async (runId: number): Promise<WorkflowJob[]> => {
+  const res = await authedFetch(`${BASE}/runs/${runId}/jobs`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail ?? `Jobs fetch failed (${res.status})`);
+  return (data.jobs ?? []) as WorkflowJob[];
+};
+
+export const fetchJobLogs = async (jobId: number): Promise<string> => {
+  const res = await authedFetch(`${BASE}/jobs/${jobId}/logs`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail ?? `Logs fetch failed (${res.status})`);
+  return (data.logs ?? '') as string;
 };
