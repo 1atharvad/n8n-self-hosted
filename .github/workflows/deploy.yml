@@ -7,9 +7,15 @@ on:
     paths-ignore:
       - 'n8n_workflows/**'
   workflow_dispatch:
+    inputs:
+      services:
+        description: 'Comma-separated containers to restart (e.g. "admin-api,frontend") or "all"'
+        required: false
+        default: 'all'
 
 env:
   DEPLOY_PATH: /www/wwwroot/n8n.atharvadevasthali.com
+  COMPOSE_FILE: docker/docker-compose.prod.yml
   SECRETS_JSON: ${{ toJSON(secrets) }}
   VARS_JSON: ${{ toJSON(vars) }}
 
@@ -21,6 +27,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Generate .env file
         run: |
@@ -52,40 +60,102 @@ jobs:
           scp -i ~/.ssh/id_ed25519 .env root@${{ secrets.CONTABO_IP }}:${{ env.DEPLOY_PATH }}/.env
 
       - name: Deploy app on Contabo
+        env:
+          INPUT_SERVICES: ${{ github.event.inputs.services }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           ssh -i ~/.ssh/id_ed25519 root@${{ secrets.CONTABO_IP }} "
             set -e
 
-            echo '--- Checking Node.js ---'
-            if ! command -v node >/dev/null 2>&1; then
-              echo 'Node.js not found, installing...'
-              apt update -y
-              apt install -y nodejs npm
-            else
-              echo 'Node.js already installed.'
-            fi
-
             echo '--- Checking Docker ---'
             if ! command -v docker >/dev/null 2>&1; then
-              echo 'Docker not found, installing...'
-              apt update -y
-              apt install -y docker-ce docker-ce-cli containerd.io
-              systemctl enable docker
-              systemctl start docker
-            else
-              echo 'Docker already installed.'
+              apt update -y && apt install -y docker-ce docker-ce-cli containerd.io
+              systemctl enable docker && systemctl start docker
             fi
 
             echo '--- Pulling latest code ---'
-            cd $DEPLOY_PATH &&
-            git fetch origin main &&
+            cd $DEPLOY_PATH
+            git fetch origin main
             git reset --hard origin/main
 
-            echo '--- Installing dependencies ---'
-            npm install --silent
+            COMPOSE=\"HOST_PROJECT_DIR=\$(pwd) docker compose --env-file .env -f $COMPOSE_FILE\"
 
-            echo '--- Running production build ---'
-            npm run docker:prod --silent
+            restart_services() {
+              local rebuild=\$1   # space-separated services to rebuild+restart
+              local reload=\$2    # space-separated services to restart only (no rebuild)
+
+              if [ -n \"\$rebuild\" ]; then
+                echo \"--- Rebuilding: \$rebuild ---\"
+                eval \$COMPOSE up -d --build --no-deps \$rebuild
+              fi
+              if [ -n \"\$reload\" ]; then
+                echo \"--- Restarting: \$reload ---\"
+                eval \$COMPOSE up -d --no-deps \$reload
+              fi
+            }
+
+            full_deploy() {
+              echo '--- Full deploy ---'
+              docker pull n8nio/n8n
+              docker pull nginx:alpine
+              docker pull postgres:15
+              docker pull redis:7-alpine
+              docker pull minio/minio:latest
+              docker pull grafana/loki:latest
+              docker pull grafana/promtail:latest
+              eval \$COMPOSE down
+              rm -rf loki-data/*
+              eval \$COMPOSE up --build -d
+            }
+
+            # ── workflow_dispatch: use the services input ──────────────────────
+            if [ \"$EVENT_NAME\" = \"workflow_dispatch\" ]; then
+              SERVICES=\"$INPUT_SERVICES\"
+              if [ -z \"\$SERVICES\" ] || [ \"\$SERVICES\" = \"all\" ]; then
+                full_deploy
+              else
+                echo \"--- Targeted restart: \$SERVICES ---\"
+                REBUILD=\"\"
+                RELOAD=\"\"
+                for svc in \$(echo \"\$SERVICES\" | tr ',' ' '); do
+                  case \"\$svc\" in
+                    nginx) RELOAD=\"\$RELOAD nginx\" ;;
+                    *) REBUILD=\"\$REBUILD \$svc\" ;;
+                  esac
+                done
+                restart_services \"\$REBUILD\" \"\$RELOAD\"
+              fi
+              echo '✅ Deployment complete!'
+              exit 0
+            fi
+
+            # ── push event: detect changed paths ──────────────────────────────
+            CHANGED=\$(git diff HEAD~1 HEAD --name-only 2>/dev/null || echo '')
+            echo \"--- Changed files ---\"
+            echo \"\$CHANGED\"
+
+            REBUILD=\"\"
+            RELOAD=\"\"
+            FULL=false
+
+            echo \"\$CHANGED\" | grep -q '^admin-api/' && REBUILD=\"\$REBUILD admin-api frontend\"
+            echo \"\$CHANGED\" | grep -q '^api/'       && REBUILD=\"\$REBUILD fastapi\"
+            echo \"\$CHANGED\" | grep -q '^processes/' && REBUILD=\"\$REBUILD worker-monitor\"
+            echo \"\$CHANGED\" | grep -q '^nginx/'     && RELOAD=\"\$RELOAD nginx\"
+            echo \"\$CHANGED\" | grep -q '^docker/'    && FULL=true
+            echo \"\$CHANGED\" | grep -q '^package'    && FULL=true
+
+            # Deduplicate
+            REBUILD=\$(echo \$REBUILD | tr ' ' '\n' | sort -u | tr '\n' ' ')
+            RELOAD=\$(echo \$RELOAD | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
+            if [ \"\$FULL\" = true ]; then
+              full_deploy
+            elif [ -z \"\$REBUILD\" ] && [ -z \"\$RELOAD\" ]; then
+              echo '--- No container-relevant changes detected, skipping restart ---'
+            else
+              restart_services \"\$REBUILD\" \"\$RELOAD\"
+            fi
 
             echo '✅ Deployment complete!'
           "
