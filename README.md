@@ -87,37 +87,80 @@ After running, copy the printed deploy public key and add it to **GitHub → Set
 ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/setup.yml --tags clone
 ```
 
+## 🔑 GitHub Secrets & Variables
+
+### Required secrets (GitHub → Settings → Secrets)
+
+| Secret | Description |
+|---|---|
+| `CONTABO_SSH_KEY` | Private SSH key for connecting to all servers |
+| `CONTABO_MAIN_IP` | Main server IP |
+| `CONTABO_WORKER_IP` | Comma-separated worker IPs — **if empty, single-server mode; if set, multi-server mode** |
+
+### App secrets (injected into `.env` on deploy)
+
+| Secret | Description |
+|---|---|
+| `JWT_SECRET` | Admin panel JWT signing secret |
+| `LOGS_ADMIN_PASSWORD` | Admin panel login password |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | PostgreSQL credentials |
+| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` / `MINIO_BUCKET_NAME` | MinIO credentials |
+| `N8N_ENCRYPTION_KEY` | n8n data encryption key |
+| `N8N_BASIC_AUTH_USER` / `N8N_BASIC_AUTH_PASSWORD` | n8n basic auth |
+| `N8N_API_KEY` | n8n API key (used internally) |
+| `API_KEY` | Media API key |
+| `ADMIN_PASSWORD` / `ADMIN_SECRET_KEY` | FastAPI admin credentials |
+| `INTERNAL_SECRET` | Internal service-to-service auth token |
+| `WEBHOOK_TUNNEL_URL` | n8n webhook URL (Cloudflare tunnel) |
+| `N8N_EDITOR_BASE_URL` | Public URL of the n8n instance |
+
+### Optional secrets (have defaults)
+
+| Secret | Default | Description |
+|---|---|---|
+| `LOGS_ADMIN_USERNAME` | `admin` | Admin panel username |
+| `ADMIN_USERNAME` | `admin` | FastAPI admin username |
+| `JWT_EXPIRE_HOURS` | `24` | JWT token expiry |
+| `CPU_GATE_THRESHOLD` | `35` | CPU % gate for API requests |
+| `SERVER_ID` | `main` | Server identifier for worker-monitor |
+| `WORKER_MONITOR_POLL_SEC` | `30` | Worker monitor poll interval |
+
 ## 🚢 Deployment
+
+### Topology — automatic detection
+
+Topology is determined purely by GitHub secrets — no manual variable needed:
+
+- **`CONTABO_WORKER_IP` is empty** → single server, runs `docker-compose.prod.yml`
+- **`CONTABO_WORKER_IP` = `"1.2.3.4,5.6.7.8"`** → multi-server; main runs `prod-main.yml`, each IP in the list runs `prod-worker.yml`
+
+To add a worker: append its IP to `CONTABO_WORKER_IP` and push. No other changes needed.
 
 ### Automatic (GitHub Actions)
 Every push to `main` triggers the CI/CD pipeline:
 1. **Lint** — frontend ESLint + Python black/isort/ruff
 2. **Deploy** — Ansible deploys only the affected containers based on changed paths
 
-Manually trigger a full or targeted deploy from **GitHub → Actions → Run workflow**, choosing topology (`single` / `multi`) and optionally specific services.
-
 ### Manual
 ```bash
-# Deploy to single server
+# Single server
 npm run ansible:deploy:single
 
-# Deploy to all multi-server hosts
-npm run ansible:deploy:multi
+# Multi-server (generates worker inventory from CONTABO_WORKER_IP)
+CONTABO_WORKER_IP="1.2.3.4,5.6.7.8" npm run ansible:deploy:multi
 
 # Rollback
 npm run ansible:rollback:single
-npm run ansible:rollback:multi
+CONTABO_WORKER_IP="1.2.3.4,5.6.7.8" npm run ansible:rollback:multi
 ```
 
 ### Deployment Topologies
 
-| Topology | Compose file | Use when |
+| Topology | Compose file | Services |
 |---|---|---|
-| `single` | `docker-compose.prod.yml` | One server running everything |
-| `multi` — main | `docker-compose.prod-main.yml` | Dedicated main server (n8n, postgres, redis, nginx, minio, admin-api) |
-| `multi` — workers | `docker-compose.prod-worker.yml` | N worker servers (n8n-worker, fastapi, promtail) |
-
-Adding a new worker server: uncomment its entry in `ansible/inventory/multi/workers.yml` and add the IP as a GitHub secret.
+| `single` | `docker-compose.prod.yml` | Everything on one server |
+| `multi` — main | `docker-compose.prod-main.yml` | n8n, postgres, redis, nginx, minio, admin-api, loki |
+| `multi` — workers | `docker-compose.prod-worker.yml` | n8n-worker, fastapi, promtail |
 
 ### Path-based targeted restarts (push events)
 
@@ -139,7 +182,7 @@ Adding a new worker server: uncomment its entry in `ansible/inventory/multi/work
 │   │   ├── single.yml              # Single-server inventory
 │   │   └── multi/
 │   │       ├── main.yml            # Main server inventory
-│   │       └── workers.yml         # Worker servers inventory
+│   │       └── workers_dynamic.yml # Generated at deploy time from CONTABO_WORKER_IP
 │   └── playbooks/
 │       ├── setup.yml               # First-time server provisioning
 │       ├── deploy.yml              # Application deployment
@@ -170,7 +213,7 @@ npm run lint:api                # black + isort + ruff on Python API
 npm run ansible:setup:single    # Provision single server
 npm run ansible:setup:multi     # Provision all multi servers
 npm run ansible:deploy:single   # Deploy to single server
-npm run ansible:deploy:multi    # Deploy to all multi servers
+npm run ansible:deploy:multi    # Generate worker inventory + deploy to all multi servers
 npm run ansible:rollback:single # Rollback single server
 npm run ansible:rollback:multi  # Rollback all multi servers
 

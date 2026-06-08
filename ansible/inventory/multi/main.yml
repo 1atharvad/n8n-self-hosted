@@ -8,4 +8,4 @@ all:
         compose_file: docker/docker-compose.prod-main.yml
       hosts:
         contabo-main:
-          ansible_host: "{{ lookup('env', 'CONTABO_MAIN_IP') }}"
+          ansible_host: "{{ lookup('env', 'CONTABO_MAIN_IP') }}"  # same secret as single

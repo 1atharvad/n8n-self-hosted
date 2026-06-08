@@ -1,5 +1,5 @@
-- name: Deploy to main / single
-  hosts: "{{ 'main' if 'main' in groups else 'all' }}"
+- name: Deploy to main
+  hosts: main
   become: true
 
   vars:
