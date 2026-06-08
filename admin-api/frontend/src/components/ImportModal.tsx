@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from 'advi-ui';
 import { Upload, AlertCircle } from 'lucide-react';
 
@@ -74,7 +75,7 @@ export const ImportModal = ({ existingKeys, onClose, onImport }: ImportModalProp
     e.target.value = '';
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
@@ -135,6 +136,7 @@ export const ImportModal = ({ existingKeys, onClose, onImport }: ImportModalProp
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

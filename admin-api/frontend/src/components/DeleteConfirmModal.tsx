@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { Button } from 'advi-ui';
 import { Trash2 } from 'lucide-react';
 
@@ -8,7 +9,7 @@ interface DeleteConfirmModalProps {
 }
 
 export const DeleteConfirmModal = ({ varKey, onCancel, onDelete }: DeleteConfirmModalProps) => {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-card border border-border rounded-xl p-6 w-full max-w-sm shadow-2xl mx-4">
         <h3 className="text-base font-semibold text-foreground mb-1">Delete variable</h3>
@@ -32,6 +33,7 @@ export const DeleteConfirmModal = ({ varKey, onCancel, onDelete }: DeleteConfirm
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

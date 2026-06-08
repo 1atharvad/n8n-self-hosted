@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { createUser, deleteUser, listUsers, updateUser } from '@/api/auth'
 import {
   Button,
@@ -214,14 +215,17 @@ export const UserManagement = () => {
       )}
 
       {/* Modal */}
-      {modal && (
+      {modal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-card border border-border rounded-lg shadow-2xl">
+          <form
+            className="w-full max-w-md bg-card border border-border rounded-lg shadow-2xl"
+            onSubmit={(e) => { e.preventDefault(); handleSave(); }}
+          >
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h3 className="text-sm font-semibold">
                 {modal === 'create' ? 'New User' : `Edit: ${editTarget?.username}`}
               </h3>
-              <button onClick={closeModal} className="text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={closeModal} className="text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -252,6 +256,7 @@ export const UserManagement = () => {
                   placeholder={
                     modal === 'create' ? 'min 8 characters' : 'Leave blank to keep current'
                   }
+                  autoComplete="new-password"
                 />
               </div>
 
@@ -322,15 +327,16 @@ export const UserManagement = () => {
             </div>
 
             <div className="flex gap-2 px-5 py-4 border-t border-border">
-              <Button onClick={handleSave} disabled={saving} size="sm">
+              <Button type="submit" disabled={saving} size="sm">
                 {saving ? 'Saving…' : 'Save'}
               </Button>
-              <Button variant="ghost" size="sm" onClick={closeModal}>
+              <Button type="button" variant="ghost" size="sm" onClick={closeModal}>
                 Cancel
               </Button>
             </div>
-          </div>
-        </div>
+          </form>
+        </div>,
+        document.body
       )}
     </div>
   )
