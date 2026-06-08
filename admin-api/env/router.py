@@ -411,7 +411,7 @@ async def deploy(
     async with httpx.AsyncClient(timeout=30, headers=_gh_headers(token)) as client:
         dispatch_resp = await client.post(
             f"{_GH_BASE}/repos/{repo}/actions/workflows/{_WORKFLOW_FILE}/dispatches",
-            json={"ref": "main"},
+            json={"ref": "main", "inputs": {"services": "all"}},
         )
         if dispatch_resp.status_code != 204:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Workflow dispatch failed: {dispatch_resp.text}")
