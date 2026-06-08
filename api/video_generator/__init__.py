@@ -5,8 +5,9 @@ from pathlib import Path
 
 import storage as minio_storage
 from audio_manager import TextToVoice
-from paths import AUDIO_FILES_DIR, VIDEO_FILES_DIR
+from paths import AUDIO_FILES_DIR
 from paths import SLIDE_IMG_FILES_DIR as IMG_FILES_DIR
+from paths import VIDEO_FILES_DIR
 
 from .image_extractor import ImageExtractor
 from .ppt_generator import PPTGenerator
