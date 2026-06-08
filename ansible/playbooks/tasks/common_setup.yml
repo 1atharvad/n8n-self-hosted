@@ -6,7 +6,7 @@
 
 - name: Copy .env file
   copy:
-    src: "{{ playbook_dir }}/../../../.env"
+    src: "{{ lookup('env', 'PWD') }}/.env"
     dest: "{{ deploy_path }}/.env"
     mode: '0600'
 
