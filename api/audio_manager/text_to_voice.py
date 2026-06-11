@@ -52,7 +52,7 @@ class TextToVoice:
             cls._instance.connection = "Text To Voice"
             cls._instance.download_required_files()
             cls._instance.kokoro_tts = Kokoro(
-                MODEL_PATH=str(MODEL_PATH), VOICES_PATH=str(VOICES_PATH)
+                model_path=str(MODEL_PATH), voices_path=str(VOICES_PATH)
             )
         return cls._instance
 
