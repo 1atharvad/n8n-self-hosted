@@ -112,6 +112,53 @@ else
   echo "⚠️  Could not read workflow data from postgres — skipping manifest and folder injection"
 fi
 
+# ── Export data tables ────────────────────────────────────────────────────────
+echo ""
+echo "📦 Exporting data tables..."
+DATA_DIR="$PROJECT_ROOT/n8n-workflows/data"
+mkdir -p "$DATA_DIR"
+
+TABLES_JSON=$(docker exec "$POSTGRES_CONTAINER" bash -c \
+  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c \
+   "SELECT json_agg(row_to_json(t)) FROM (SELECT id, name FROM public.data_table ORDER BY name) t;"' \
+  2>/dev/null | tr -d '\n' | grep -o '\[.*\]')
+
+if [[ -n "$TABLES_JSON" && "$TABLES_JSON" != "null" ]]; then
+  # pg_dump all data_table* tables — run inside container to handle mixed-case table names
+  docker exec "$POSTGRES_CONTAINER" bash -c '
+    TABLES=$(psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c "SELECT table_name FROM information_schema.tables WHERE table_name LIKE '"'"'data_table_user_%'"'"' AND table_schema='"'"'public'"'"' ORDER BY table_name;")
+    ARGS=(-t public.data_table -t public.data_table_column)
+    while IFS= read -r tbl; do
+      [[ -z "$tbl" ]] && continue
+      ARGS+=(-t "public.\"${tbl}\"")
+    done <<< "$TABLES"
+    pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --column-inserts "${ARGS[@]}"
+  ' 2>/dev/null > "$DATA_DIR/data_tables_restore.sql"
+  echo "✅ data_tables_restore.sql written"
+
+  # Per-table CSVs for readability (data_table_user_<id> has real columns)
+  TABLES_DIR="$DATA_DIR/tables"
+  mkdir -p "$TABLES_DIR"
+  rm -f "$TABLES_DIR"/*.csv
+
+  while IFS= read -r row; do
+    table_id=$(echo "$row"   | jq -r '.id')
+    table_name=$(echo "$row" | jq -r '.name')
+    [[ -z "$table_id" ]] && continue
+
+    docker exec "$POSTGRES_CONTAINER" bash -c \
+      "psql -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -c \
+       \"COPY public.\\\"data_table_user_${table_id}\\\" TO STDOUT WITH CSV HEADER\"" \
+      2>/dev/null > "$TABLES_DIR/${table_name}.csv" || true
+
+    rows=$(( $(wc -l < "$TABLES_DIR/${table_name}.csv") - 1 ))
+    [[ $rows -lt 0 ]] && rows=0
+    echo "  ✅ ${table_name}: ${rows} row(s)"
+  done < <(echo "$TABLES_JSON" | jq -c '.[]')
+else
+  echo "ℹ️  No data tables found"
+fi
+
 # Commit and push only if --commit flag is passed and something changed
 if [[ "$COMMIT" = true ]]; then
   if [[ -n $(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then

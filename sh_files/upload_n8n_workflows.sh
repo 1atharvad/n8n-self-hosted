@@ -206,3 +206,17 @@ done
 
 echo ""
 echo "✅ Done: $imported imported, $skipped skipped (archived), $failed failed, $moved moved to folders, $created_folders folder(s) created"
+
+# ── Restore data tables ───────────────────────────────────────────────────────
+DATA_DIR="$PROJECT_ROOT/n8n-workflows/data"
+if [ -f "$DATA_DIR/data_tables_restore.sql" ]; then
+  echo ""
+  echo "📦 Restoring data tables..."
+  docker exec -i "$POSTGRES_CONTAINER" bash -c \
+    'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1' \
+    < "$DATA_DIR/data_tables_restore.sql" > /dev/null
+  echo "✅ Data tables restored"
+else
+  echo ""
+  echo "ℹ️  No data_tables_restore.sql found — skipping data table restore"
+fi
