@@ -128,13 +128,15 @@ jobs:
           FULL=false
 
           echo "$CHANGED" | grep -q '^admin-api/' && MAIN_SVCS="$MAIN_SVCS admin-api frontend"
-          echo "$CHANGED" | grep -q '^api/'       && WORKER_SVCS="$WORKER_SVCS fastapi"
+          echo "$CHANGED" | grep -q '^api/' && MAIN_SVCS="$MAIN_SVCS media-api" && WORKER_SVCS="$WORKER_SVCS media-api"
           echo "$CHANGED" | grep -q '^processes/' && MAIN_SVCS="$MAIN_SVCS worker-monitor" && WORKER_SVCS="$WORKER_SVCS worker-monitor"
-          echo "$CHANGED" | grep -q '^nginx/'     && MAIN_SVCS="$MAIN_SVCS nginx"
-          echo "$CHANGED" | grep -q '^docker/'    && FULL=true
-          echo "$CHANGED" | grep -q '^package'    && FULL=true
-          echo "$CHANGED" | grep -q '^ansible/'   && FULL=true
-          echo "$CHANGED" | grep -q '^sh_files/'  && FULL=true
+          echo "$CHANGED" | grep -q '^nginx/' && MAIN_SVCS="$MAIN_SVCS nginx"
+          echo "$CHANGED" | grep -q '^custom-n8n-nodes/' && MAIN_SVCS="$MAIN_SVCS n8n" && WORKER_SVCS="$WORKER_SVCS n8n"
+          echo "$CHANGED" | grep -q '^\(loki\|promtail\)' && MAIN_SVCS="$MAIN_SVCS loki promtail"
+          echo "$CHANGED" | grep -q '^docker/' && FULL=true
+          echo "$CHANGED" | grep -q '^package' && FULL=true
+          echo "$CHANGED" | grep -q '^ansible/' && FULL=true
+          echo "$CHANGED" | grep -q '^sh_files/' && FULL=true
 
           # Deduplicate and trim
           MAIN_SVCS=$(echo $MAIN_SVCS | tr ' ' '\n' | sort -u | xargs)
