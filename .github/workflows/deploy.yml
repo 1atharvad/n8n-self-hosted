@@ -118,8 +118,8 @@ jobs:
             exit 0
           fi
 
-          # Push event: detect from changed paths
-          CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null || echo '')
+          # Push event: detect from changed paths across all commits in the push
+          CHANGED=$(git diff ${{ github.event.before }} HEAD --name-only 2>/dev/null || echo '')
           echo "Changed files:"
           echo "$CHANGED"
 
