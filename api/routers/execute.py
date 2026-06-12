@@ -15,39 +15,59 @@ _INTERPRETERS = {"sh", "bash", "python", "python3", "node", "ruby", "perl"}
 # Scanned against the full command string including chained segments
 _BLOCKED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     # Subshell / substitution
-    (re.compile(r"\$\("),                                                  "subshell substitution"),
-    (re.compile(r"`"),                                                      "backtick substitution"),
+    (re.compile(r"\$\("), "subshell substitution"),
+    (re.compile(r"`"), "backtick substitution"),
     # Recursive delete (short and long form)
-    (re.compile(r"\brm\b[^;&|\n]*(-[a-zA-Z]*[rR]|--recursive|--no-preserve-root)"), "recursive delete"),
+    (
+        re.compile(
+            r"\brm\b[^;&|\n]*(-[a-zA-Z]*[rR]|--recursive|--no-preserve-root)"
+        ),
+        "recursive delete",
+    ),
     # Disk destruction
-    (re.compile(r"\bdd\b[^;&|\n]*\bof\s*=\s*/dev/"),                      "write to block device"),
-    (re.compile(r"\bmkfs\b"),                                               "filesystem format"),
-    (re.compile(r"\bshred\b"),                                              "destructive shred"),
+    (re.compile(r"\bdd\b[^;&|\n]*\bof\s*=\s*/dev/"), "write to block device"),
+    (re.compile(r"\bmkfs\b"), "filesystem format"),
+    (re.compile(r"\bshred\b"), "destructive shred"),
     # Docker — block run and exec regardless of flags (host has docker.sock mounted)
-    (re.compile(r"\bdocker\b[^;&|\n]*\b(run|exec)\b"),                    "docker run/exec not allowed"),
+    (
+        re.compile(r"\bdocker\b[^;&|\n]*\b(run|exec)\b"),
+        "docker run/exec not allowed",
+    ),
     # System control
-    (re.compile(r"\b(shutdown|reboot|halt|poweroff)\b"),                    "system power control"),
-    (re.compile(r"\binit\s+[06]\b"),                                        "system shutdown via init"),
+    (
+        re.compile(r"\b(shutdown|reboot|halt|poweroff)\b"),
+        "system power control",
+    ),
+    (re.compile(r"\binit\s+[06]\b"), "system shutdown via init"),
     # Kill all
-    (re.compile(r"\bkill\b[^;&|\n]*\s+-1\b"),                              "kill all processes"),
-    (re.compile(r"\bpkill\b[^;&|\n]*-9\b"),                                "force-kill all processes"),
+    (re.compile(r"\bkill\b[^;&|\n]*\s+-1\b"), "kill all processes"),
+    (re.compile(r"\bpkill\b[^;&|\n]*-9\b"), "force-kill all processes"),
     # Download and execute
-    (re.compile(r"\b(curl|wget)\b[^;&|\n]*\|[^;&|\n]*(ba)?sh\b"),          "download-and-execute"),
-    (re.compile(r"\bbase64\b[^;&|\n]*\|[^;&|\n]*(ba)?sh\b"),               "encoded execute"),
+    (
+        re.compile(r"\b(curl|wget)\b[^;&|\n]*\|[^;&|\n]*(ba)?sh\b"),
+        "download-and-execute",
+    ),
+    (
+        re.compile(r"\bbase64\b[^;&|\n]*\|[^;&|\n]*(ba)?sh\b"),
+        "encoded execute",
+    ),
     # Code execution
-    (re.compile(r"\beval\b"),                                               "eval execution"),
+    (re.compile(r"\beval\b"), "eval execution"),
     # Overwrite sensitive files
-    (re.compile(r">\s*/etc/(passwd|shadow|sudoers|hostname|hosts)\b"),      "overwrite system file"),
-    (re.compile(r">\s*/root/\.ssh/"),                                       "overwrite SSH credentials"),
+    (
+        re.compile(r">\s*/etc/(passwd|shadow|sudoers|hostname|hosts)\b"),
+        "overwrite system file",
+    ),
+    (re.compile(r">\s*/root/\.ssh/"), "overwrite SSH credentials"),
     # Privilege escalation
-    (re.compile(r"\bsudo\b"),                                               "sudo not allowed"),
-    (re.compile(r"\bchmod\b[^;&|\n]*\+s\b"),                               "setuid/setgid not allowed"),
+    (re.compile(r"\bsudo\b"), "sudo not allowed"),
+    (re.compile(r"\bchmod\b[^;&|\n]*\+s\b"), "setuid/setgid not allowed"),
     # Misc
-    (re.compile(r":\s*\(\s*\)\s*\{"),                                      "fork bomb"),
-    (re.compile(r"\biptables\b[^;&|\n]*\s-F\b"),                           "flush firewall rules"),
-    (re.compile(r"\bufw\s+disable\b"),                                      "disable firewall"),
-    (re.compile(r"\bcrontab\s+-r\b"),                                       "wipe all crontabs"),
-    (re.compile(r"\bnc\b[^;&|\n]*-e\b"),                                   "netcat reverse shell"),
+    (re.compile(r":\s*\(\s*\)\s*\{"), "fork bomb"),
+    (re.compile(r"\biptables\b[^;&|\n]*\s-F\b"), "flush firewall rules"),
+    (re.compile(r"\bufw\s+disable\b"), "disable firewall"),
+    (re.compile(r"\bcrontab\s+-r\b"), "wipe all crontabs"),
+    (re.compile(r"\bnc\b[^;&|\n]*-e\b"), "netcat reverse shell"),
 ]
 
 
@@ -55,7 +75,9 @@ def _validate_command(command: str) -> list[str]:
     try:
         parts = shlex.split(command)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid command syntax: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid command syntax: {e}"
+        ) from e
 
     if not parts:
         raise HTTPException(status_code=400, detail="Empty command")
@@ -71,8 +93,19 @@ def _validate_command(command: str) -> list[str]:
             )
 
     # Block wrappers that re-exec interpreters and bypass the checks above
-    if executable in {"env", "xargs", "find", "nohup", "nice", "ionice", "timeout"}:
-        raise HTTPException(status_code=403, detail=f"Wrapper command '{executable}' is not allowed")
+    if executable in {
+        "env",
+        "xargs",
+        "find",
+        "nohup",
+        "nice",
+        "ionice",
+        "timeout",
+    }:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Wrapper command '{executable}' is not allowed",
+        )
 
     # Interpreter usage — block -c flag and enforce /sh_files/ for any path argument
     if executable in _INTERPRETERS:
@@ -82,7 +115,9 @@ def _validate_command(command: str) -> list[str]:
                     status_code=403,
                     detail="Interpreter -c flag is not allowed; use a script in /sh_files/ instead",
                 )
-            if (part.startswith("/") or part.startswith("./")) and not part.startswith(_SH_FILES_DIR):
+            if (
+                part.startswith("/") or part.startswith("./")
+            ) and not part.startswith(_SH_FILES_DIR):
                 raise HTTPException(
                     status_code=403,
                     detail=f"Script execution is only allowed from {_SH_FILES_DIR}",
