@@ -7,7 +7,7 @@ fix = true
 
 # Linting rules go under lint section
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "B", "UP"]
+select = ["E", "F", "W", "N", "B", "UP"]
 
 # Ignore rules (optional)
 ignore = [
