@@ -128,7 +128,7 @@ jobs:
           FULL=false
 
           echo "$CHANGED" | grep -q '^admin-api/' && MAIN_SVCS="$MAIN_SVCS admin-api frontend"
-          echo "$CHANGED" | grep -q '^api/' && MAIN_SVCS="$MAIN_SVCS media-api" && WORKER_SVCS="$WORKER_SVCS media-api"
+          echo "$CHANGED" | grep -q '^api/' && MAIN_SVCS="$MAIN_SVCS fastapi" && WORKER_SVCS="$WORKER_SVCS fastapi"
           echo "$CHANGED" | grep -q '^processes/' && MAIN_SVCS="$MAIN_SVCS worker-monitor" && WORKER_SVCS="$WORKER_SVCS worker-monitor"
           echo "$CHANGED" | grep -q '^nginx/' && MAIN_SVCS="$MAIN_SVCS nginx"
           echo "$CHANGED" | grep -q '^custom-n8n-nodes/' && MAIN_SVCS="$MAIN_SVCS n8n" && WORKER_SVCS="$WORKER_SVCS n8n"
