@@ -20,7 +20,7 @@ done
 N8N_CONTAINER="${N8N_CONTAINER:-n8n}"
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-postgres}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 WORKFLOWS_DIR="$PROJECT_ROOT/n8n-workflows/workflows"
 MANIFEST="$PROJECT_ROOT/n8n-workflows/manifest.json"
 

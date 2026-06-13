@@ -170,6 +170,7 @@ services:
       N8N_API_KEY: ${N8N_API_KEY:-}
       ADMIN_API_URL: ${ADMIN_API_URL}
       INTERNAL_SECRET: ${INTERNAL_SECRET:-}
+      PROJECT_ROOT: /workspace
     expose:
       - "9374"
     volumes:

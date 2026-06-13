@@ -24,7 +24,7 @@ done
 
 N8N_CONTAINER="n8n"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 WORKFLOWS_DIR="$PROJECT_ROOT/n8n-workflows/workflows"
 BRANCH=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD)
 
