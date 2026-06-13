@@ -181,7 +181,7 @@ if [[ "$COMMIT" = true ]]; then
       exit 1
     fi
     git -C "$PROJECT_ROOT" add n8n-workflows/
-    git -C "$PROJECT_ROOT" commit -- n8n-workflows/ -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')"
+    git -C "$PROJECT_ROOT" commit -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')" -- n8n-workflows/
     git -C "$PROJECT_ROOT" push origin "$BRANCH"
     echo "✅ Workflows backed up and pushed"
   else
