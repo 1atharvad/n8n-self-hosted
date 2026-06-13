@@ -1,0 +1,548 @@
+{
+  "updatedAt": "2026-05-16T22:41:11.062Z",
+  "createdAt": "2026-05-16T22:33:26.225Z",
+  "id": "IMnHHCu7gxSxfeAi",
+  "name": "Add / Update Daily Report",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "daily_report"
+            },
+            {
+              "name": "report_type"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        96
+      ],
+      "id": "0a677fa5-e2da-4f0f-8a0d-c83a4a938944",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.user_id }}",
+            "latest_question_summary": "="
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "latest_question_summary",
+              "displayName": "latest_question_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        208,
+        96
+      ],
+      "id": "ef6404d6-d428-4726-ad08-cda5e560159e",
+      "name": "Update Latest Question Summary",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.report_type }}",
+                    "rightValue": "start_report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a1ccf0b3-c72c-4989-97cc-d749e8fe26f0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Start Report"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0bc13729-76ec-4337-92f0-2fd31648c3ab",
+                    "leftValue": "={{ $json.report_type }}",
+                    "rightValue": "end_report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "End Report"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        96
+      ],
+      "id": "39a336fd-d484-4bee-a22b-9bdfd5d31446",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 887784209,
+          "mode": "list",
+          "cachedResultName": "Timesheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=887784209"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.user_id }}",
+            "start_report": "={{ $json.daily_report }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "end_time",
+              "displayName": "end_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "start_report",
+              "displayName": "start_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "end_report",
+              "displayName": "end_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dedbcfbe-55cb-424f-9311-ddcfc1d6facc",
+      "name": "Add / Update Daily Start of Day Report",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 887784209,
+          "mode": "list",
+          "cachedResultName": "Timesheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=887784209"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.user_id }}",
+            "end_report": "={{ $json.daily_report }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "end_time",
+              "displayName": "end_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "start_report",
+              "displayName": "start_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "end_report",
+              "displayName": "end_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        0,
+        208
+      ],
+      "id": "0fa11e8a-afc1-444d-8b4c-c24940362f79",
+      "name": "Add / Update Daily End of Day Report",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Add / Update Daily Start of Day Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add / Update Daily End of Day Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add / Update Daily Start of Day Report": {
+      "main": [
+        [
+          {
+            "node": "Update Latest Question Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add / Update Daily End of Day Report": {
+      "main": [
+        [
+          {
+            "node": "Update Latest Question Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "nodeGroups": [],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "user_id": "7519660825",
+          "daily_report": "completed test automation tasks",
+          "report_type": "start_report"
+        }
+      }
+    ]
+  },
+  "versionId": "eee32cd9-b804-42af-84f5-2b4d61d4708d",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-05-16T22:33:26.225Z",
+      "createdAt": "2026-05-16T22:33:26.225Z",
+      "role": "workflow:owner",
+      "workflowId": "IMnHHCu7gxSxfeAi",
+      "projectId": "i6SPWKiaev6Io6So",
+      "project": {
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "parentFolder": "Schedule Management System",
+  "parentFolderId": "72Xd3lko9CSEbz5e"
+}

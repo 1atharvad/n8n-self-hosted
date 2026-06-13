@@ -1,0 +1,14 @@
+id,key,value,createdAt,updatedAt,type
+9,jnn__ig-ch1__batch_size,5,2026-05-21 00:50:01.383+00,2026-05-21 00:51:47.509+00,number
+10,jnn__ig-ch1__max_epoch,10,2026-05-21 00:50:15.038+00,2026-05-21 00:51:48.643+00,number
+11,jnn__ig-ch1__video_count,1,2026-05-21 00:50:28.853+00,2026-05-21 00:51:50.431+00,number
+12,jnn__ig-ch1__job_portal_list__0,LinkedIn,2026-05-21 00:50:41.263+00,2026-05-21 00:51:53.419+00,string
+13,jnn__ig-ch1__template_file,job_news_template_instagram.pptx,2026-05-21 00:50:53.093+00,2026-05-21 00:51:55.588+00,string
+14,jnn__ig-ch1__video_type,ig-ch1,2026-05-21 00:51:03.427+00,2026-05-21 00:51:57.226+00,string
+3,jnn__yt-ch1__max_epoch,20,2026-05-16 22:51:21.492+00,2026-05-31 15:47:42.104+00,number
+1,api_url,http://fastapi:9374,2026-05-16 22:51:21.492+00,2026-05-19 01:22:39.716+00,string
+5,jnn__yt-ch1__job_portal_list__0,LinkedIn,2026-05-18 18:20:40.28+00,2026-05-19 01:22:47.884+00,string
+6,jnn__yt-ch1__template_file,job_news_template_instagram.pptx,2026-05-18 18:21:32.394+00,2026-05-19 01:22:49.828+00,string
+7,jnn__yt-ch1__video_type,yt-ch1,2026-05-18 18:22:15.93+00,2026-05-19 01:22:51.611+00,string
+2,jnn__yt-ch1__batch_size,5,2026-05-16 22:51:21.492+00,2026-05-19 01:22:57.235+00,number
+4,jnn__yt-ch1__video_count,10,2026-05-18 18:18:57.506+00,2026-05-20 17:20:10.799+00,number

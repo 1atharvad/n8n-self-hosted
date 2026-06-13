@@ -1,0 +1,589 @@
+{
+  "updatedAt": "2026-05-16T22:41:07.353Z",
+  "createdAt": "2026-05-16T22:33:44.148Z",
+  "id": "TrlEwaUo64KDpyvU",
+  "name": "Add New Shift",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            },
+            {
+              "name": "weekday"
+            },
+            {
+              "name": "start_time"
+            },
+            {
+              "name": "end_time"
+            },
+            {
+              "name": "day_off",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fcdabe6b-d019-407e-8ff2-0b0580b47f82",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 235982528,
+          "mode": "list",
+          "cachedResultName": "Shifts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=235982528"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "afcc63a9-4313-4de7-99c3-63f2cf7959f0",
+      "name": "Get User Weekly Shifts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.user_id }}",
+            "latest_question_summary": "={{ $json.latest_question_summary }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "latest_question_summary",
+              "displayName": "latest_question_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1520,
+        560
+      ],
+      "id": "f329325e-2cba-4b0e-ab2f-69d651cf57e4",
+      "name": "Update Latest Question Summary",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "if ($input.first().json.existing_weekday.length === 0) {\n  return {\n    json: {\n      user_id: $('Merge').first().json.user_id,\n      next_weekday: 'Monday',\n      latest_question_summary: 'Shift scheduling question asked for Monday'\n    }\n  };\n}\n\nconst allWeekdays = [\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\", \"Saturday\", \"Sunday\"];\nconst curr_weekday_list = $input.first().json.existing_weekday;\nconst missingWeekdays = allWeekdays.filter(day => !curr_weekday_list.includes(day));\n\nreturn {\n  json: {\n    user_id: $('Merge').first().json.user_id,\n    next_weekday: missingWeekdays.length ? missingWeekdays[0] : '',\n    latest_question_summary:  missingWeekdays.length ? `Shift scheduling question asked for ${missingWeekdays[0]}` : ''\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        560
+      ],
+      "id": "e9eb5fea-92aa-462b-bfc0-b537d8b14533",
+      "name": "Retrieve Next Weekday"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        144
+      ],
+      "id": "c8d21d31-19f7-4cc4-a3dd-345bd861f625",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 235982528,
+          "mode": "list",
+          "cachedResultName": "Shifts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=235982528"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "weekday": "={{ $json.weekday }}",
+            "end_time": "={{ $json.end_time }}",
+            "start_time": "={{ $json.start_time }}",
+            "day_off": "={{ $json.day_off }}",
+            "user_id": "={{ $json.user_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "weekday",
+              "displayName": "weekday",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "end_time",
+              "displayName": "end_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "day_off",
+              "displayName": "day_off",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        880,
+        400
+      ],
+      "id": "ce8f4c56-dc30-4a09-b3a0-a241d726669d",
+      "name": "Add Shift Entry",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "weekday",
+              "renameField": true,
+              "outputFieldName": "existing_weekday"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        432,
+        0
+      ],
+      "id": "a6855eb4-45c9-492c-89c4-a6c5709df766",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bd574427-3cc9-43fc-9ef2-b8ec38fa0513",
+              "leftValue": "={{ $json.existing_weekday }}",
+              "rightValue": "={{ $json.weekday }}",
+              "operator": {
+                "type": "array",
+                "operation": "notContains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        400
+      ],
+      "id": "869f9550-6550-4046-879c-0f7d394ccd70",
+      "name": "Check if weekday already added"
+    },
+    {
+      "parameters": {
+        "jsCode": "let existing_weekday = $('Merge').first().json.existing_weekday;\nexisting_weekday.push($input.first().json.weekday);\n\nreturn {\n  json: {\n    existing_weekday\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        400
+      ],
+      "id": "f1452129-606b-43bf-a6c9-676c3de33e2d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1744,
+        400
+      ],
+      "id": "0826e199-9306-4962-91c3-14170a4c8d29",
+      "name": "Merge1"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get User Weekly Shifts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get User Weekly Shifts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Next Weekday": {
+      "main": [
+        [
+          {
+            "node": "Update Latest Question Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Latest Question Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Check if weekday already added",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if weekday already added": {
+      "main": [
+        [
+          {
+            "node": "Add Shift Entry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retrieve Next Weekday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Shift Entry": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Next Weekday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "nodeGroups": [],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "user_id": "7519660825",
+          "weekday": "Monday",
+          "start_time": "",
+          "end_time": "",
+          "day_off": true
+        }
+      }
+    ]
+  },
+  "versionId": "972acb4f-af1b-4a8e-a31f-0734db27a221",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-05-16T22:33:44.148Z",
+      "createdAt": "2026-05-16T22:33:44.148Z",
+      "role": "workflow:owner",
+      "workflowId": "TrlEwaUo64KDpyvU",
+      "projectId": "i6SPWKiaev6Io6So",
+      "project": {
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "parentFolder": "Schedule Management System",
+  "parentFolderId": "72Xd3lko9CSEbz5e"
+}

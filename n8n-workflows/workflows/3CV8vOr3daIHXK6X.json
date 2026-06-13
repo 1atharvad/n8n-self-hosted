@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-05-17T01:24:02.011Z",
-  "createdAt": "2026-04-23T02:49:58.300Z",
+  "updatedAt": "2026-06-12T20:12:19.979Z",
+  "createdAt": "2026-05-16T22:31:33.458Z",
   "id": "3CV8vOr3daIHXK6X",
   "name": "Script Generator",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -14,10 +14,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        560,
-        -32
+        2176,
+        560
       ],
-      "id": "8b98c752-28b9-4eec-afba-79ef19ae4e82",
+      "id": "8db1a75c-da47-46d1-ad6a-62d32c542d5a",
       "name": "Loop Over Items1"
     },
     {
@@ -29,10 +29,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1120,
-        160
+        2736,
+        752
       ],
-      "id": "c622eca4-9832-4df8-80a1-7292bd961a4b",
+      "id": "d1c22976-396b-4689-b5a3-f1d790cb7074",
       "name": "Structured Output Parser"
     },
     {
@@ -43,12 +43,19 @@
               "name": "date"
             },
             {
+              "name": "start_id",
+              "type": "number"
+            },
+            {
               "name": "num_of_jobs",
               "type": "number"
             },
             {
               "name": "maxCount",
               "type": "number"
+            },
+            {
+              "name": "video_type"
             }
           ]
         }
@@ -56,10 +63,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -80,
-        -32
+        1536,
+        560
       ],
-      "id": "d52f20ae-8911-4607-be38-160895c2332b",
+      "id": "f96310d8-fe9a-4c70-a8d6-e2b573994c62",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -69,10 +76,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1344,
-        -32
+        2960,
+        560
       ],
-      "id": "7ff41ab9-83a3-483b-826b-87488bbe04fc",
+      "id": "0caa7b8d-6dab-4d69-8725-3401d14f99d8",
       "name": "Restructure Script"
     },
     {
@@ -112,10 +119,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1056,
-        336
+        2672,
+        928
       ],
-      "id": "ad0360c2-d99b-4508-9552-34227e992606",
+      "id": "07463d0b-6863-4e1c-a7a6-95a55c87c060",
       "name": "Text to Voice"
     },
     {
@@ -155,10 +162,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        784,
-        -16
+        2400,
+        560
       ],
-      "id": "340a99b8-955b-410d-bf8d-1aa0b831129c",
+      "id": "0e9dd8e7-ff0b-40ee-b911-3fbd0f9dbcb0",
       "name": "If"
     },
     {
@@ -168,10 +175,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        560,
-        336
+        2176,
+        928
       ],
-      "id": "1c6b14b7-40e6-4fe4-80f9-317ab78f489b",
+      "id": "67d112b1-b45d-4b47-ba0a-b1ffb6b41760",
       "name": "Loop Over Items"
     },
     {
@@ -212,10 +219,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        784,
-        352
+        2400,
+        944
       ],
-      "id": "76c7195f-1cc6-44cf-a69c-c22846fc4b6c",
+      "id": "7034655d-354d-4be7-b069-aeafd9863ab8",
       "name": "If1"
     },
     {
@@ -225,10 +232,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        560,
-        640
+        2176,
+        1232
       ],
-      "id": "4a7bf1d1-4d69-45d4-9835-57c203826dd6",
+      "id": "9664906b-dbc2-4a90-8e2c-87508c3b82ee",
       "name": "Code"
     },
     {
@@ -245,10 +252,10 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        768,
-        640
+        2384,
+        1232
       ],
-      "id": "0d08ee23-d2e4-4e02-a303-a0a556cdb2e1",
+      "id": "1981318e-1a8d-4d9d-a98d-005b87ce2a1a",
       "name": "Aggregate"
     },
     {
@@ -260,10 +267,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        976,
-        640
+        2592,
+        1232
       ],
-      "id": "514c47d2-03a2-431d-8ec3-224921311f3f",
+      "id": "b70b082e-d802-4fa8-aeee-35919f14ed75",
       "name": "Merge"
     },
     {
@@ -275,167 +282,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        560,
-        832
+        2176,
+        1424
       ],
-      "id": "dcb8d774-6188-4f17-9244-8846487c4daa",
+      "id": "7e3c32f1-d75b-46ba-9385-ee21e84742f3",
       "name": "Edit Fields"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "HmMxxv4eZOZGzrOl",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/HmMxxv4eZOZGzrOl",
-          "cachedResultName": "Video Creation"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "old_text": "={{ $json.old_text }}",
-            "jobs": "={{ $json.jobs }}",
-            "template_slide": "={{ $json.template_slide }}",
-            "date": "={{ $('When Executed by Another Workflow').item.json.date }}",
-            "batch_size": 5,
-            "initial_point": 0
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "template_slide",
-              "displayName": "template_slide",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "old_text",
-              "displayName": "old_text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "object",
-              "removed": false
-            },
-            {
-              "id": "jobs",
-              "displayName": "jobs",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "array",
-              "removed": false
-            },
-            {
-              "id": "date",
-              "displayName": "date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "batch_size",
-              "displayName": "batch_size",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "initial_point",
-              "displayName": "initial_point",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        1392,
-        560
-      ],
-      "id": "872987f6-ee56-4712-a395-ebcb957b3a04",
-      "name": "Create Video",
-      "retryOnFail": false
-    },
-    {
-      "parameters": {
-        "fileSelector": "={{ $json.file_path }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.readWriteFile",
-      "typeVersion": 1,
-      "position": [
-        1584,
-        560
-      ],
-      "id": "f485cfa8-adfc-4aff-8198-ed192d377a70",
-      "name": "Get Video file"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "b6b8e99c-dd86-437e-944b-3f4364566032",
-              "leftValue": "={{ $('When Executed by Another Workflow').item.json.test_mode }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        1184,
-        640
-      ],
-      "id": "181f5075-0566-44f0-ad66-c6b4571e8a57",
-      "name": "If2"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        1392,
-        752
-      ],
-      "id": "a9b9dc7b-54c3-42f8-a9a7-ae3e3d4f6b21",
-      "name": "Output"
     },
     {
       "parameters": {
@@ -446,10 +297,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1744,
-        -32
+        3552,
+        560
       ],
-      "id": "9f0dbd22-8b94-4063-bfa3-73fb8e0d3c38",
+      "id": "e2d87172-2fc0-49dc-bc09-400e9584d231",
       "name": "Merge1"
     },
     {
@@ -461,45 +312,32 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1472,
-        336
+        3088,
+        928
       ],
-      "id": "4f08bb4c-df0f-4032-917a-3f91ab6c2093",
+      "id": "43ce971e-c02b-4305-abf2-bbbcaeb98ea6",
       "name": "Merge2"
     },
     {
       "parameters": {
-        "jsCode": "let count = 0;\nconst maxCount = $('When Executed by Another Workflow').first().json.maxCount;\n\nfor (const item of $input.all()) {\n  if ((!item.json.script_added || !item.json.audio_added) && count < maxCount) {\n    item.json.index = count;\n    count += 1;\n  } else {\n    item.json.index = -1;\n  }\n}\n\nreturn $input.all();"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        336,
-        -32
-      ],
-      "id": "bd282c2a-98d3-4c56-a14b-7e8d481185e3",
-      "name": "Code1"
-    },
-    {
-      "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT *\nFROM job_listing.job_links\nWHERE date = $1\n  AND video_created = false\nORDER BY id ASC\nLIMIT $2;",
+        "query": "SELECT * FROM job_listing.job_links\nWHERE date = $1\n  AND id >= $2::int\n  AND video_type = $4\nORDER BY id ASC\nLIMIT $3::int;",
         "options": {
-          "queryReplacement": "={{ $json.date }},{{ $json.num_of_jobs }}"
+          "queryReplacement": "={{ $json.date }},{{ $json.start_id }},{{ $json.num_of_jobs }},{{ $json.video_type }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        128,
-        -32
+        1744,
+        560
       ],
-      "id": "26bf9977-c691-4f36-b580-8b813d177631",
+      "id": "3177825e-1177-4d37-a7fe-764b8e8169bd",
       "name": "Extract Job Openings",
       "credentials": {
         "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
         }
       }
     },
@@ -666,6 +504,26 @@
               "type": "boolean",
               "canBeUsedToMatch": true,
               "removed": true
+            },
+            {
+              "id": "job_description",
+              "displayName": "job_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "video_type",
+              "displayName": "video_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -676,15 +534,15 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1536,
-        -32
+        3360,
+        560
       ],
-      "id": "2c934675-fe64-4753-b430-8220f6e24a52",
+      "id": "be08a963-017b-4343-8737-c41373e77a40",
       "name": "Add Script",
       "credentials": {
         "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
         }
       }
     },
@@ -851,6 +709,26 @@
               "type": "boolean",
               "canBeUsedToMatch": true,
               "removed": true
+            },
+            {
+              "id": "job_description",
+              "displayName": "job_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "video_type",
+              "displayName": "video_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -861,33 +739,96 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1264,
-        336
+        2880,
+        928
       ],
-      "id": "35bf6144-b792-49fa-95c6-a834c23b59f9",
+      "id": "830ecea5-109b-491e-8f41-4024acc95e7b",
       "name": "Add Audio File",
       "credentials": {
         "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
         }
       }
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Create a professional TV news channel script sub-narrative for a scheduled segment that highlights job postings.\n\n**JOB POSTING DETAILS:**\nCompany Name: {{ $json.company_name }}\nPosition: {{ $json.position }}\nLocation: {{ $json.location }}\nApply Link: {{ $json.link }}\n\n**TASK:**\nExtract the job description from the provided link and relevant sites for the specific job opening, then write a formal and concise broadcast script sub-narrative where:\n- The content focuses on the core job information without introduction or closing segments\n- The tone is professional, clear, and neutral\n- The segment follows a logical flow: job overview → qualifications → skills required → benefits/perks → application details\n- The script should be delivered as a single-voice narration suitable for AI audio generation\n- Avoid any conversational back-and-forth or multiple speakers\n- Keep sentences clear and well-paced for spoken delivery\n\n**OUTPUT REQUIREMENTS:**\nReturn a JSON object with these exact fields:\n- segment_title: A concise, engaging title for this job segment (e.g., \"Tech Careers Update\" or \"Engineering Opportunity Spotlight\")\n- job_overview: Precise description of the role, company, location, and responsibilities\n- qualifications_requirements: Summary of necessary skills, experience, and education\n- skills_required: List or short paragraph of specific technical or soft skills needed\n- benefits_perks: Outline any notable advantages or benefits of the position\n- application_details: Instructions on how to apply, referencing \"link below\" instead of actual URLs\n\n**GUIDELINES:**\n- Maintain a formal and respectful tone throughout\n- Avoid slang or casual language\n- If the job posting is missing details, fill in with realistic and relevant information\n- Ensure the script flows naturally when read aloud by AI text-to-speech\n- Do not include actual URLs or links in the script text as text-to-speech cannot deliver them properly",
+        "text": "=Create a professional TV news channel script sub-narrative for a scheduled segment that highlights job postings.\n\n**JOB POSTING DETAILS:**\nCompany Name: {{ $json.company_name }}\nPosition: {{ $json.position }}\nLocation: {{ $json.location }}\nJob Description: {{ $json.job_description }}\nApply Link: {{ $json.link }}\n\n**TASK:**\nWrite a formal and concise broadcast script sub-narrative where:\n- The content focuses on the core job information without introduction or closing segments\n- The tone is professional, clear, and neutral\n- The segment follows a logical flow: job overview → qualifications → skills required → benefits/perks → application details\n- The script should be delivered as a single-voice narration suitable for AI audio generation\n- Avoid any conversational back-and-forth or multiple speakers\n- Keep sentences clear and well-paced for spoken delivery\n\n**OUTPUT REQUIREMENTS:**\nReturn a JSON object with these exact fields:\n- segment_title: A concise, engaging title for this job segment (e.g., \"Tech Careers Update\" or \"Engineering Opportunity Spotlight\")\n- job_overview: Precise description of the role, company, location, and responsibilities based on the job description\n- qualifications_requirements: Summary of necessary skills, experience, and education\n- skills_required: List or short paragraph of specific technical or soft skills needed\n- benefits_perks: Outline any notable advantages or benefits of the position\n- application_details: Instructions on how to apply with reference to \"link below\"\n\n**GUIDELINES:**\n- Maintain a formal and respectful tone throughout\n- Avoid slang or casual language\n- Extract information directly from the provided job description\n- If job description is not available or empty, visit the link provided and extract relevant information from the job posting\n- If certain details are missing from the job posting, note them as \"Not specified in posting\"\n- Ensure the script flows naturally when read aloud by AI text-to-speech\n- Do not include actual URLs or links in the script text",
         "hasOutputParser": true,
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        992,
-        -32
+        2608,
+        560
       ],
-      "id": "9d462f5b-ccb3-4272-be51-472bb545ae69",
+      "id": "ea11c0ba-90e8-406a-bdc9-34ff154c8524",
       "name": "Script Generator"
+    },
+    {
+      "parameters": {
+        "jsCode": "let count = 0;\nlet maxCount;\n\ntry {\n  maxCount = $('When Executed by Another Workflow').first().json.maxCount;\n} catch (error) {\n  maxCount = 99999;\n}\n\nfor (const item of $input.all()) {\n  if ((!item.json.script_added || !item.json.audio_added) && count < maxCount) {\n    item.json.index = count;\n    count += 1;\n  } else {\n    item.json.index = -1;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        560
+      ],
+      "id": "78a5ad23-3877-4eb7-8e1f-fa674ab29d8f",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "eVllB3VNGtqbLuF4",
+          "mode": "list",
+          "cachedResultName": "Job Details (Testing)",
+          "cachedResultUrl": "/projects/i6SPWKiaev6Io6So/datatables/eVllB3VNGtqbLuF4"
+        }
+      },
+      "type": "n8n-nodes-base.evaluationTrigger",
+      "typeVersion": 4.7,
+      "position": [
+        1952,
+        736
+      ],
+      "id": "47004dad-2253-4718-8638-f996ad0860bc",
+      "name": "When fetching a dataset row"
+    },
+    {
+      "parameters": {
+        "operation": "checkIfEvaluating"
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        3168,
+        560
+      ],
+      "id": "5d31a79f-2cbf-4c80-817d-1079a2558094",
+      "name": "Check if Evaluation triggered"
+    },
+    {
+      "parameters": {
+        "operation": "setMetrics",
+        "metric": "helpfulness",
+        "userQuery": "=**JOB POSTING DETAILS:**\nCompany Name: {{ $('If').item.json.company_name }}\nPosition: {{ $('If').item.json.position }}\nLocation: {{ $('If').item.json.location }}\nJob Description: {{ $('If').item.json.job_description }}",
+        "actualAnswer": "={{ $json.script }}",
+        "prompt": "=You are an expert evaluator assessing whether generated job posting scripts effectively utilize all provided input information.\n\nEvaluate how well a generated script uses and incorporates the input data (company_name, position, location, job_description) on a scale from 1 to 5. Consider whether the script extracts and integrates relevant details, avoids generic placeholders, and creates content specific to the actual job posting.\n\n# Scoring Criteria\n\n- 5: Extremely effective - The script incorporates all input fields naturally, extracts specific details from job_description, personalizes content to the actual role/company, and all required JSON fields are present and substantive.\n- 4: Very effective - The script uses most input fields, incorporates job_description details well, has some company/role-specific content, and includes all required JSON fields.\n- 3: Moderately effective - The script uses some input fields, includes some job_description details, but may contain generic language or missing specific information.\n- 2: Slightly effective - The script uses minimal input data, relies on generic content, extracts few specific details from job_description, or is missing some required JSON fields.\n- 1: Not effective - The script ignores most input data, uses only placeholder text, provides no job_description details, or is missing required JSON fields.\n\n# Evaluation Steps\n\n1. Verify all required JSON fields are present: segment_title, job_overview, qualifications_requirements, skills_required, benefits_perks, application_details\n2. Check if company_name is mentioned and integrated naturally (not just once, but in context)\n3. Check if position/role is accurately reflected throughout the script\n4. Check if location is incorporated\n5. Check if specific details are extracted from job_description (responsibilities, requirements, technical skills, etc.) rather than generic statements\n6. Check if benefits/perks mentioned are actual job posting details, not generic corporate benefits\n7. Check if application_details references the link appropriately without exposing the URL\n8. Verify tone is professional, neutral, and suitable for AI text-to-speech (no slang, no emotional language)\n9. Check script length is appropriate (concise but comprehensive, not too short or overly verbose)\n10. Check relevance - every sentence should relate to the job posting, no filler or tangential content\n11. Verify content flows logically: overview → qualifications → skills → benefits → application\n12. Check for any placeholder text or unfilled sections\n\n# Output Format\n\nProvide:\n- A detailed analysis evaluating how effectively the script uses input information\n- A one-sentence summary highlighting the strengths or weaknesses in information utilization\n- An assessment of which input fields were well-utilized and which were underutilized\n- The final effectiveness score as an integer (1, 2, 3, 4, or 5)\n\nAlways follow the JSON format below and return nothing else:\n{\n  \"extended_reasoning\": \"<detailed step-by-step analysis of information utilization>\",\n  \"fields_assessment\": {\n    \"company_name\": \"<well-used / mentioned / ignored / etc>\",\n    \"position\": \"<well-used / mentioned / ignored / etc>\",\n    \"location\": \"<well-used / mentioned / ignored / etc>\",\n    \"job_description\": \"<specific details extracted / some details / mostly generic / ignored>\",\n    \"link_reference\": \"<properly referenced / mentioned / missing>\"\n  },\n  \"reasoning_summary\": \"<one sentence summary of information utilization effectiveness>\",\n  \"score\": <number: integer from 1 to 5>\n}\n\n# Notes\n\n- Focus on whether the LLM extracted actual details from job_description vs. using boilerplate\n- Company-specific and role-specific content should be evident (not generic)\n- Check that all 5 input fields are meaningfully utilized\n- \"Not specified in posting\" should only appear when the input truly lacked that information\n- Consider whether the script would sound different if generated for a different job (if not, information wasn't well-used)\n- Verify the script is substantive, not just a template with minimal personalization",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        3360,
+        384
+      ],
+      "id": "d6b4ffac-2b27-4bf6-91ce-af2679138d63",
+      "name": "Evaluation"
     },
     {
       "parameters": {
@@ -897,17 +838,28 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        960,
-        192
+        2560,
+        784
       ],
-      "id": "e9d3ef72-7484-4bbe-9972-0e1ca5ab7022",
-      "name": "OpenRouter Chat Model1",
+      "id": "c627e6af-9bdf-4e63-985b-2d5d929481dc",
+      "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "ZOsMSA2673vhlLZX",
+          "id": "b7nDnWwy7OrWzTgu",
           "name": "OpenRouter account"
         }
       }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        384
+      ],
+      "id": "987bd879-54c6-456e-bfdc-c37f388108b3",
+      "name": "Stub"
     }
   ],
   "connections": {
@@ -960,7 +912,7 @@
       "main": [
         [
           {
-            "node": "Add Script",
+            "node": "Check if Evaluation triggered",
             "type": "main",
             "index": 0
           }
@@ -982,12 +934,12 @@
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "Script Generator",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Script Generator",
+            "node": "Stub",
             "type": "main",
             "index": 0
           }
@@ -1066,13 +1018,7 @@
     },
     "Merge": {
       "main": [
-        [
-          {
-            "node": "If2",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Edit Fields": {
@@ -1082,35 +1028,6 @@
             "node": "Merge",
             "type": "main",
             "index": 1
-          }
-        ]
-      ]
-    },
-    "Create Video": {
-      "main": [
-        [
-          {
-            "node": "Get Video file",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If2": {
-      "main": [
-        [
-          {
-            "node": "Create Video",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Output",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -1131,17 +1048,6 @@
         [
           {
             "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code1": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items1",
             "type": "main",
             "index": 0
           }
@@ -1192,7 +1098,47 @@
         ]
       ]
     },
-    "OpenRouter Chat Model1": {
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When fetching a dataset row": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Evaluation triggered": {
+      "main": [
+        [
+          {
+            "node": "Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
       "ai_languageModel": [
         [
           {
@@ -1203,6 +1149,22 @@
           {
             "node": "Structured Output Parser",
             "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Evaluation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stub": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
             "index": 0
           }
         ]
@@ -1219,59 +1181,53 @@
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "date": "2025-08-22",
-          "num_of_jobs": 10,
-          "maxCount": 99999
-        }
-      }
-    ]
-  },
-  "versionId": "5f78be36-1f7e-412c-99b4-d8e55933d2fb",
-  "activeVersionId": null,
-  "versionCounter": 18,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8bcada37-0465-4744-af56-58caf5831234",
+  "activeVersionId": "8bcada37-0465-4744-af56-58caf5831234",
+  "versionCounter": 304,
   "triggerCount": 0,
+  "sourceWorkflowId": null,
   "tags": [
-    {
-      "updatedAt": "2026-05-16T22:08:55.159Z",
-      "createdAt": "2026-05-16T22:08:55.159Z",
-      "id": "uRLukwQ6lXVe1ia9",
-      "name": "F-JNN"
-    },
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
       "createdAt": "2025-09-26T07:16:33.839Z",
       "id": "ens6dG0mnb19cVTi",
       "name": "Sub-Workflow"
+    },
+    {
+      "updatedAt": "2026-05-16T22:08:55.159Z",
+      "createdAt": "2026-05-16T22:08:55.159Z",
+      "id": "uRLukwQ6lXVe1ia9",
+      "name": "F-JNN"
     }
   ],
   "shared": [
     {
-      "updatedAt": "2026-04-23T02:49:58.300Z",
-      "createdAt": "2026-04-23T02:49:58.300Z",
+      "updatedAt": "2026-05-16T22:31:33.458Z",
+      "createdAt": "2026-05-16T22:31:33.458Z",
       "role": "workflow:owner",
       "workflowId": "3CV8vOr3daIHXK6X",
-      "projectId": "r4FxHAXU5mmnE4p2",
+      "projectId": "i6SPWKiaev6Io6So",
       "project": {
-        "updatedAt": "2026-04-23T00:46:33.004Z",
-        "createdAt": "2026-04-23T00:44:53.719Z",
-        "id": "r4FxHAXU5mmnE4p2",
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
       }
     }
   ],
   "versionMetadata": {
-    "name": null,
-    "description": null
+    "name": "Version 8bcada37",
+    "description": ""
   },
-  "folder": "Youtube Stream (JNN)"
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
 }

@@ -1,22 +1,24 @@
 {
-  "updatedAt": "2026-05-16T22:11:33.613Z",
-  "createdAt": "2026-04-23T02:50:00.599Z",
+  "updatedAt": "2026-06-13T15:04:59.117Z",
+  "createdAt": "2026-05-16T22:32:00.319Z",
   "id": "66MHT0z3zhiYgblm",
   "name": "Combine Videos",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/combine-videos",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/combine-videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
             {
               "name": "video_file_name",
-              "value": "={{ (() => {\n  const input = $('When Executed by Another Workflow').first().json;\n  const prefix = input.include_epoch_in_output ? `epoch-${input.epoch }_` : '';\n  return `${prefix}${$json.output_file_name}`;\n})() }}"
+              "value": "={{ $json.output_file_name }}"
             },
             {
               "name": "video_files",
@@ -25,6 +27,14 @@
             {
               "name": "epoch",
               "value": "={{ $('When Executed by Another Workflow').item.json.epoch }}"
+            },
+            {
+              "name": "video_type",
+              "value": "={{ $('When Executed by Another Workflow').first().json.video_type }}"
+            },
+            {
+              "name": "upload_to_minio",
+              "value": "={{ $('When Executed by Another Workflow').first().json.upload_to_minio }}"
             }
           ]
         },
@@ -34,24 +44,38 @@
       "typeVersion": 4.2,
       "position": [
         624,
-        256
+        208
       ],
       "id": "f9f5c77e-67be-40b3-84d1-04b0e43b51e1",
-      "name": "Compile Final Video"
+      "name": "Compile Final Video",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').first().json.api_url }}/combine-videos-status/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').first().json.api_url }}/combine-videos-status/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         624,
-        512
+        464
       ],
       "id": "1d16e3cd-4032-492e-8354-a2b2cefdd497",
-      "name": "Status Video Check"
+      "name": "Status Video Check",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -139,24 +163,32 @@
       "typeVersion": 3.2,
       "position": [
         832,
-        496
+        448
       ],
       "id": "41a83e00-ee87-4b65-8600-ef3497b70acc",
       "name": "Check video request status"
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').first().json.api_url }}/combine-videos-result/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').first().json.api_url }}/combine-videos-result/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1056,
-        480
+        1040,
+        432
       ],
       "id": "808b662c-793d-4679-b6d1-c392fdee110d",
-      "name": "Get Final Video"
+      "name": "Get Final Video",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -174,11 +206,14 @@
               "type": "number"
             },
             {
+              "name": "video_type"
+            },
+            {
               "name": "include_intro_outro",
               "type": "boolean"
             },
             {
-              "name": "include_epoch_in_output",
+              "name": "upload_to_minio",
               "type": "boolean"
             }
           ]
@@ -187,8 +222,8 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        0,
-        -176
+        -16,
+        -160
       ],
       "id": "8a5ae77d-c3c0-48d5-9658-290cdb056015",
       "name": "When Executed by Another Workflow"
@@ -201,7 +236,7 @@
       "typeVersion": 1.1,
       "position": [
         416,
-        512
+        464
       ],
       "id": "d504a5fd-817e-464e-ad1b-e0cc3a36893c",
       "name": "Wait 20 sec",
@@ -288,27 +323,16 @@
     },
     {
       "parameters": {
-        "command": "=sh /sh_files/copy_video.sh --filename {{ $json.filename }}"
-      },
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        1472,
-        0
-      ],
-      "id": "40a783f8-0406-40d3-88ce-139126245d9b",
-      "name": "Execute Command"
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/convert-mp4-to-mp4",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/convert-mp4-to-mp4",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
             {
               "name": "video_file",
-              "value": "={{ $json.stdout }}"
+              "value": "={{ $json.output }}"
             }
           ]
         },
@@ -321,7 +345,13 @@
         0
       ],
       "id": "eb02ad71-ae7f-45fc-bd38-9e981271a09a",
-      "name": "MP4 to MP4 conversion"
+      "name": "MP4 to MP4 conversion",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -352,23 +382,10 @@
       "typeVersion": 2.2,
       "position": [
         416,
-        160
+        128
       ],
       "id": "4ba5b0fb-fc89-48fd-8b9c-c68d8c2b4e2d",
       "name": "If1"
-    },
-    {
-      "parameters": {
-        "command": "=ls n8n_files/img_video_files/epoch_{{ $('When Executed by Another Workflow').item.json.epoch }}"
-      },
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        416,
-        -176
-      ],
-      "id": "9062780e-d530-4e73-8344-863345bbb9d9",
-      "name": "Execute Command1"
     },
     {
       "parameters": {
@@ -383,7 +400,7 @@
             {
               "id": "eb36bd60-8346-489c-81f7-291eb625eab0",
               "name": "file_exists",
-              "value": "={{ $json.stdout.toString().includes($(\"When Executed by Another Workflow\").item.json.output_file_name) }}",
+              "value": "={{ $json.output.toString().includes($(\"When Executed by Another Workflow\").item.json.output_file_name) }}",
               "type": "boolean"
             },
             {
@@ -406,7 +423,7 @@
       "typeVersion": 3.4,
       "position": [
         624,
-        -176
+        -160
       ],
       "id": "7ac20ba0-a467-4b2a-94ba-156405efc222",
       "name": "Edit Fields2"
@@ -440,7 +457,7 @@
       "typeVersion": 2.2,
       "position": [
         832,
-        -176
+        -160
       ],
       "id": "fb6dc559-8557-4f8b-b4eb-f937c73f695e",
       "name": "If"
@@ -469,7 +486,7 @@
       "typeVersion": 3.4,
       "position": [
         1040,
-        -176
+        -160
       ],
       "id": "7083a08e-f5d5-4a39-9a97-87d7a2a6a9a4",
       "name": "Output"
@@ -481,25 +498,11 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        1056,
-        704
+        1040,
+        624
       ],
       "id": "6c0bdef9-e5d8-444e-8d18-ab1cfa31fef5",
       "name": "Stop and Error"
-    },
-    {
-      "parameters": {
-        "executionIdMode": "custom",
-        "customExecutionId": "job_posting"
-      },
-      "type": "CUSTOM.Workflow Variables",
-      "typeVersion": 1,
-      "position": [
-        208,
-        -176
-      ],
-      "id": "7bb9b984-722b-4020-96b3-b8350f946a34",
-      "name": "Workflow Variables"
     },
     {
       "parameters": {
@@ -509,10 +512,91 @@
       "typeVersion": 2,
       "position": [
         1040,
-        256
+        208
       ],
       "id": "622ac558-c7fc-4141-81c9-ca4622d0878a",
       "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7x2kP8hsfNCvf5dY",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7x2kP8hsfNCvf5dY",
+          "cachedResultName": "Get Global Data in JSON Format From Data Tables"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "required_fields": "[\n  \"api_url\"\n]"
+          },
+          "matchingColumns": [
+            "required_fields"
+          ],
+          "schema": [
+            {
+              "id": "required_fields",
+              "displayName": "required_fields",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "687a0b61-01ce-423b-972a-a71a464f765c",
+      "name": "Input Parameters"
+    },
+    {
+      "parameters": {
+        "command": "=ls /n8n_files/video_files/{{ $('When Executed by Another Workflow').item.json.video_type }}-epoch_{{ $('When Executed by Another Workflow').item.json.epoch }}"
+      },
+      "type": "CUSTOM.remoteExecute",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -160
+      ],
+      "id": "dae1df6d-1817-4137-84c9-fc2ba8737391",
+      "name": "Remote Execute",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=bash /sh_files/copy_video.sh --filename {{ $json.filename }}"
+      },
+      "type": "CUSTOM.remoteExecute",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "85663f74-3d14-44fc-8925-6e5f6689db40",
+      "name": "Copy Videos to Combine",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     }
   ],
   "connections": {
@@ -567,7 +651,7 @@
       "main": [
         [
           {
-            "node": "Workflow Variables",
+            "node": "Input Parameters",
             "type": "main",
             "index": 0
           }
@@ -607,7 +691,7 @@
         ],
         [
           {
-            "node": "Execute Command",
+            "node": "Copy Videos to Combine",
             "type": "main",
             "index": 0
           }
@@ -630,17 +714,6 @@
         [
           {
             "node": "Split Out2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute Command": {
-      "main": [
-        [
-          {
-            "node": "MP4 to MP4 conversion",
             "type": "main",
             "index": 0
           }
@@ -676,17 +749,6 @@
         ]
       ]
     },
-    "Execute Command1": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Edit Fields2": {
       "main": [
         [
@@ -716,22 +778,44 @@
         ]
       ]
     },
-    "Workflow Variables": {
+    "Code in JavaScript": {
       "main": [
         [
           {
-            "node": "Execute Command1",
+            "node": "Compile Final Video",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Input Parameters": {
       "main": [
         [
           {
-            "node": "Compile Final Video",
+            "node": "Remote Execute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remote Execute": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy Videos to Combine": {
+      "main": [
+        [
+          {
+            "node": "MP4 to MP4 conversion",
             "type": "main",
             "index": 0
           }
@@ -751,27 +835,16 @@
   },
   "staticData": null,
   "meta": {
-    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51",
+    "templateCredsSetupCompleted": true
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "video_file_name": [
-            "slide-1.mp4"
-          ],
-          "output_file_name": "pseudo_slide-01-05",
-          "epoch": 6,
-          "include_intro_outro": false,
-          "include_epoch_in_output": true
-        }
-      }
-    ]
-  },
-  "versionId": "a0883c0d-bf16-459c-a5d5-8e70d5e0761d",
-  "activeVersionId": null,
-  "versionCounter": 173,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "c258e327-b610-4b63-8114-84724d76f1e1",
+  "activeVersionId": "c258e327-b610-4b63-8114-84724d76f1e1",
+  "versionCounter": 183,
   "triggerCount": 0,
+  "sourceWorkflowId": null,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -788,26 +861,28 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-04-23T02:50:00.599Z",
-      "createdAt": "2026-04-23T02:50:00.599Z",
+      "updatedAt": "2026-05-16T22:32:00.319Z",
+      "createdAt": "2026-05-16T22:32:00.319Z",
       "role": "workflow:owner",
       "workflowId": "66MHT0z3zhiYgblm",
-      "projectId": "r4FxHAXU5mmnE4p2",
+      "projectId": "i6SPWKiaev6Io6So",
       "project": {
-        "updatedAt": "2026-04-23T00:46:33.004Z",
-        "createdAt": "2026-04-23T00:44:53.719Z",
-        "id": "r4FxHAXU5mmnE4p2",
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
       }
     }
   ],
   "versionMetadata": {
-    "name": "Version 7d5b5946",
+    "name": "Version c258e327",
     "description": ""
   },
-  "folder": "Youtube Stream (JNN)"
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
 }

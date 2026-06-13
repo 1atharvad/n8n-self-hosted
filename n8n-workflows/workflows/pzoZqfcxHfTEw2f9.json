@@ -1,0 +1,203 @@
+{
+  "updatedAt": "2026-05-16T22:40:56.986Z",
+  "createdAt": "2026-05-16T22:34:30.574Z",
+  "id": "pzoZqfcxHfTEw2f9",
+  "name": "View Schedule",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "00458114-1597-4217-8b65-dbb8776ade24",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 235982528,
+          "mode": "list",
+          "cachedResultName": "Shifts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=235982528"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "44f012d2-18fc-49e7-b9cd-1346618dc17b",
+      "name": "Get User Weekly Shifts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const shift_list = []\n\nfor (const item of $input.all()) {\n  if (!Boolean(item.json.day_off)) {\n    shift_list.push(`<b>${item.json.weekday}</b>: ${item.json.start_time} to ${item.json.end_time}`);\n  } else {\n    shift_list.push(`<b>${item.json.weekday}</b>: Day Off`);\n  }\n}\n\nreturn {\n  json: {\n    user_id: $('When Executed by Another Workflow').first().json.user_id,\n    schedule: shift_list.join('\\n')\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3152a018-ef97-4c30-8ad2-19150ff6ce4e",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.user_id }}",
+        "text": "=Welcome to the Scheduling System! 👋\n\nHere is your current schedule timings for the week\n\n{{ $json.schedule }}\n\nIf you need help or further instructions, just type /help at any time.\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "92dedd38-1c0f-474a-9bfc-6e7eede68983",
+      "name": "Send a text message",
+      "webhookId": "149bcfdc-0bf2-4914-b180-04392b0b51a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "jWtPMfK1IdxoMBYo",
+          "name": "Telegram account (aetherdrive98_test_bot)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get User Weekly Shifts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Weekly Shifts": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "nodeGroups": [],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "user_id": "7519660825"
+        }
+      }
+    ]
+  },
+  "versionId": "2679de08-6ba6-4d2b-88dd-b35a7e6abbb0",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-05-16T22:34:30.574Z",
+      "createdAt": "2026-05-16T22:34:30.574Z",
+      "role": "workflow:owner",
+      "workflowId": "pzoZqfcxHfTEw2f9",
+      "projectId": "i6SPWKiaev6Io6So",
+      "project": {
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "parentFolder": "Schedule Management System",
+  "parentFolderId": "72Xd3lko9CSEbz5e"
+}

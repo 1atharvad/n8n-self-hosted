@@ -1,0 +1,378 @@
+{
+  "updatedAt": "2026-05-31T19:18:24.257Z",
+  "createdAt": "2026-05-30T05:24:19.438Z",
+  "id": "kWYlADplv47HnBgb",
+  "name": "Scheduler for Youtube Video",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7x2kP8hsfNCvf5dY",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7x2kP8hsfNCvf5dY",
+          "cachedResultName": "Get Global Data in JSON Format From Data Tables"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "required_fields": "[\n  \"api_url\",\n  \"api_key\"\n]"
+          },
+          "matchingColumns": [
+            "required_fields"
+          ],
+          "schema": [
+            {
+              "id": "required_fields",
+              "displayName": "required_fields",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        112
+      ],
+      "id": "59cc2813-c2e0-4d5b-8e73-514aed210019",
+      "name": "Input Parameters"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 15 3,6,9,12,15 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        208
+      ],
+      "id": "50906472-1c23-4b8a-919c-59e8400c879d",
+      "name": "Schedule Trigger (15)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 30 1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        400
+      ],
+      "id": "ea66d04a-034c-4f3e-964d-8e69a75d231b",
+      "name": "Schedule Trigger (30)"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -176
+      ],
+      "id": "e1b986ad-0c00-4011-a5b2-68bb284e6d2c",
+      "name": "Schedule Trigger (0)"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 45 1,4,7,10,13,16 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        16
+      ],
+      "id": "fe305000-628b-4dc1-9928-f16fa50e0060",
+      "name": "Schedule Trigger (45)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "publish",
+        "channel": "jnn:job:queue",
+        "messageData": "{\"data\": \"here\"}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -48
+      ],
+      "id": "add5059e-5c6b-4621-9fc6-ef2ac58e61f2",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "rllwig8hhSor55Ls",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "56069f75-13e7-4b17-b59e-4b6d113ef994",
+              "leftValue": "={{ $json.ready }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        112
+      ],
+      "id": "5c36a302-a26c-4f29-a771-e368b4b67d7d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Input Parameters').item.json.api_url }}/cpu-gate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -16,
+        112
+      ],
+      "id": "aac6e3f3-9d36-4d57-b766-fafc86d4af86",
+      "name": "Check CPU Load",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        112
+      ],
+      "id": "3872ae99-36f6-4e17-bd05-0a15c8296232",
+      "name": "Wait 1 min",
+      "webhookId": "3a46e7df-5a70-4541-af19-df598459c1ea"
+    }
+  ],
+  "connections": {
+    "Input Parameters": {
+      "main": [
+        [
+          {
+            "node": "Check CPU Load",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (15)": {
+      "main": [
+        [
+          {
+            "node": "Input Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (30)": {
+      "main": [
+        [
+          {
+            "node": "Input Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (0)": {
+      "main": [
+        [
+          {
+            "node": "Input Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (45)": {
+      "main": [
+        [
+          {
+            "node": "Input Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 1 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check CPU Load": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1 min": {
+      "main": [
+        [
+          {
+            "node": "Check CPU Load",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 900,
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger (30)": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger (0)": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "39255e55-511e-4740-8d0f-2ae71e0776a2",
+  "activeVersionId": null,
+  "versionCounter": 118,
+  "triggerCount": 2,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-05-30T05:24:19.438Z",
+      "createdAt": "2026-05-30T05:24:19.438Z",
+      "role": "workflow:owner",
+      "workflowId": "kWYlADplv47HnBgb",
+      "projectId": "i6SPWKiaev6Io6So",
+      "project": {
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 39255e55",
+    "description": ""
+  },
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
+}

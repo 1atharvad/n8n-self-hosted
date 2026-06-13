@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-05-16T22:17:57.917Z",
-  "createdAt": "2026-04-23T02:49:57.137Z",
+  "updatedAt": "2026-06-12T18:09:58.521Z",
+  "createdAt": "2026-05-16T22:31:04.307Z",
   "id": "2Kbv7D61qx6QiovN",
   "name": "Job Scrapper",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -24,7 +24,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const maxPages = $input.first().json.maxPages;\nconst pages_scrapped = $('When Executed by Another Workflow').first().json.pages_scrapped;\n\nreturn [...Array(maxPages).keys()].map(x => {\n  return {\n    json: {\n      start: (pages_scrapped + x) * 10,\n      query: $input.first().json.query,\n      before: $input.first().json.before,\n      after: $input.first().json.after\n    }\n  }\n});"
+        "jsCode": "const maxPages = $input.first().json.maxPages;\nconst pages_scrapped = $('Save Variables').first().json.pages_scrapped;\n\nreturn [...Array(maxPages).keys()].map(x => {\n  return {\n    json: {\n      start: (pages_scrapped + x) * 10,\n      query: $input.first().json.query,\n      before: $input.first().json.before,\n      after: $input.first().json.after\n    }\n  }\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -115,19 +115,6 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all()\n  .filter(item =>\n    item.json.output.company_name !== \"Not specified\"\n      && item.json.output.position !== \"Not specified\"\n  )\n  .map(item => {\n    return {\n      json: {\n        ...item.json.output\n      }\n    };\n  });"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -400,
-        160
-      ],
-      "id": "f638f11d-91d7-4c72-9653-7bc3fc7790e9",
-      "name": "Code"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
         "options": {}
@@ -135,8 +122,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -192,
-        160
+        192,
+        176
       ],
       "id": "650e8484-16ba-42a0-b8e6-ba3c65622943",
       "name": "Merge"
@@ -248,19 +235,6 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all()\n  .filter(item =>\n    item.json.output.company_name !== \"Not specified\"\n      && item.json.output.position !== \"Not specified\"\n  )\n  .map(item => {\n    return {\n      json: {\n        ...item.json.output\n      }\n    };\n  });"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -400,
-        560
-      ],
-      "id": "582bb56a-6e3f-498c-a995-2472a0bb2a9f",
-      "name": "Code2"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
         "options": {}
@@ -268,8 +242,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -192,
-        560
+        192,
+        576
       ],
       "id": "ee16a973-bde9-4abb-8f73-134f09ff703d",
       "name": "Merge1"
@@ -282,8 +256,8 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -560,
-        384
+        32,
+        400
       ],
       "id": "1c38716b-5205-44b9-964b-25caac81bd9b",
       "name": "Structured Output Parser1"
@@ -296,8 +270,8 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -560,
-        784
+        32,
+        800
       ],
       "id": "7984f821-b95b-4beb-96b8-f1c322b3d678",
       "name": "Structured Output Parser"
@@ -306,6 +280,10 @@
       "parameters": {
         "workflowInputs": {
           "values": [
+            {
+              "name": "mp4_id",
+              "type": "number"
+            },
             {
               "name": "scrape_by_weekday",
               "type": "boolean"
@@ -325,8 +303,7 @@
               "type": "number"
             },
             {
-              "name": "additional_date",
-              "type": "number"
+              "name": "video_type"
             }
           ]
         }
@@ -339,6 +316,398 @@
       ],
       "id": "c4b38e85-a4a6-4b3c-a88d-9db012a29888",
       "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "30ecdb3c-8557-42ee-b8c6-0e34dfa850c5",
+              "leftValue": "={{ $('Total Job Scrapped').item.json.all_jobs_scrapped }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -736,
+        992
+      ],
+      "id": "3ed76451-0afe-4e6d-a2dc-c3b052929bcf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "maxItems": "={{ $('When Executed by Another Workflow').first().json.num_of_jobs }}"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        992
+      ],
+      "id": "180dbce0-502b-4842-9d2b-49a84efd0613",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f6b3272-394b-4262-941b-2453e98f5933",
+              "name": "num_job_scrapped",
+              "value": "={{ $('Total Job Scrapped').first().json.total_jobs_scrapped }}",
+              "type": "number"
+            },
+            {
+              "id": "6a918710-feac-4835-83cc-1a8da5e00d10",
+              "name": "pages_scrapped",
+              "value": "={{ $json.pages_scrapped }}",
+              "type": "number"
+            },
+            {
+              "id": "393afc07-d5f3-4e62-bd07-1694c181c65a",
+              "name": "first_job_id",
+              "value": "={{ $('Save Job Listings').first().json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        992
+      ],
+      "id": "50711867-30e9-4e21-a86f-4c0a3c8b03b4",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6d3c506-5783-4575-a3ac-784d52fb745b",
+              "name": "portal",
+              "value": "={{ $json.job_portal }}",
+              "type": "string"
+            },
+            {
+              "id": "a63a9632-1e69-45bc-ae60-874e88bc5fe5",
+              "name": "jobs_completed",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "7d31ea95-bc7d-470e-9eb5-9938a669db24",
+              "name": "pages_scrapped",
+              "value": "={{ $('When Executed by Another Workflow').item.json.pages_scrapped }}",
+              "type": "number"
+            },
+            {
+              "id": "fe5546db-9358-494b-ab85-d8dc5467d6b1",
+              "name": "maxPages",
+              "value": "={{ $json.maxPages }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1824,
+        448
+      ],
+      "id": "967df18a-f8ca-46c5-bfe7-692d59543c85",
+      "name": "Save Variables"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "2Kbv7D61qx6QiovN",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/2Kbv7D61qx6QiovN",
+          "cachedResultName": "Job Scrapper"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "pages_scrapped": "={{ $('Total Job Scrapped').first().json.pages_scrapped }}",
+            "num_of_jobs": "={{ $('Total Job Scrapped').first().json.remaining_job_count }}",
+            "weekday": "={{ $('When Executed by Another Workflow').first().json.weekday }}",
+            "scrape_by_weekday": "={{ $('When Executed by Another Workflow').first().json.scrape_by_weekday }}",
+            "job_portal": "={{ $('When Executed by Another Workflow').first().json.job_portal }}",
+            "mp4_id": "={{ $('When Executed by Another Workflow').first().json.mp4_id }}",
+            "video_type": "={{ $('When Executed by Another Workflow').first().json.video_type }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "mp4_id",
+              "displayName": "mp4_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "scrape_by_weekday",
+              "displayName": "scrape_by_weekday",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            },
+            {
+              "id": "job_portal",
+              "displayName": "job_portal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "weekday",
+              "displayName": "weekday",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "pages_scrapped",
+              "displayName": "pages_scrapped",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "num_of_jobs",
+              "displayName": "num_of_jobs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "video_type",
+              "displayName": "video_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        1216
+      ],
+      "id": "207b173b-d9d7-44a1-8f9b-68179fd4185a",
+      "name": "Call 'Job Scrapper'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7aef1f07-e908-4f7e-bb91-d4d930cff4a3",
+              "name": "num_job_scrapped",
+              "value": "={{ $json.num_job_scrapped + $('Total Job Scrapped').item.json.total_jobs_scrapped }}",
+              "type": "number"
+            },
+            {
+              "id": "90367922-9909-406b-a2b1-5635fb82944e",
+              "name": "pages_scrapped",
+              "value": "={{ $json.pages_scrapped }}",
+              "type": "number"
+            },
+            {
+              "id": "4b34ce2d-00d2-47df-bf90-9f1f6d856c4a",
+              "name": "first_job_id",
+              "value": "={{ $('Save Job Listings').first().json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        1216
+      ],
+      "id": "47a65e63-5743-4d72-bafc-c6c179aab3b0",
+      "name": "Output1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the following fields from the text below:\n\n- company_name\n- position\n- location\n- experience_required (in short)\n- skills_required (in short)\n- job_type\n\nText: \"{{ $json.title }}\"\n\nIf the text does not contain enough information, consult this link as reference: **{{ $json.link }}**\n\nReturn the result ONLY as a valid JSON object with double quotes, no extra text or explanations. The JSON should follow this format:\n\n{\n  \"output\":{\n    \"company_name\": \"...\",\n    \"position\": \"...\",\n    \"location\": \"...\",\n    \"experience_required: \"...\",\n    \"skills_required\": \"...\",\n    \"job_type\": \"...\"\n  }\n}\n\nRules:\n1. If a field is missing, return \"Not specified\" for consistency.\n2. Keep all keys exactly as shown.\n3. Do not include any extra text outside the JSON object.\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        176
+      ],
+      "id": "bdb701aa-1a23-4b9c-bf2c-8ca079753b1b",
+      "name": "Extract details for Intershala, Foundit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the following fields from the text below:\n\n- experience_required (in years, short format)\n- skills_required (list of specific keywords/technologies separated by commas)\n- job_type (Full-time, Part-time, Contract, etc.)\n\nText: \"{{ $json.title }}\"\nJob Description: `{{ $json.job_description }}`\n\nReturn the result ONLY as a valid JSON object with double quotes, no extra text or explanations. The JSON should follow this format:\n\n{\n  \"output\": {\n    \"experience_required\": \"\",\n    \"skills_required\": \"\",\n    \"job_type\": \"\"\n  }\n}\n\nRules:\n1. For skills_required: Extract specific technical keywords separated by commas (e.g., \"Python, React, AWS, Machine Learning, Docker\"). Return as a single string.\n2. For experience_required: Return as \"X+ years\" or \"Not specified\"\n3. For job_type: Return standard format (Full-time, Part-time, Contract, Temporary, etc.)\n4. If a field is missing, return \"Not specified\"\n5. Keep all keys exactly as shown.\n6. Do not include any extra text outside the JSON object.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        576
+      ],
+      "id": "66101c6a-47c0-4fcc-9514-82cdc75162a6",
+      "name": "Extract details for LinkedIn",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "3Waxi1c8vq2oiZWC",
+          "mode": "list",
+          "cachedResultName": "Job Portals",
+          "cachedResultUrl": "/projects/i6SPWKiaev6Io6So/datatables/3Waxi1c8vq2oiZWC"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name",
+              "keyValue": "={{ $json.portal }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1600,
+        448
+      ],
+      "id": "c2c2d57c-afcd-47c8-b3ab-011470fa2557",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  const site = item.json.site;\n  const inurl = item.json.inurl;\n  const keywords = item.json.keywords;\n  \n  item.json.query = `\n    ${site ? `site:${item.json.site}` : ''}\n    ${inurl ? ` inurl:${inurl}` : ''}\n    ${keywords ? ` ${keywords}` : ''}\n  `.replace(/\\n/g, '').replace(/\\s{2,}/g, ' ');\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        448
+      ],
+      "id": "e54bf761-6c53-41b5-8a61-05d305bdb368",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "errorMessage": "=No Output, try changing keywords in data table \"Job Portals\" in row for \"{{ $('Get row(s)').item.json.name }}\" job portal"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        192,
+        384
+      ],
+      "id": "e36cea8c-eb4b-48dc-90f8-d325ba814cab",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1-nano",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        800
+      ],
+      "id": "be4beee7-184f-4697-aa86-d511d080fc94",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "b7nDnWwy7OrWzTgu",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1-nano",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        400
+      ],
+      "id": "ab1ccb7f-4575-48f1-95c4-0b9fc6544ecb",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "b7nDnWwy7OrWzTgu",
+          "name": "OpenRouter account"
+        }
+      }
     },
     {
       "parameters": {
@@ -367,7 +736,9 @@
             "skills_required": "={{ $json.skills_required }}",
             "job_type": "={{ $json.job_type }}",
             "link": "={{ $json.link }}",
-            "date": "={{ $now.format('yyyy-MM-dd') }}"
+            "date": "={{ $now.format('yyyy-MM-dd') }}",
+            "job_description": "={{ $json.job_description || '' }}",
+            "video_type": "={{ $('When Executed by Another Workflow').first().json.video_type }}"
           },
           "matchingColumns": [
             "id"
@@ -501,6 +872,26 @@
               "display": true,
               "type": "boolean",
               "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_description",
+              "displayName": "job_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "video_type",
+              "displayName": "video_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -512,50 +903,16 @@
       "typeVersion": 2.6,
       "position": [
         -1392,
-        1024
+        992
       ],
-      "id": "32362f10-0bc0-4110-9ff7-0f5e67e6010e",
+      "id": "1af85f14-212b-4760-8aa4-5958d8e4ba71",
       "name": "Save Job Listings",
       "credentials": {
         "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
         }
       }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "30ecdb3c-8557-42ee-b8c6-0e34dfa850c5",
-              "leftValue": "={{ $('Total Job Scrapped').item.json.all_jobs_scrapped }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -528,
-        1024
-      ],
-      "id": "3ed76451-0afe-4e6d-a2dc-c3b052929bcf",
-      "name": "If"
     },
     {
       "parameters": {
@@ -565,229 +922,10 @@
       "typeVersion": 2,
       "position": [
         -1184,
-        1024
+        992
       ],
-      "id": "84f2d862-8b28-4c47-bdfa-93dac8cd86a0",
+      "id": "396fbae3-c122-4279-b0a0-30c582755167",
       "name": "Total Job Scrapped"
-    },
-    {
-      "parameters": {
-        "maxItems": "={{ $('When Executed by Another Workflow').first().json.num_of_jobs }}"
-      },
-      "type": "n8n-nodes-base.limit",
-      "typeVersion": 1,
-      "position": [
-        -1600,
-        1024
-      ],
-      "id": "180dbce0-502b-4842-9d2b-49a84efd0613",
-      "name": "Limit"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "1f6b3272-394b-4262-941b-2453e98f5933",
-              "name": "num_job_scrapped",
-              "value": "={{ $('Total Job Scrapped').first().json.total_jobs_scrapped }}",
-              "type": "number"
-            },
-            {
-              "id": "6a918710-feac-4835-83cc-1a8da5e00d10",
-              "name": "pages_scrapped",
-              "value": "={{ $json.pages_scrapped }}",
-              "type": "number"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -304,
-        1024
-      ],
-      "id": "50711867-30e9-4e21-a86f-4c0a3c8b03b4",
-      "name": "Output"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "f6d3c506-5783-4575-a3ac-784d52fb745b",
-              "name": "portal",
-              "value": "={{ $json.job_portal }}",
-              "type": "string"
-            },
-            {
-              "id": "a63a9632-1e69-45bc-ae60-874e88bc5fe5",
-              "name": "jobs_completed",
-              "value": 0,
-              "type": "number"
-            },
-            {
-              "id": "7d31ea95-bc7d-470e-9eb5-9938a669db24",
-              "name": "pages_scrapped",
-              "value": "={{ $('When Executed by Another Workflow').item.json.pages_scrapped }}",
-              "type": "number"
-            },
-            {
-              "id": "fe5546db-9358-494b-ab85-d8dc5467d6b1",
-              "name": "maxPages",
-              "value": "={{ $json.maxPages }}",
-              "type": "number"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -1824,
-        448
-      ],
-      "id": "967df18a-f8ca-46c5-bfe7-692d59543c85",
-      "name": "Save Variables"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "2Kbv7D61qx6QiovN",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/2Kbv7D61qx6QiovN",
-          "cachedResultName": "Job Scrapper"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "pages_scrapped": "={{ $('Total Job Scrapped').first().json.pages_scrapped }}",
-            "num_of_jobs": "={{ $('Total Job Scrapped').first().json.remaining_job_count }}",
-            "weekday": "={{ $('When Executed by Another Workflow').first().json.weekday }}",
-            "scrape_by_weekday": "={{ $('When Executed by Another Workflow').first().json.scrape_by_weekday }}",
-            "job_portal": "={{ $('When Executed by Another Workflow').first().json.job_portal }}",
-            "additional_date": "={{ $('When Executed by Another Workflow').first().json.additional_date }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "scrape_by_weekday",
-              "displayName": "scrape_by_weekday",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
-            },
-            {
-              "id": "job_portal",
-              "displayName": "job_portal",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "weekday",
-              "displayName": "weekday",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "pages_scrapped",
-              "displayName": "pages_scrapped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "num_of_jobs",
-              "displayName": "num_of_jobs",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "additional_date",
-              "displayName": "additional_date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        -304,
-        1248
-      ],
-      "id": "207b173b-d9d7-44a1-8f9b-68179fd4185a",
-      "name": "Call 'Job Scrapper'"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "7aef1f07-e908-4f7e-bb91-d4d930cff4a3",
-              "name": "num_job_scrapped",
-              "value": "={{ $json.num_job_scrapped + $('Total Job Scrapped').item.json.total_jobs_scrapped }}",
-              "type": "number"
-            },
-            {
-              "id": "90367922-9909-406b-a2b1-5635fb82944e",
-              "name": "pages_scrapped",
-              "value": "={{ $json.pages_scrapped }}",
-              "type": "number"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -96,
-        1248
-      ],
-      "id": "47a65e63-5743-4d72-bafc-c6c179aab3b0",
-      "name": "Output1"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        64,
-        736
-      ],
-      "id": "4089503e-53fd-42c3-951d-988fbe95df61",
-      "name": "Hello"
     },
     {
       "parameters": {
@@ -807,7 +945,7 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "id": "={{ $json.id }}",
+            "id": "={{ $('When Executed by Another Workflow').first().json.mp4_id }}",
             "pages_scrapped": "={{ $('Total Job Scrapped').item.json.pages_scrapped }}"
           },
           "matchingColumns": [
@@ -843,6 +981,16 @@
               "type": "number",
               "canBeUsedToMatch": true,
               "removed": true
+            },
+            {
+              "id": "pages_scrapped",
+              "displayName": "pages_scrapped",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "start_time",
@@ -885,14 +1033,54 @@
               "removed": true
             },
             {
-              "id": "pages_scrapped",
-              "displayName": "pages_scrapped",
+              "id": "execution_id",
+              "displayName": "execution_id",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "type": "number",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "num_of_jobs",
+              "displayName": "num_of_jobs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "video_type",
+              "displayName": "video_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -903,366 +1091,95 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -752,
-        1024
-      ],
-      "id": "5344a885-c8f2-45e7-a7b1-627e04fc8ad3",
-      "name": "Update rows in a table",
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "select",
-        "schema": {
-          "__rl": true,
-          "value": "job_listing",
-          "mode": "list",
-          "cachedResultName": "job_listing"
-        },
-        "table": {
-          "__rl": true,
-          "value": "mp4_list",
-          "mode": "list",
-          "cachedResultName": "mp4_list"
-        },
-        "limit": 1,
-        "sort": {
-          "values": [
-            {
-              "column": "id",
-              "direction": "DESC"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
         -960,
-        1024
+        992
       ],
-      "id": "7c4bc528-c4aa-45cf-8df3-36c6c317a156",
-      "name": "Select rows from a table",
+      "id": "5a987072-531c-4d70-a9fd-c61f43372a18",
+      "name": "Update Pages Scrapped Count",
       "credentials": {
         "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
         }
       }
     },
     {
       "parameters": {
-        "promptType": "define",
-        "text": "=Extract the following fields from the text below:\n\n- company_name\n- position\n- location\n- experience_required (in short)\n- skills_required (in short)\n- job_type\n\nText: \"{{ $json.title }}\"\n\nIf the text does not contain enough information, consult this link as reference: **{{ $json.link }}**\n\nReturn the result ONLY as a valid JSON object with double quotes, no extra text or explanations. The JSON should follow this format:\n\n{\n  \"output\":{\n    \"company_name\": \"...\",\n    \"position\": \"...\",\n    \"location\": \"...\",\n    \"experience_required: \"...\",\n    \"skills_required\": \"...\",\n    \"job_type\": \"...\"\n  }\n}\n\nRules:\n1. If a field is missing, return \"Not specified\" for consistency.\n2. Keep all keys exactly as shown.\n3. Do not include any extra text outside the JSON object.\n\n",
-        "hasOutputParser": true,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -736,
-        160
-      ],
-      "id": "bdb701aa-1a23-4b9c-bf2c-8ca079753b1b",
-      "name": "Extract details for Intershala, Foundit"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Extract the following fields from the text below:\n\n- experience_required (in short)\n- skills_required (in short)\n- job_type\n\nText: \"{{ $json.title }}\"\n\nIf the text does not contain enough information, consult this link as reference: **{{ $json.link }}**\n\nReturn the result ONLY as a valid JSON object with double quotes, no extra text or explanations. The JSON should follow this format:\n\n{\n  \"output\": {\n    \"experience_required\": \"\",\n    \"skills_required\": \"\",\n    \"job_type\": \"\"\n  }\n}\n\nRules:\n1. If a field is missing, return \"Not specified\" for consistency.\n2. Keep all keys exactly as shown.\n3. Do not include any extra text outside the JSON object.\n\n",
-        "hasOutputParser": true,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -736,
-        560
-      ],
-      "id": "66101c6a-47c0-4fcc-9514-82cdc75162a6",
-      "name": "Extract details for LinkedIn",
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "dataTableId": {
-          "__rl": true,
-          "value": "a2kziU0XT0UK7qMi",
-          "mode": "list",
-          "cachedResultName": "Job Portals",
-          "cachedResultUrl": "/projects/r4FxHAXU5mmnE4p2/datatables/a2kziU0XT0UK7qMi"
-        },
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "name",
-              "keyValue": "={{ $json.portal }}"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        -1600,
-        448
-      ],
-      "id": "c2c2d57c-afcd-47c8-b3ab-011470fa2557",
-      "name": "Get row(s)"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  const site = item.json.site;\n  const inurl = item.json.inurl;\n  const keywords = item.json.keywords;\n  \n  item.json.query = `\n    ${site ? `site:${item.json.site}` : ''}\n    ${inurl ? ` inurl:${inurl}` : ''}\n    ${keywords ? ` ${keywords}` : ''}\n  `.replace(/\\n/g, '').replace(/\\s{2,}/g, ' ');\n}\n\nreturn $input.all();"
+        "mode": "runOnceForEachItem",
+        "jsCode": "const html = $json.data || \"\";\n\nlet jd = html.match(/<div[^>]*class=\"[^\"]*description__text[^\"]*\"[^>]*>(.*?)<\\/div>/is)?.[1] || '';\n\njd = jd.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\\s+/g, ' ').trim();\n\nreturn {\n  job_description: jd,\n  jd_success: jd.length > 200\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1392,
-        448
+        -560,
+        768
       ],
-      "id": "e54bf761-6c53-41b5-8a61-05d305bdb368",
-      "name": "Code in JavaScript"
+      "id": "19cc3b8e-ee45-4174-8e38-f15176fda4b9",
+      "name": "Extract JD"
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "2Kbv7D61qx6QiovN",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/2Kbv7D61qx6QiovN",
-          "cachedResultName": "Job Scrapper"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "pages_scrapped": "={{ $('When Executed by Another Workflow').first().json.pages_scrapped }}",
-            "num_of_jobs": "={{ $('When Executed by Another Workflow').first().json.num_of_jobs }}",
-            "weekday": "={{ $('When Executed by Another Workflow').first().json.weekday }}",
-            "scrape_by_weekday": "={{ $('When Executed by Another Workflow').first().json.scrape_by_weekday }}",
-            "job_portal": "={{ $('When Executed by Another Workflow').first().json.job_portal }}",
-            "additional_date": "={{ $('When Executed by Another Workflow').first().json.additional_date + 1 }}"
-          },
-          "matchingColumns": [],
-          "schema": [
+        "url": "={{ $json.link.split('?')[0] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "id": "scrape_by_weekday",
-              "displayName": "scrape_by_weekday",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             },
             {
-              "id": "job_portal",
-              "displayName": "job_portal",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
             },
             {
-              "id": "weekday",
-              "displayName": "weekday",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
             },
             {
-              "id": "pages_scrapped",
-              "displayName": "pages_scrapped",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "num_of_jobs",
-              "displayName": "num_of_jobs",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "additional_date",
-              "displayName": "additional_date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        48,
-        288
-      ],
-      "id": "478f6fbc-8f29-4f5a-84f7-4d6ddd89bf26",
-      "name": "Call 'Job Scrapper'1"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "8c318c53-485a-48e6-8738-264b7aaa0017",
-              "leftValue": "={{ $json.additional_date }}",
-              "rightValue": 7,
-              "operator": {
-                "type": "number",
-                "operation": "lte"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -192,
-        368
-      ],
-      "id": "c2ee9bee-3376-46bd-8929-f36e1ad00b4a",
-      "name": "If1"
-    },
-    {
-      "parameters": {
-        "errorMessage": "=No Output, tried with restricted search within 7 days, try changing keywords in data table \"Job Portals\" in row for \"{{ $('Get row(s)').item.json.name }}\" job portal"
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        48,
-        480
-      ],
-      "id": "e36cea8c-eb4b-48dc-90f8-d325ba814cab",
-      "name": "Stop and Error"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "010e7d75-bca3-40e6-87d1-ffecdb4f373e",
-              "name": "additional_date",
-              "value": "={{ $('When Executed by Another Workflow').item.json.additional_date + 1 }}",
-              "type": "number"
+              "name": "Referer",
+              "value": "https://www.google.com/"
             }
           ]
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        -400,
-        368
+        -768,
+        768
       ],
-      "id": "4c021a04-2ef1-49a9-9574-4ddd7d83fceb",
-      "name": "Additional Date Search"
+      "id": "8797c14f-33dc-4b09-a590-af6b4036c38e",
+      "name": "Get Job Details",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "b4971eaa-6ae9-42a6-961b-826cf74a780b",
-              "name": "num_job_scrapped",
-              "value": 0,
-              "type": "number"
-            },
-            {
-              "id": "97586045-1e2e-473d-9bdd-2ac9054b27f3",
-              "name": "pages_scrapped",
-              "value": "={{ $('When Executed by Another Workflow').item.json.pages_scrapped }}",
-              "type": "string"
-            }
-          ]
-        },
+        "mode": "combine",
+        "combineBy": "combineByPosition",
         "options": {}
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
       "position": [
-        288,
-        288
+        -352,
+        672
       ],
-      "id": "6070b8c4-3de1-46a3-b51c-e2df45fefe68",
-      "name": "No Output Default"
+      "id": "5bfc1405-e908-4b10-b5c8-c5ada3dc6ccd",
+      "name": "Merge2"
     },
     {
       "parameters": {
-        "model": "openai/gpt-4.1-nano",
-        "options": {}
+        "jsCode": "return $input.all()\n  .map(item => {\n    const { output, ...rest } = item.json;\n    return {\n      json: {\n        ...rest,\n        ...output\n      }\n    };\n  })\n  .filter(item =>\n    item.json.company_name !== \"Not specified\"\n      && item.json.position !== \"Not specified\"\n  );"
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        -736,
-        784
+        640,
+        768
       ],
-      "id": "be4beee7-184f-4697-aa86-d511d080fc94",
-      "name": "OpenRouter Chat Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "ZOsMSA2673vhlLZX",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "openai/gpt-4.1-nano",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        -736,
-        384
-      ],
-      "id": "ab1ccb7f-4575-48f1-95c4-0b9fc6544ecb",
-      "name": "OpenRouter Chat Model1",
-      "credentials": {
-        "openRouterApi": {
-          "id": "ZOsMSA2673vhlLZX",
-          "name": "OpenRouter account"
-        }
-      }
+      "id": "582bb56a-6e3f-498c-a995-2472a0bb2a9f",
+      "name": "Flatten JSON Output"
     }
   ],
   "connections": {
@@ -1321,12 +1238,12 @@
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "Get Job Details",
             "type": "main",
-            "index": 1
+            "index": 0
           },
           {
-            "node": "Extract details for LinkedIn",
+            "node": "Merge2",
             "type": "main",
             "index": 0
           }
@@ -1349,22 +1266,11 @@
         ]
       ]
     },
-    "Code": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Merge": {
       "main": [
         [
           {
-            "node": "Hello",
+            "node": "Flatten JSON Output",
             "type": "main",
             "index": 0
           }
@@ -1386,7 +1292,7 @@
       "main": [
         [
           {
-            "node": "Additional Date Search",
+            "node": "Stop and Error",
             "type": "main",
             "index": 0
           }
@@ -1407,22 +1313,11 @@
         ]
       ]
     },
-    "Code2": {
-      "main": [
-        [
-          {
-            "node": "Merge1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Merge1": {
       "main": [
         [
           {
-            "node": "Hello",
+            "node": "Flatten JSON Output",
             "type": "main",
             "index": 0
           }
@@ -1462,17 +1357,6 @@
         ]
       ]
     },
-    "Save Job Listings": {
-      "main": [
-        [
-          {
-            "node": "Total Job Scrapped",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "If": {
       "main": [
         [
@@ -1485,17 +1369,6 @@
         [
           {
             "node": "Call 'Job Scrapper'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Total Job Scrapped": {
-      "main": [
-        [
-          {
-            "node": "Select rows from a table",
             "type": "main",
             "index": 0
           }
@@ -1535,44 +1408,11 @@
         ]
       ]
     },
-    "Hello": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Select rows from a table": {
-      "main": [
-        [
-          {
-            "node": "Update rows in a table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update rows in a table": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Extract details for Intershala, Foundit": {
       "main": [
         [
           {
-            "node": "Code",
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
@@ -1583,7 +1423,7 @@
       "main": [
         [
           {
-            "node": "Code2",
+            "node": "Merge1",
             "type": "main",
             "index": 0
           }
@@ -1612,46 +1452,6 @@
         ]
       ]
     },
-    "If1": {
-      "main": [
-        [
-          {
-            "node": "Call 'Job Scrapper'1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Stop and Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Additional Date Search": {
-      "main": [
-        [
-          {
-            "node": "If1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Job Scrapper'1": {
-      "main": [
-        [
-          {
-            "node": "No Output Default",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "OpenRouter Chat Model": {
       "ai_languageModel": [
         [
@@ -1673,6 +1473,88 @@
           }
         ]
       ]
+    },
+    "Save Job Listings": {
+      "main": [
+        [
+          {
+            "node": "Total Job Scrapped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Total Job Scrapped": {
+      "main": [
+        [
+          {
+            "node": "Update Pages Scrapped Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Pages Scrapped Count": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Job Details": {
+      "main": [
+        [
+          {
+            "node": "Extract JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract JD": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Extract details for LinkedIn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Flatten JSON Output": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1687,26 +1569,15 @@
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "scrape_by_weekday": false,
-          "job_portal": "LinkedIn",
-          "weekday": "Monday",
-          "pages_scrapped": 0,
-          "num_of_jobs": 10,
-          "additional_date": 0
-        }
-      }
-    ]
-  },
-  "versionId": "487bde70-3506-48ad-85be-1b4a1c289285",
-  "activeVersionId": null,
-  "versionCounter": 32,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "12166ce2-e2f3-4b25-951d-1d786a498175",
+  "activeVersionId": "12166ce2-e2f3-4b25-951d-1d786a498175",
+  "versionCounter": 286,
   "triggerCount": 0,
+  "sourceWorkflowId": null,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -1723,26 +1594,28 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-04-23T02:49:57.137Z",
-      "createdAt": "2026-04-23T02:49:57.137Z",
+      "updatedAt": "2026-05-16T22:31:04.307Z",
+      "createdAt": "2026-05-16T22:31:04.307Z",
       "role": "workflow:owner",
       "workflowId": "2Kbv7D61qx6QiovN",
-      "projectId": "r4FxHAXU5mmnE4p2",
+      "projectId": "i6SPWKiaev6Io6So",
       "project": {
-        "updatedAt": "2026-04-23T00:46:33.004Z",
-        "createdAt": "2026-04-23T00:44:53.719Z",
-        "id": "r4FxHAXU5mmnE4p2",
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
       }
     }
   ],
   "versionMetadata": {
-    "name": "Version ebfec423",
+    "name": "Version 12166ce2",
     "description": ""
   },
-  "folder": "Youtube Stream (JNN)"
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
 }

@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-05-16T22:13:48.664Z",
-  "createdAt": "2026-04-23T02:50:02.851Z",
+  "updatedAt": "2026-06-13T04:00:45.124Z",
+  "createdAt": "2026-05-16T22:33:14.416Z",
   "id": "HmMxxv4eZOZGzrOl",
   "name": "Video Creation",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -14,6 +14,9 @@
             {
               "name": "template_slide",
               "type": "number"
+            },
+            {
+              "name": "template_file"
             },
             {
               "name": "old_text",
@@ -37,6 +40,9 @@
             {
               "name": "epoch",
               "type": "number"
+            },
+            {
+              "name": "video_type"
             }
           ]
         }
@@ -44,7 +50,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -400,
+        -384,
         176
       ],
       "id": "d4f8a42d-e7d2-408c-8f09-79d6a8b6206c",
@@ -52,7 +58,9 @@
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/img-ext-result/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/img-ext-result/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -62,12 +70,20 @@
         704
       ],
       "id": "22c0f255-8ec6-42aa-a689-22a1e9bb5053",
-      "name": "Get images"
+      "name": "Get images",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/ppt-generator",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/ppt-generator",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "sendBody": true,
         "contentType": "raw",
         "body": "={{ $('When Executed by Another Workflow').item.json }}",
@@ -80,12 +96,20 @@
         176
       ],
       "id": "befec674-e35f-43a1-836f-215cdbfc397e",
-      "name": "Create PPT"
+      "name": "Create PPT",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/extract-slides",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/extract-slides",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -94,7 +118,7 @@
               "value": "={{ $json.file_id }}"
             },
             {
-              "name": "=start_slide",
+              "name": "start_slide",
               "value": "={{ $json.start_slide }}"
             },
             {
@@ -104,6 +128,14 @@
             {
               "name": "total_slides",
               "value": "={{ $json.total_slides }}"
+            },
+            {
+              "name": "epoch",
+              "value": "={{ $('When Executed by Another Workflow').item.json.epoch }}"
+            },
+            {
+              "name": "video_type",
+              "value": "={{ $('When Executed by Another Workflow').item.json.video_type }}"
             }
           ]
         },
@@ -116,7 +148,13 @@
         176
       ],
       "id": "e1decc04-2381-4898-80fe-b3175d8f35c0",
-      "name": "Extract Images"
+      "name": "Extract Images",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -146,19 +184,6 @@
       ],
       "id": "37cec807-51d0-4415-88b4-397096fcb356",
       "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        656,
-        608
-      ],
-      "id": "c9c13db7-968a-4a1c-9470-fcdfed7aed66",
-      "name": "Loop Over Items"
     },
     {
       "parameters": {
@@ -198,7 +223,9 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/convert-to-mp4",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/convert-to-mp4",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -213,6 +240,10 @@
             {
               "name": "epoch",
               "value": "={{ $('When Executed by Another Workflow').item.json.epoch }}"
+            },
+            {
+              "name": "video_type",
+              "value": "={{ $('When Executed by Another Workflow').first().json.video_type }}"
             }
           ]
         },
@@ -226,11 +257,19 @@
       ],
       "id": "a733e245-9ca4-4d1f-a63d-5c4fddc67773",
       "name": "Convert to MP4",
-      "retryOnFail": false
+      "retryOnFail": false,
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/img-ext-status/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/img-ext-status/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -240,7 +279,13 @@
         176
       ],
       "id": "214d5d2a-fcad-40d8-b81b-6934bf884f0d",
-      "name": "Status Image Check"
+      "name": "Status Image Check",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -335,7 +380,9 @@
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/convert-to-mp4-status/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/convert-to-mp4-status/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -345,7 +392,13 @@
         832
       ],
       "id": "75f2ee68-e1e8-4b3a-a71e-d0ef5e591d56",
-      "name": "Status MP4 conversion Check"
+      "name": "Status MP4 conversion Check",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -399,6 +452,31 @@
               },
               "renameOutput": true,
               "outputKey": "Pending"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ad83f56c-c18d-4ebb-ae9a-8f9a04bb5c40",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Failed"
             }
           ]
         },
@@ -411,8 +489,7 @@
         816
       ],
       "id": "e357e26d-ca74-44b3-aa3e-7a4c990ddb45",
-      "name": "Check MP4 conversion request status",
-      "onError": "continueErrorOutput"
+      "name": "Check MP4 conversion request status"
     },
     {
       "parameters": {
@@ -527,20 +604,7 @@
     },
     {
       "parameters": {
-        "command": "=ls n8n_files/img_video_files/"
-      },
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        240,
-        -48
-      ],
-      "id": "be32ef55-c9c6-4069-afb7-6d64db1afbae",
-      "name": "Execute Command"
-    },
-    {
-      "parameters": {
-        "jsCode": "const batch_size = $('When Executed by Another Workflow').first().json.batch_size;\nconst initial_point = $('When Executed by Another Workflow').first().json.initial_point;\nconst total_slides = $('Create PPT').first().json.total_slides;\nconst file_name = $('Create PPT').first().json.file_name;\nconst file_list = $input.first().json.stdout;\nconst existing_list = file_list ? file_list.split('\\n').map(video_file => parseInt(video_file.split('.mp4')[0].split('slide-')[1], 10)) : [];\nconst batch_nums = Array.from({length: batch_size}, (_, i) => i + initial_point + 1).filter(num => num <= parseInt(total_slides, 10));\nconst non_exiting_list = batch_nums.filter(num => !existing_list.includes(num));\nconst video_file_list = batch_nums.map(num => `slide-${String(num).padStart(total_slides.length, '0')}.mp4`);\nconst output_file = `pseudo_slide-${String(batch_nums.at(0)).padStart(total_slides.length, '0')}-${String(batch_nums.at(-1)).padStart(total_slides.length, '0')}`;\nconst batch_completed = non_exiting_list.length === 0 || String(file_list).includes(output_file);\n\nreturn {\n  json: {\n    file_id: file_name.split('.')[0],\n    filename: video_file_list,\n    output_file: output_file,\n    batch_completed: batch_completed,\n    start_slide: batch_nums.at(0),\n    end_slide: batch_nums.at(-1),\n    total_slides: parseInt(total_slides, 10)\n  }\n}"
+        "jsCode": "const batch_size = $('When Executed by Another Workflow').first().json.batch_size;\nconst initial_point = $('When Executed by Another Workflow').first().json.initial_point;\nconst total_slides = $('Create PPT').first().json.total_slides;\nconst file_name = $('Create PPT').first().json.file_name;\nconst file_list = $input.first().json.output;\nconst existing_list = file_list ? file_list.split('\\n').map(video_file => parseInt(video_file.split('.mp4')[0].split('slide-')[1], 10)) : [];\nconst batch_nums = Array.from({length: batch_size}, (_, i) => i + initial_point + 1).filter(num => num <= parseInt(total_slides, 10));\nconst non_exiting_list = batch_nums.filter(num => !existing_list.includes(num));\nconst video_file_list = batch_nums.map(num => `slide-${String(num).padStart(total_slides.length, '0')}.mp4`);\nconst output_file = `pseudo_slide-${String(batch_nums.at(0)).padStart(total_slides.length, '0')}-${String(batch_nums.at(-1)).padStart(total_slides.length, '0')}`;\nconst batch_completed = non_exiting_list.length === 0 || String(file_list).includes(output_file);\n\nreturn {\n  json: {\n    file_id: file_name.split('.')[0],\n    filename: video_file_list,\n    output_file: output_file,\n    batch_completed: batch_completed,\n    start_slide: batch_nums.at(0),\n    end_slide: batch_nums.at(-1),\n    total_slides: parseInt(total_slides, 10)\n  }\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -615,25 +679,11 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        1120,
+        1056,
         144
       ],
       "id": "ca2ed347-cb1a-404a-a7a5-43793b736ffa",
       "name": "Stop and Error"
-    },
-    {
-      "parameters": {
-        "executionIdMode": "custom",
-        "customExecutionId": "job_posting"
-      },
-      "type": "CUSTOM.Workflow Variables",
-      "typeVersion": 1,
-      "position": [
-        -176,
-        176
-      ],
-      "id": "103c6ec7-ee57-4975-a25d-f92f620a8ab3",
-      "name": "Workflow Variables"
     },
     {
       "parameters": {
@@ -650,16 +700,93 @@
     },
     {
       "parameters": {
-        "errorMessage": "={{ $json.error }}"
+        "errorMessage": "={{ $json.stderr }}"
       },
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        1312,
+        1280,
         864
       ],
       "id": "343d6951-c8ea-4e59-b382-bdc3f831f6fe",
       "name": "Stop and Error1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7x2kP8hsfNCvf5dY",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7x2kP8hsfNCvf5dY",
+          "cachedResultName": "Get Global Data in JSON Format From Data Tables"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "required_fields": "[\n  \"api_url\"\n]"
+          },
+          "matchingColumns": [
+            "required_fields"
+          ],
+          "schema": [
+            {
+              "id": "required_fields",
+              "displayName": "required_fields",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        176
+      ],
+      "id": "4ac5474e-ecf4-4e58-8f38-36225f12b4fa",
+      "name": "Input Parameters"
+    },
+    {
+      "parameters": {
+        "command": "=dir=\"/n8n_files/video_files/{{ $('When Executed by Another Workflow').item.json.video_type }}-epoch_{{ $('When Executed by Another Workflow').item.json.epoch }}\"\n[ ! -d \"$dir\" ] && exit 0\nfind \"$dir\" -type f ! -name \"*.txt\" | sort | while read f; do   \n  if [ -s \"$f\" ] && ffprobe -v error -i \"$f\" 2>&1 | grep -q \".\"; then     \n    rm \"$f\"\n  else\n    basename \"$f\"\n  fi \ndone"
+      },
+      "type": "CUSTOM.remoteExecute",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "f52b1a94-457c-4398-8a13-16c6d81e823a",
+      "name": "Remote Execute",
+      "alwaysOutputData": false,
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        608
+      ],
+      "id": "84d91dbe-2b02-4606-8d68-e084a937ba54",
+      "name": "Loop Over Items"
     }
   ],
   "connections": {
@@ -667,7 +794,7 @@
       "main": [
         [
           {
-            "node": "Workflow Variables",
+            "node": "Input Parameters",
             "type": "main",
             "index": 0
           }
@@ -694,7 +821,7 @@
             "index": 0
           },
           {
-            "node": "Execute Command",
+            "node": "Remote Execute",
             "type": "main",
             "index": 0
           }
@@ -728,24 +855,6 @@
         [
           {
             "node": "Code in JavaScript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Items": {
-      "main": [
-        [
-          {
-            "node": "Aggregate",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Convert to MP4",
             "type": "main",
             "index": 0
           }
@@ -854,7 +963,8 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "Wait 10 sec": {
@@ -895,17 +1005,6 @@
         [
           {
             "node": "Merge1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute Command": {
-      "main": [
-        [
-          {
-            "node": "Code2",
             "type": "main",
             "index": 0
           }
@@ -957,7 +1056,18 @@
         ]
       ]
     },
-    "Workflow Variables": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Parameters": {
       "main": [
         [
           {
@@ -968,11 +1078,29 @@
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Remote Execute": {
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to MP4",
             "type": "main",
             "index": 0
           }
@@ -992,136 +1120,16 @@
   },
   "staticData": null,
   "meta": {
-    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51",
+    "templateCredsSetupCompleted": true
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "template_slide": 0,
-          "old_text": {
-            "company_name": "{{COMPANY_NAME}}",
-            "position": "{{POSITION}}",
-            "location": "{{LOCATION}}",
-            "experience": "{{EXPERIENCE}}",
-            "skills": "{{SKILLS}}",
-            "job_type": "{{JOB_TYPE}}",
-            "link": "{{LINK}}"
-          },
-          "jobs": [
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner - Computer Science - French - Remote - Global",
-              "location": "Idaho, United States",
-              "experience": "Not specified",
-              "skills": "Data Partner, Computer Science, French language proficiency, Remote work capability",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060677",
-              "audio_file": "6f8fc98f-4503-4897-b939-587fda922d12.wav"
-            },
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner – Computer Science - Remote - North America",
-              "location": "Georgia, United States",
-              "experience": "Not specified",
-              "skills": "Not specified",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-%E2%80%93-computer-science-remote-north-america-at-telus-digital-4303082277",
-              "audio_file": "41416608-033c-4082-816c-d33e2cb62959.wav"
-            },
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner - Computer Science - French - Remote - Global",
-              "location": "Georgia, United States",
-              "experience": "Not specified",
-              "skills": "Computer Science, French language proficiency",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-computer-science-french-remote-global-at-telus-digital-4303060674",
-              "audio_file": "6cfdfce0-77ef-437d-9416-72dd51abe077.wav"
-            },
-            {
-              "company_name": "TELUS Digital",
-              "position": "Data Partner - Chemistry - Remote - North America",
-              "location": "Wyoming, United States",
-              "experience": "Not specified",
-              "skills": "Data analysis, partner management, chemistry knowledge",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/data-partner-chemistry-remote-north-america-at-telus-digital-4303080418",
-              "audio_file": "c6f28537-6ae5-44a3-bde8-78516b315d2e.wav"
-            },
-            {
-              "company_name": "Centene Corporation",
-              "position": "Data Analyst II Healthcare Analytics",
-              "location": "Arizona, United States",
-              "experience": "2+ years of experience in data analysis or related field",
-              "skills": "Data analysis, SQL, Excel, healthcare analytics, problem-solving skills",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/data-analyst-ii-healthcare-analytics-at-centene-corporation-4303074270",
-              "audio_file": "573c946e-0656-4391-9472-87298f1b3d44.wav"
-            },
-            {
-              "company_name": "Mercor",
-              "position": "Data Science Manager",
-              "location": "United States",
-              "experience": "5+ years experience in data science or related field",
-              "skills": "Data science, machine learning, leadership, project management",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/data-science-manager-at-mercor-4298981936",
-              "audio_file": "500c9b9d-a8c4-4d2d-908e-54381c9d5369.wav"
-            },
-            {
-              "company_name": "Humana",
-              "position": "Senior Business Intelligence Engineer",
-              "location": "Arkansas, United States",
-              "experience": "Senior level experience in Business Intelligence or related field",
-              "skills": "Business Intelligence, Data Analysis, SQL, Data Visualization, ETL processes",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/senior-business-intelligence-engineer-at-humana-4301406340",
-              "audio_file": "6f819a92-e7c8-4cb3-ac43-7474275a19bc.wav"
-            },
-            {
-              "company_name": "Dacha Corp",
-              "position": "Cyber Warfare Technician",
-              "location": "Stockton, KS",
-              "experience": "Not specified",
-              "skills": "Not specified",
-              "job_type": "Not specified",
-              "link": "https://www.linkedin.com/jobs/view/cyber-warfare-technician-at-dacha-corp-4303058031",
-              "audio_file": "997bec8a-e5ed-4e7b-a977-856a687a8e1e.wav"
-            },
-            {
-              "company_name": "HIRESIGMA",
-              "position": "Senior Machine Learning Engineer",
-              "location": "United States",
-              "experience": "5-8 years",
-              "skills": "Machine learning, Python, data analysis, deep learning frameworks",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/senior-machine-learning-engineer-at-hiresigma-4302765507",
-              "audio_file": "569c4dbb-7eea-453d-b093-8767eac0c169.wav"
-            },
-            {
-              "company_name": "Basis",
-              "position": "Full Stack Engineer",
-              "location": "United States",
-              "experience": "Mid-level (3-5 years)",
-              "skills": "Full Stack Development, JavaScript, React, Node.js, SQL, REST APIs",
-              "job_type": "Full-time",
-              "link": "https://www.linkedin.com/jobs/view/full-stack-engineer-at-basis-4302769551",
-              "audio_file": "8b0d693c-60a7-4c71-97e8-31dddbfb28dc.wav"
-            }
-          ],
-          "date": "2025-08-20",
-          "batch_size": 5,
-          "initial_point": 0,
-          "epoch": 1
-        }
-      }
-    ]
-  },
-  "versionId": "083d19ab-43d5-4508-bd6a-174586eb1388",
-  "activeVersionId": null,
-  "versionCounter": 39,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "0e3bf349-ff98-4678-922c-6891a11c78aa",
+  "activeVersionId": "0e3bf349-ff98-4678-922c-6891a11c78aa",
+  "versionCounter": 204,
   "triggerCount": 0,
+  "sourceWorkflowId": null,
   "tags": [
     {
       "updatedAt": "2025-09-26T07:16:33.839Z",
@@ -1138,26 +1146,28 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-04-23T02:50:02.851Z",
-      "createdAt": "2026-04-23T02:50:02.851Z",
+      "updatedAt": "2026-05-16T22:33:14.416Z",
+      "createdAt": "2026-05-16T22:33:14.416Z",
       "role": "workflow:owner",
       "workflowId": "HmMxxv4eZOZGzrOl",
-      "projectId": "r4FxHAXU5mmnE4p2",
+      "projectId": "i6SPWKiaev6Io6So",
       "project": {
-        "updatedAt": "2026-04-23T00:46:33.004Z",
-        "createdAt": "2026-04-23T00:44:53.719Z",
-        "id": "r4FxHAXU5mmnE4p2",
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
       }
     }
   ],
   "versionMetadata": {
-    "name": "Version af3d36f0",
+    "name": "Version 0e3bf349",
     "description": ""
   },
-  "folder": "Youtube Stream (JNN)"
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
 }

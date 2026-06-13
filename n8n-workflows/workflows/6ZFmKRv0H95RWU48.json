@@ -1,0 +1,1371 @@
+{
+  "updatedAt": "2026-05-16T22:41:43.970Z",
+  "createdAt": "2026-05-16T22:32:18.449Z",
+  "id": "6ZFmKRv0H95RWU48",
+  "name": "Shift Notification System",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -976,
+        176
+      ],
+      "id": "7b3407a2-8798-45a2-85fb-4704466b6928",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const startTimeString = $input.first().json.start_time;\nconst endTimeString = $input.first().json.end_time;\nconst timeZone = $input.first().json.timezone;\nconst now = new Date($now);\n\n// Map timezones to offsets\nconst timezoneOffsets = {\n  'Asia/Kolkata': '+05:30',\n  'America/New_York': '-04:00',\n  'America/Chicago': '-05:00',\n  'America/Denver': '-06:00',\n  'America/Los_Angeles': '-07:00',\n  'UTC': '+00:00',\n};\n\nconst offsetString = timezoneOffsets[timeZone] || '+00:00';\nconst offsetParts = offsetString.match(/([+-])(\\d{2}):(\\d{2})/);\nconst sign = offsetParts[1] === '+' ? 1 : -1;\nconst offsetMinutes = sign * (parseInt(offsetParts[2]) * 60 + parseInt(offsetParts[3]));\nconst currentOffsetTime = new Date(now.getTime() + offsetMinutes * 60 * 1000);\n\nconst pad = (n) => String(n).padStart(2, '0');\nconst yyyy = currentOffsetTime.getFullYear();\nconst mm = pad(currentOffsetTime.getMonth() + 1);\nconst dd = pad(currentOffsetTime.getDate());\nconst hh = pad(currentOffsetTime.getHours());\nconst mi = pad(currentOffsetTime.getMinutes());\nconst ss = pad(currentOffsetTime.getSeconds());\n\nconst [startHour, startMinute] = startTimeString.split(':').map(Number);\nconst [endHour, endMinute] = endTimeString.split(':').map(Number);\nconst isoStartTime = `${yyyy}-${mm}-${dd}T${pad(startHour)}:${pad(startMinute)}:00${offsetString}`;\nconst isoEndTime = `${yyyy}-${mm}-${dd}T${pad(endHour)}:${pad(endMinute)}:00${offsetString}`;\nconst isoCurrentTime = `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}${offsetString}`;\n\nreturn [\n  {\n    json: {\n      user_id: $input.first().json.user_id,\n      selected_time_zone: timeZone,\n      formatted_date: $input.first().json.formattedDate,\n      start_time: `${pad(startHour)}:${pad(startMinute)}`,\n      end_time: `${pad(endHour)}:${pad(endMinute)}`,\n      iso_start_time: isoStartTime,\n      iso_end_time: isoEndTime,\n      current_time: `${hh}:${mi}`,\n      iso_current_time: isoCurrentTime\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        192
+      ],
+      "id": "c4f4938d-256c-4d51-8dfd-3309cb676059",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        192
+      ],
+      "id": "30ce5c54-afa2-43ef-990e-baf53a95af22",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e051c73f-e9ec-45ad-86ef-f5301fd672ce",
+              "leftValue": "={{ $json.day_off }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        192
+      ],
+      "id": "9a1374e5-dae3-4a63-a719-d2e53b88da66",
+      "name": "is_day_off"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1cc7e25d-2ac6-4b95-aafe-dcd986c976d3",
+              "leftValue": "={{ $json.startTimeDifference.minutes }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "90835a2b-8514-4c44-b548-872d46240ad7",
+              "leftValue": "={{ $json.startTimeDifference.minutes }}",
+              "rightValue": 120,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "f9222028-ace2-48d7-b2ba-403f598b9411",
+              "leftValue": "={{ $json.endTimeDifference.minutes }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        496
+      ],
+      "id": "8e5fe628-56a3-49d4-88e8-aa839d09719a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1232,
+        320
+      ],
+      "id": "826cea5e-64be-4efd-9d4c-38bbcd8a0ddf",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.user_id || $('If').item.json.user_id }}",
+        "text": "=Hi Intern 👋,\n\nYour shift for today started at {{ $('If').item.json.start_time }}. The current time is {{ $('If').item.json.current_time }}.\n\nCould you please confirm if you've started working?\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2256,
+        496
+      ],
+      "id": "a728c704-5bb6-4cf9-9647-536a329ea502",
+      "name": "Send a text message",
+      "webhookId": "7b2657bd-d28e-4fd1-b623-12eb9b1a862f",
+      "credentials": {
+        "telegramApi": {
+          "id": "jWtPMfK1IdxoMBYo",
+          "name": "Telegram account (aetherdrive98_test_bot)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getTimeBetweenDates",
+        "startDate": "={{ $json.iso_start_time }}",
+        "endDate": "={{ $json.iso_current_time }}",
+        "units": [
+          "minute"
+        ],
+        "outputFieldName": "startTimeDifference",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        192
+      ],
+      "id": "6bcd9e32-30fd-4bac-b2c8-1fe7d31d3def",
+      "name": "Start Time Diff"
+    },
+    {
+      "parameters": {
+        "operation": "getTimeBetweenDates",
+        "startDate": "={{ $json.iso_end_time }}",
+        "endDate": "={{ $json.iso_current_time }}",
+        "units": [
+          "minute"
+        ],
+        "outputFieldName": "endTimeDifference",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        16
+      ],
+      "id": "2c168cd3-5088-4a61-b547-a5d817039f51",
+      "name": "End Time Diff"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e16a99cd-1232-418e-8641-79d942b19d51",
+              "leftValue": "={{ $json.endTimeDifference.minutes }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "be83abdc-9662-429a-90c5-0c897fa757a1",
+              "leftValue": "={{ $json.endTimeDifference.minutes }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        336
+      ],
+      "id": "32e26a5b-9e74-4b5b-a12e-cdb69d9995a9",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.user_id }}",
+        "text": "=Hi Intern 👋,\n\nYour shift for today ended at {{ $('If1').item.json.end_time }}. The current time is {{ $('If1').item.json.current_time }}.\n\nCould you please confirm if you've ended working for today?\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2064,
+        288
+      ],
+      "id": "e7604b1a-7eab-4759-beab-1ba90c184b50",
+      "name": "Send a text message1",
+      "webhookId": "7b2657bd-d28e-4fd1-b623-12eb9b1a862f",
+      "credentials": {
+        "telegramApi": {
+          "id": "jWtPMfK1IdxoMBYo",
+          "name": "Telegram account (aetherdrive98_test_bot)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "includeInputFields": true,
+          "timezone": "={{ $json.timezone }}"
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        560
+      ],
+      "id": "389c9e5e-91df-4570-a014-17b95d1965e1",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7066cb7-2c6d-43cd-a6e7-4cdb08e597c0",
+              "name": "timezone",
+              "value": "['Asia/Kolkata', 'America/Chicago']",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -768,
+        320
+      ],
+      "id": "8b3a142e-53c2-4d80-8c14-405d24733c89",
+      "name": "Timezones"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "timezone",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        320
+      ],
+      "id": "785b982c-4091-4109-a97e-9ae3f1a397e1",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "const weekday_list = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\n\nfor (const item of $input.all()) {\n  const date = item.json.currentDate;\n  const [year, month, day] = date.split('T')[0].split('-').map(Number);\n  item.json.formattedDate = date.split('T')[0]\n  item.json.weekday = weekday_list[new Date(year, month - 1, day).getUTCDay()]\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        560
+      ],
+      "id": "3d7d2fee-04f2-4002-b7bf-15b0bfdb8e08",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -576,
+        112
+      ],
+      "id": "ecdde924-3aaa-4742-b7b5-32bf784f1124",
+      "name": "Get User Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "timezone",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -192,
+        192
+      ],
+      "id": "87fd31d7-b92a-4884-b8d2-41f5182c8c8c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 235982528,
+          "mode": "list",
+          "cachedResultName": "Shifts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=235982528"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "weekday",
+              "lookupValue": "={{ $json.weekday }}"
+            },
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        0,
+        192
+      ],
+      "id": "4aac962d-7693-40df-aef5-047fc6d014b6",
+      "name": "Get Shift Details",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.result.chat.id }}",
+            "latest_question_summary": "=Check if the intern confirms if they have started working on {{ $now.format('yyyy-MM-dd') }} started at {{ $('If').item.json.start_time }} (timesheet entry)."
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_name",
+              "displayName": "team_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_lead_name",
+              "displayName": "team_lead_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_id",
+              "displayName": "team_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_lead_id",
+              "displayName": "team_lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "latest_question_summary",
+              "displayName": "latest_question_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2464,
+        496
+      ],
+      "id": "49c9eaa7-c8a0-440b-8ca0-35cf0871e294",
+      "name": "Update Question Summary for Shift",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.result.chat.id }}",
+            "latest_question_summary": "=Check if the intern confirms if they have ended working on {{ $now.format('yyyy-MM-dd') }} at {{ $('If1').item.json.end_time }} (timesheet entry)."
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_name",
+              "displayName": "team_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_lead_name",
+              "displayName": "team_lead_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_id",
+              "displayName": "team_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "team_lead_id",
+              "displayName": "team_lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "latest_question_summary",
+              "displayName": "latest_question_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2240,
+        288
+      ],
+      "id": "c987501f-6abe-44fc-96fb-19e9db72029a",
+      "name": "Update Question Summary for End of Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e041a28-4b7c-49de-bbcc-fbace6a57e1f",
+              "name": "user_id",
+              "value": "={{ $json.user_id }}",
+              "type": "number"
+            },
+            {
+              "id": "26aa4601-8af5-4e19-9c8b-8102516430a2",
+              "name": "timezone",
+              "value": "={{ $json.timezone }}",
+              "type": "string"
+            },
+            {
+              "id": "e21aeb9d-97c5-4274-96cd-2ae3deadd41d",
+              "name": "formattedDate",
+              "value": "={{ $json.formattedDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "edccbb0e-3d49-4ebf-94a6-2b54b5fef0ce",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "user_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        208,
+        192
+      ],
+      "id": "682e4906-fe19-40b7-bdb7-bfee336480e8",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9b67399d-3ef3-402e-a6db-3c03a7ebf05b",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "24113160-54b7-45ee-a040-7c51905c70ce",
+              "leftValue": "={{ $json.start_time }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2064,
+        496
+      ],
+      "id": "37168883-6b6a-4aad-90e2-380eb90764e7",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 887784209,
+          "mode": "list",
+          "cachedResultName": "Timesheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=887784209"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            },
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $json.formatted_date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1856,
+        496
+      ],
+      "id": "ce9bcf89-5ee1-42f3-bb4f-e6dbae07c133",
+      "name": "Get Timesheet Entry",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM",
+          "mode": "list",
+          "cachedResultName": "Intern List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 887784209,
+          "mode": "list",
+          "cachedResultName": "Timesheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aSbdKBykS2tU1gDdx-KRz9D7SdH8AAK3dmvdb7Ta_DM/edit#gid=887784209"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "user_id",
+              "lookupValue": "={{ $json.user_id }}"
+            },
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $json.formatted_date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1648,
+        288
+      ],
+      "id": "fd5cfe2c-8537-41f0-b66a-29857f52b122",
+      "name": "Get Timesheet Entry1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AEguwTTY1RKTQyzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9b67399d-3ef3-402e-a6db-3c03a7ebf05b",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "24113160-54b7-45ee-a040-7c51905c70ce",
+              "leftValue": "={{ $json.end_time }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1856,
+        288
+      ],
+      "id": "1328809a-14ad-42d8-b86a-eaa118cc0e32",
+      "name": "If4"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Timezones",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Start Time Diff",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "End Time Diff",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "is_day_off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is_day_off": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get Timesheet Entry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Update Question Summary for Shift",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Time Diff": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "End Time Diff": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get Timesheet Entry1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Update Question Summary for End of Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Timezones": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get User Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Get Shift Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Shift Details": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Update Question Summary for Shift": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Question Summary for End of Sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Timesheet Entry": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Timesheet Entry1": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "e63a5cb3-adc6-4009-9d8f-8901f5818591",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2025-09-14T06:12:46.206Z",
+      "createdAt": "2025-09-14T06:12:46.206Z",
+      "id": "wunuXZrNVStaIVXs",
+      "name": "Sub-Process"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-05-16T22:32:18.449Z",
+      "createdAt": "2026-05-16T22:32:18.449Z",
+      "role": "workflow:owner",
+      "workflowId": "6ZFmKRv0H95RWU48",
+      "projectId": "i6SPWKiaev6Io6So",
+      "project": {
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
+        "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  },
+  "parentFolder": "Schedule Management System",
+  "parentFolderId": "72Xd3lko9CSEbz5e"
+}

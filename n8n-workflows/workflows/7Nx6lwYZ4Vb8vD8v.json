@@ -1,22 +1,28 @@
 {
-  "updatedAt": "2026-05-16T22:18:56.292Z",
-  "createdAt": "2026-04-23T02:50:01.719Z",
+  "updatedAt": "2026-05-31T17:39:46.695Z",
+  "createdAt": "2026-05-16T22:32:31.332Z",
   "id": "7Nx6lwYZ4Vb8vD8v",
   "name": "Text to Voice Converter",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $json.api_url }}/vtt-generate-audio-bytes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
             {
               "name": "text",
               "value": "={{ $('When Executed by Another Workflow').item.json.text }}"
+            },
+            {
+              "name": "voice",
+              "value": "am_michael"
             }
           ]
         },
@@ -31,7 +37,13 @@
       "id": "29dd8e24-4f09-4eb2-b991-38d778c9b11a",
       "name": "Request Test to Audio Conversion",
       "retryOnFail": false,
-      "executeOnce": false
+      "executeOnce": false,
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -49,7 +61,9 @@
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').first().json.api_url }}/vtt-status/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').first().json.api_url }}/vtt-status/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -59,7 +73,13 @@
         -32
       ],
       "id": "c417df61-b5ae-4503-afc3-506fd6c3fe97",
-      "name": "Status Check"
+      "name": "Status Check",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -154,7 +174,9 @@
     },
     {
       "parameters": {
-        "url": "={{ $('Workflow Variables').item.json.api_url }}/vtt-result/{{ $json.job_id }}",
+        "url": "={{ $('Input Parameters').item.json.api_url }}/vtt-result/{{ $json.job_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "fastApiServerApi",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -164,7 +186,13 @@
         -32
       ],
       "id": "5006196a-3524-4a49-927d-93ff96b23145",
-      "name": "Get audio file"
+      "name": "Get audio file",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     },
     {
       "parameters": {
@@ -187,20 +215,6 @@
     },
     {
       "parameters": {
-        "executionIdMode": "custom",
-        "customExecutionId": "job_posting"
-      },
-      "type": "CUSTOM.Workflow Variables",
-      "typeVersion": 1,
-      "position": [
-        400,
-        -32
-      ],
-      "id": "a7b24b53-449e-440b-8261-e801ded6c5f3",
-      "name": "Workflow Variables"
-    },
-    {
-      "parameters": {
         "errorMessage": "={{ $json.error }}"
       },
       "type": "n8n-nodes-base.stopAndError",
@@ -211,6 +225,49 @@
       ],
       "id": "1a3ed8c7-51ef-4336-880a-9a000da97cc1",
       "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7x2kP8hsfNCvf5dY",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7x2kP8hsfNCvf5dY",
+          "cachedResultName": "Get Global Data in JSON Format From Data Tables"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "required_fields": "[\n  \"api_url\"\n]"
+          },
+          "matchingColumns": [
+            "required_fields"
+          ],
+          "schema": [
+            {
+              "id": "required_fields",
+              "displayName": "required_fields",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": true,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "abd56c6d-46c7-4840-b886-4d9c90579949",
+      "name": "Input Parameters"
     }
   ],
   "connections": {
@@ -276,14 +333,14 @@
       "main": [
         [
           {
-            "node": "Workflow Variables",
+            "node": "Input Parameters",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Workflow Variables": {
+    "Input Parameters": {
       "main": [
         [
           {
@@ -305,57 +362,53 @@
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "de331dec9aaf376116316c7d9bea9774d15e0352e57dad758565adefb9561776"
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51"
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "text": "It was 7 minutes after midnight. The dog was lying on the grass in the middle of the lawn in front of Mrs Shears’ house. Its eyes were closed. It looked as if it was running on its side, the way dogs run when they think they are chasing a cat in a dream."
-        }
-      }
-    ]
-  },
-  "versionId": "bdab2878-4482-4ae3-907f-34bf6c85c6a4",
-  "activeVersionId": null,
-  "versionCounter": 20,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "a516547f-7d8d-4c01-8f54-7f712747875f",
+  "activeVersionId": "a516547f-7d8d-4c01-8f54-7f712747875f",
+  "versionCounter": 78,
   "triggerCount": 0,
+  "sourceWorkflowId": null,
   "tags": [
-    {
-      "updatedAt": "2025-09-26T07:16:33.839Z",
-      "createdAt": "2025-09-26T07:16:33.839Z",
-      "id": "ens6dG0mnb19cVTi",
-      "name": "Sub-Workflow"
-    },
     {
       "updatedAt": "2026-05-16T22:08:55.159Z",
       "createdAt": "2026-05-16T22:08:55.159Z",
       "id": "uRLukwQ6lXVe1ia9",
       "name": "F-JNN"
+    },
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
     }
   ],
   "shared": [
     {
-      "updatedAt": "2026-04-23T02:50:01.719Z",
-      "createdAt": "2026-04-23T02:50:01.719Z",
+      "updatedAt": "2026-05-16T22:32:31.332Z",
+      "createdAt": "2026-05-16T22:32:31.332Z",
       "role": "workflow:owner",
       "workflowId": "7Nx6lwYZ4Vb8vD8v",
-      "projectId": "r4FxHAXU5mmnE4p2",
+      "projectId": "i6SPWKiaev6Io6So",
       "project": {
-        "updatedAt": "2026-04-23T00:46:33.004Z",
-        "createdAt": "2026-04-23T00:44:53.719Z",
-        "id": "r4FxHAXU5mmnE4p2",
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
       }
     }
   ],
   "versionMetadata": {
-    "name": "Version 06fb7d76",
+    "name": "Version a516547f",
     "description": ""
   },
-  "folder": "Youtube Stream (JNN)"
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
 }

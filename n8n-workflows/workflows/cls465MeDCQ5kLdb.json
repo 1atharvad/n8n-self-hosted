@@ -1,25 +1,12 @@
 {
-  "updatedAt": "2026-05-16T22:10:03.715Z",
-  "createdAt": "2026-04-28T18:12:32.549Z",
+  "updatedAt": "2026-06-13T00:19:38.082Z",
+  "createdAt": "2026-05-16T22:33:53.000Z",
   "id": "cls465MeDCQ5kLdb",
   "name": "Cleanup & Reset Database",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
-    {
-      "parameters": {
-        "command": "sh /sh_files/cleanup.sh --confirm"
-      },
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        -16,
-        80
-      ],
-      "id": "7d531d0c-dd5f-4df6-8f15-dc6f968ff7cd",
-      "name": "Folder files cleanup"
-    },
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
@@ -34,28 +21,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "TRUNCATE TABLE job_listing.mp4_list RESTART IDENTITY CASCADE;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        -432,
-        -16
-      ],
-      "id": "68fa1245-356a-4cb9-a349-4c63b18a0baa",
-      "name": "Delete from Mp4List",
-      "credentials": {
-        "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "TRUNCATE TABLE job_listing.job_links RESTART IDENTITY CASCADE;",
+        "query": "-- Delete today's data\nDELETE FROM job_listing.job_links \nWHERE date = CURRENT_DATE;\n\n-- Reset the sequence to the next available ID\nSELECT setval('job_listing.job_links_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM job_listing.job_links));",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
@@ -68,8 +34,29 @@
       "name": "Delete from JobLinks",
       "credentials": {
         "postgres": {
-          "id": "shW2iHfLRrHL9cFY",
-          "name": "Postgres account"
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Delete today's data\nDELETE FROM job_listing.mp4_list \nWHERE date = CURRENT_DATE;\n\n-- Reset the sequence to the next available ID\nSELECT setval('job_listing.mp4_list_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM job_listing.mp4_list));",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -432,
+        -16
+      ],
+      "id": "df9f45aa-57a3-4b7d-b0b8-5329efbceefa",
+      "name": "Delete from Mp4List",
+      "credentials": {
+        "postgres": {
+          "id": "yc7NiS95ggUrE59j",
+          "name": "Postgres account (Server)"
         }
       }
     },
@@ -77,9 +64,7 @@
       "parameters": {
         "rule": {
           "interval": [
-            {
-              "triggerAtHour": 21
-            }
+            {}
           ]
         }
       },
@@ -90,7 +75,26 @@
         176
       ],
       "id": "e6324f67-8683-434c-b2d6-6815775a905b",
-      "name": "Schedule Trigger (at 9PM)"
+      "name": "Schedule Trigger (at Midnight)"
+    },
+    {
+      "parameters": {
+        "command": "bash /sh_files/cleanup.sh --confirm"
+      },
+      "type": "CUSTOM.remoteExecute",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        80
+      ],
+      "id": "ba6ad9d8-e9da-4ffa-a426-4deb4b3b91f9",
+      "name": "Folder files cleanup",
+      "credentials": {
+        "fastApiServerApi": {
+          "id": "md7HjwFndkcEuAZi",
+          "name": "FastAPI Server account"
+        }
+      }
     }
   ],
   "connections": {
@@ -99,17 +103,6 @@
         [
           {
             "node": "Delete from Mp4List",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Delete from Mp4List": {
-      "main": [
-        [
-          {
-            "node": "Delete from JobLinks",
             "type": "main",
             "index": 0
           }
@@ -127,7 +120,18 @@
         ]
       ]
     },
-    "Schedule Trigger (at 9PM)": {
+    "Delete from Mp4List": {
+      "main": [
+        [
+          {
+            "node": "Delete from JobLinks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (at Midnight)": {
       "main": [
         [
           {
@@ -143,13 +147,25 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "staticData": null,
-  "meta": null,
+  "staticData": {
+    "node:Schedule Trigger (at 9PM)": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger (at Midnight)": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "instanceId": "3fcc524a2177e7ddb4a539aaa7c79d9f30b9b0ada55dc8bc7dd873b11ec37e51",
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
   "pinData": {},
-  "versionId": "94545aac-c271-4bca-b895-d2afc919f456",
-  "activeVersionId": null,
-  "versionCounter": 52,
-  "triggerCount": 0,
+  "versionId": "ac0cc5cd-a415-469a-982d-d1a612d065da",
+  "activeVersionId": "ac0cc5cd-a415-469a-982d-d1a612d065da",
+  "versionCounter": 171,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
   "tags": [
     {
       "updatedAt": "2026-05-16T22:08:55.159Z",
@@ -160,26 +176,28 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-04-28T18:12:32.549Z",
-      "createdAt": "2026-04-28T18:12:32.549Z",
+      "updatedAt": "2026-05-16T22:33:53.000Z",
+      "createdAt": "2026-05-16T22:33:53.000Z",
       "role": "workflow:owner",
       "workflowId": "cls465MeDCQ5kLdb",
-      "projectId": "r4FxHAXU5mmnE4p2",
+      "projectId": "i6SPWKiaev6Io6So",
       "project": {
-        "updatedAt": "2026-04-23T00:46:33.004Z",
-        "createdAt": "2026-04-23T00:44:53.719Z",
-        "id": "r4FxHAXU5mmnE4p2",
+        "updatedAt": "2026-05-16T22:27:54.117Z",
+        "createdAt": "2026-05-16T22:26:58.253Z",
+        "id": "i6SPWKiaev6Io6So",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
-        "creatorId": "d151c88d-c353-4d5e-91ee-dd52a5a7fbdc"
+        "customTelemetryTags": [],
+        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
       }
     }
   ],
   "versionMetadata": {
-    "name": null,
-    "description": null
+    "name": "Version ac0cc5cd",
+    "description": ""
   },
-  "folder": "Youtube Stream (JNN)"
+  "parentFolder": "Youtube Stream (JNN)",
+  "parentFolderId": "yX1BtvrIqWbmETdj"
 }
