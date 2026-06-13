@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 
 class TTSRequest(BaseModel):
@@ -47,4 +47,15 @@ class CombineVideosRequest(BaseModel):
 
 
 class ExecuteRequest(BaseModel):
-    command: str
+    command: str | None = None
+    script: str | None = None
+
+    @model_validator(mode="after")
+    def check_exactly_one(self) -> "ExecuteRequest":
+        if not self.command and not self.script:
+            raise ValueError("Either 'command' or 'script' must be provided")
+        if self.command and self.script:
+            raise ValueError(
+                "Only one of 'command' or 'script' may be provided"
+            )
+        return self

@@ -1,6 +1,8 @@
 import asyncio
+import os
 import re
 import shlex
+import tempfile
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
@@ -12,7 +14,6 @@ router = APIRouter(tags=["File Management"])
 _SH_FILES_DIR = "/sh_files/"
 _INTERPRETERS = {"sh", "bash", "python", "python3", "node", "ruby", "perl"}
 
-# Scanned against the full command string including chained segments
 _BLOCKED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     # Subshell / substitution
     (re.compile(r"\$\("), "subshell substitution"),
@@ -70,6 +71,14 @@ _BLOCKED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bnc\b[^;&|\n]*-e\b"), "netcat reverse shell"),
 ]
 
+# Script mode drops $() and backtick checks — normal bash constructs in scripts.
+# All destructive/escalation patterns still apply.
+_BLOCKED_SCRIPT_PATTERNS = [
+    p
+    for p in _BLOCKED_PATTERNS
+    if p[1] not in ("subshell substitution", "backtick substitution")
+]
+
 
 def _validate_command(command: str) -> list[str]:
     try:
@@ -84,7 +93,6 @@ def _validate_command(command: str) -> list[str]:
 
     executable = parts[0]
 
-    # Direct path execution — must be under /sh_files/
     if executable.startswith("/") or executable.startswith("./"):
         if not executable.startswith(_SH_FILES_DIR):
             raise HTTPException(
@@ -92,7 +100,6 @@ def _validate_command(command: str) -> list[str]:
                 detail=f"Script execution is only allowed from {_SH_FILES_DIR}",
             )
 
-    # Block wrappers that re-exec interpreters and bypass the checks above
     if executable in {
         "env",
         "xargs",
@@ -107,7 +114,6 @@ def _validate_command(command: str) -> list[str]:
             detail=f"Wrapper command '{executable}' is not allowed",
         )
 
-    # Interpreter usage — block -c flag and enforce /sh_files/ for any path argument
     if executable in _INTERPRETERS:
         for part in parts[1:]:
             if part == "-c":
@@ -123,7 +129,6 @@ def _validate_command(command: str) -> list[str]:
                     detail=f"Script execution is only allowed from {_SH_FILES_DIR}",
                 )
 
-    # Blocked patterns — scanned against the full command string including chained parts
     for pattern, reason in _BLOCKED_PATTERNS:
         if pattern.search(command):
             raise HTTPException(status_code=403, detail=f"Blocked: {reason}")
@@ -131,15 +136,38 @@ def _validate_command(command: str) -> list[str]:
     return parts
 
 
+def _validate_script(script: str) -> None:
+    for pattern, reason in _BLOCKED_SCRIPT_PATTERNS:
+        if pattern.search(script):
+            raise HTTPException(status_code=403, detail=f"Blocked: {reason}")
+
+
 @router.post('/execute')
 async def execute_command(req: ExecuteRequest):
-    parts = _validate_command(req.command)
-    proc = await asyncio.create_subprocess_exec(
-        *parts,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
+    if req.script is not None:
+        _validate_script(req.script)
+        fd, tmp_path = tempfile.mkstemp(suffix=".sh", dir="/tmp")
+        try:
+            with os.fdopen(fd, "w") as f:
+                f.write(req.script)
+            proc = await asyncio.create_subprocess_exec(
+                "bash",
+                tmp_path,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+        finally:
+            os.unlink(tmp_path)
+    else:
+        parts = _validate_command(req.command)  # type: ignore[arg-type]
+        proc = await asyncio.create_subprocess_exec(
+            *parts,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+
     output = "\n".join(
         filter(None, [stdout.decode().strip(), stderr.decode().strip()])
     )
