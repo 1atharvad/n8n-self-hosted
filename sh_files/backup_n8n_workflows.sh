@@ -182,7 +182,13 @@ if [[ "$COMMIT" = true ]]; then
     fi
     git -C "$PROJECT_ROOT" add n8n-workflows/
     git -C "$PROJECT_ROOT" commit -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')" -- n8n-workflows/
-    git -C "$PROJECT_ROOT" push origin "$BRANCH"
+    ORIGIN=$(git -C "$PROJECT_ROOT" remote get-url origin 2>/dev/null || echo "")
+    if [[ -n "${GIT_TOKEN:-}" && "$ORIGIN" == https://* ]]; then
+      PUSH_URL="https://x-access-token:${GIT_TOKEN}@${ORIGIN#https://}"
+      git -C "$PROJECT_ROOT" push "$PUSH_URL" "$BRANCH"
+    else
+      git -C "$PROJECT_ROOT" push origin "$BRANCH"
+    fi
     echo "✅ Workflows backed up and pushed"
   else
     echo "✅ No changes, nothing to commit"
