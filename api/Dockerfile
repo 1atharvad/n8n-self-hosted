@@ -37,7 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     git \
     docker.io \
- && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+ && git config --global --add safe.directory /workspace
 
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin/uvicorn /usr/local/bin/uvicorn
