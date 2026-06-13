@@ -26,18 +26,27 @@ N8N_CONTAINER="n8n"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 WORKFLOWS_DIR="$PROJECT_ROOT/n8n-workflows/workflows"
-BRANCH=$(git --no-optional-locks -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD)
+BRANCH=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
 echo "📂 Project root: $PROJECT_ROOT"
 echo "🌿 Branch: $BRANCH"
 
+# Detect if git index is writable (read-only in container, writable on host)
+GIT_WRITABLE=false
+if touch "$PROJECT_ROOT/.git/.write_probe" 2>/dev/null; then
+  rm -f "$PROJECT_ROOT/.git/.write_probe"
+  GIT_WRITABLE=true
+fi
+
 # Show any uncommitted workflow changes so user can decide
-DIRTY=$(git --no-optional-locks -C "$PROJECT_ROOT" status --porcelain n8n-workflows 2>/dev/null)
-if [[ -n "$DIRTY" ]]; then
-  echo ""
-  echo "⚠️  You have uncommitted changes in n8n-workflows/:"
-  git --no-optional-locks -C "$PROJECT_ROOT" status --short n8n-workflows
-  echo ""
+if [[ "$GIT_WRITABLE" = true ]]; then
+  DIRTY=$(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows 2>/dev/null)
+  if [[ -n "$DIRTY" ]]; then
+    echo ""
+    echo "⚠️  You have uncommitted changes in n8n-workflows/:"
+    git -C "$PROJECT_ROOT" status --short n8n-workflows
+    echo ""
+  fi
 fi
 
 if [ "$FORCE" = false ]; then
@@ -164,7 +173,9 @@ fi
 
 # Commit and push only if --commit flag is passed and something changed
 if [[ "$COMMIT" = true ]]; then
-  if [[ -n $(git --no-optional-locks -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then
+  if [[ "$GIT_WRITABLE" = false ]]; then
+    echo "⚠️  Git is read-only (container mount) — skipping commit. Run with --commit on the host."
+  elif [[ -n $(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then
     git -C "$PROJECT_ROOT" add n8n-workflows/
     git -C "$PROJECT_ROOT" commit -- n8n-workflows/ -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')"
     git -C "$PROJECT_ROOT" push origin "$BRANCH"
