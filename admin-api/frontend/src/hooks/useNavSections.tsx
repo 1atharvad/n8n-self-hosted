@@ -21,6 +21,11 @@ export const useNavSections = (active: ActivePage): SidebarSection[] => {
         { icon: <Cpu className="h-4 w-4" />, label: 'Performance', onClick: () => navigate('/performance'), active: active === 'performance' },
         { icon: <Network className="h-4 w-4" />, label: 'Infrastructure', onClick: () => navigate('/infrastructure'), active: active === 'infrastructure' },
         { icon: <GitBranch className="h-4 w-4" />, label: 'Workflows', onClick: () => navigate('/workflows'), active: active === 'workflows' },
+      ],
+    },
+    {
+      title: 'Operations',
+      items: [
         { icon: <Rocket className="h-4 w-4" />, label: 'Deployments', onClick: () => navigate('/deployments'), active: active === 'deployments' },
         { icon: <Archive className="h-4 w-4" />, label: 'Backups', onClick: () => navigate('/backups'), active: active === 'backups' },
         { icon: <ShieldCheck className="h-4 w-4" />, label: 'Audit Log', onClick: () => navigate('/audit'), active: active === 'audit' },

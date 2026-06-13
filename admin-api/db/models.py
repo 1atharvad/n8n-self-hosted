@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, JSON, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, JSON, String
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -55,3 +55,27 @@ class AuditLog(Base):
     detail = Column(String(255), nullable=True)
     ip_address = Column(String(45), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now, index=True)
+
+
+class AlertRule(Base):
+    __tablename__ = "alert_rules"
+
+    id = Column(String(36), primary_key=True, default=_new_uuid)
+    name = Column(String(128), nullable=False)
+    type = Column(String(32), nullable=False)  # service_down | cpu_high | backup_stale
+    config = Column(JSON, nullable=False, default=dict)
+    webhook_url = Column(String(512), nullable=False)
+    cooldown_minutes = Column(Integer, nullable=False, default=60)
+    enabled = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
+
+
+class AlertEvent(Base):
+    __tablename__ = "alert_events"
+
+    id = Column(String(36), primary_key=True, default=_new_uuid)
+    rule_id = Column(String(36), nullable=False, index=True)
+    rule_name = Column(String(128), nullable=False)
+    fired_at = Column(DateTime(timezone=True), nullable=False, default=_now, index=True)
+    value = Column(String(256), nullable=False)
+    webhook_status = Column(Integer, nullable=True)

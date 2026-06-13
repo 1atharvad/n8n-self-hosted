@@ -59,6 +59,7 @@ EWMA_ALPHA_DOWN = _env_float("EWMA_ALPHA_DOWN", 0.1)
 COMPOSE_PROJECT = _env_str("COMPOSE_PROJECT_NAME", "n8n-automation")
 SERVER_ID = _env_str("SERVER_ID", socket.gethostname())
 CPU_GATE_THRESHOLD = _env_int("CPU_GATE_THRESHOLD", 65)
+MEDIA_API_URL = _env_str("MEDIA_API_URL", "http://media-api:9374")
 
 BULL_ACTIVE_KEY = "bull:jobs:active"
 REDIS_KEY = f"worker-monitor:metrics:{SERVER_ID}"
@@ -221,6 +222,7 @@ def run():
                 "active_src": active_src,
                 "containers": containers,
                 "container_cpu": cpu_stats,
+                "media_api_url": MEDIA_API_URL,
             })
             r.lpush(REDIS_KEY, snapshot)
             r.ltrim(REDIS_KEY, 0, 199)

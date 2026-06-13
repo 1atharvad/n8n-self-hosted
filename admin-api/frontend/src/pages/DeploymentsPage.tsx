@@ -68,7 +68,9 @@ const DeploymentsPage = () => {
   }, [isConfigured, loadRuns]);
 
   const hasActiveRef = useRef(false);
-  hasActiveRef.current = runs.some((r) => r.status === 'queued' || r.status === 'in_progress');
+  useEffect(() => {
+    hasActiveRef.current = runs.some((r) => r.status === 'queued' || r.status === 'in_progress');
+  }, [runs]);
 
   useEffect(() => {
     if (!isConfigured) return;
