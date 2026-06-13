@@ -1,4 +1,3 @@
-import asyncio
 import os
 from contextlib import asynccontextmanager
 from typing import List
@@ -21,8 +20,6 @@ from env import router as env_router
 from n8n import router as n8n_router
 from logs import router, audit_router
 from health import router as health_router
-from alerts import router as alerts_router
-from alerts.checker import run_alert_checker
 from infrastructure import router as infrastructure_router
 
 
@@ -42,8 +39,6 @@ async def lifespan(app: FastAPI):
     redis_host = os.getenv("REDIS_HOST", "redis")
     redis_port = int(os.getenv("REDIS_PORT", 6379))
     app.state.redis = aioredis.Redis(host=redis_host, port=redis_port, decode_responses=True)
-
-    asyncio.create_task(run_alert_checker(app))
 
     yield
 
@@ -76,5 +71,4 @@ app.include_router(n8n_router)
 app.include_router(env_router)
 app.include_router(backups_router)
 app.include_router(health_router)
-app.include_router(alerts_router)
 app.include_router(infrastructure_router)
