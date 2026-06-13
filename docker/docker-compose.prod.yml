@@ -178,6 +178,7 @@ services:
       - ${HOST_PROJECT_DIR}/n8n_files:/n8n_files
       - ${HOST_PROJECT_DIR}/sh_files:/sh_files
       - ${HOST_PROJECT_DIR}:/workspace:ro
+      - ${HOST_PROJECT_DIR}/n8n-workflows:/workspace/n8n-workflows
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc:/host/proc:ro
     depends_on:

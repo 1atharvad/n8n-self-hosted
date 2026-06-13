@@ -140,10 +140,11 @@ async def execute_command(req: ExecuteRequest):
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
+    output = "\n".join(
+        filter(None, [stdout.decode().strip(), stderr.decode().strip()])
+    )
+    status = 200 if proc.returncode == 0 else 500
     return JSONResponse(
-        {
-            "stdout": stdout.decode(),
-            "stderr": stderr.decode(),
-            "returnCode": proc.returncode,
-        }
+        {"output": output, "returnCode": proc.returncode},
+        status_code=status,
     )
