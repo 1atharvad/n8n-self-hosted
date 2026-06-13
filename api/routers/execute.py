@@ -143,8 +143,8 @@ async def execute_command(req: ExecuteRequest):
     output = "\n".join(
         filter(None, [stdout.decode().strip(), stderr.decode().strip()])
     )
-    status = 200 if proc.returncode == 0 else 500
+    status_code = 200 if proc.returncode == 0 else 500
     return JSONResponse(
         {"output": output, "returnCode": proc.returncode},
-        status_code=status,
+        status_code=status_code,
     )
