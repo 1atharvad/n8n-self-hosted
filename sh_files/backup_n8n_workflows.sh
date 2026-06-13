@@ -176,6 +176,10 @@ if [[ "$COMMIT" = true ]]; then
   if [[ "$GIT_WRITABLE" = false ]]; then
     echo "⚠️  Git is read-only (container mount) — skipping commit. Run with --commit on the host."
   elif [[ -n $(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then
+    if [[ "$BRANCH" == "unknown" ]]; then
+      echo "❌ Cannot determine branch — skipping push. Check git HEAD."
+      exit 1
+    fi
     git -C "$PROJECT_ROOT" add n8n-workflows/
     git -C "$PROJECT_ROOT" commit -- n8n-workflows/ -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')"
     git -C "$PROJECT_ROOT" push origin "$BRANCH"

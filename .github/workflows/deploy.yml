@@ -60,8 +60,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -118,33 +116,10 @@ jobs:
             exit 0
           fi
 
-          # Push event: detect from changed paths across all commits in the push
-          CHANGED=$(git diff ${{ github.event.before }} HEAD --name-only 2>/dev/null || echo '')
-          echo "Changed files:"
-          echo "$CHANGED"
-
-          MAIN_SVCS=""
-          WORKER_SVCS=""
-          FULL=false
-
-          echo "$CHANGED" | grep -q '^admin-api/' && MAIN_SVCS="$MAIN_SVCS admin-api frontend"
-          echo "$CHANGED" | grep -q '^api/' && MAIN_SVCS="$MAIN_SVCS fastapi" && WORKER_SVCS="$WORKER_SVCS fastapi"
-          echo "$CHANGED" | grep -q '^processes/' && MAIN_SVCS="$MAIN_SVCS worker-monitor" && WORKER_SVCS="$WORKER_SVCS worker-monitor"
-          echo "$CHANGED" | grep -q '^nginx/' && MAIN_SVCS="$MAIN_SVCS nginx"
-          echo "$CHANGED" | grep -q '^custom-n8n-nodes/' && MAIN_SVCS="$MAIN_SVCS n8n" && WORKER_SVCS="$WORKER_SVCS n8n"
-          echo "$CHANGED" | grep -q '^\(loki\|promtail\)' && MAIN_SVCS="$MAIN_SVCS loki promtail"
-          echo "$CHANGED" | grep -q '^docker/' && FULL=true
-          echo "$CHANGED" | grep -q '^package' && FULL=true
-          echo "$CHANGED" | grep -q '^ansible/' && FULL=true
-          echo "$CHANGED" | grep -q '^sh_files/' && FULL=true
-
-          # Deduplicate and trim
-          MAIN_SVCS=$(echo $MAIN_SVCS | tr ' ' '\n' | sort -u | xargs)
-          WORKER_SVCS=$(echo $WORKER_SVCS | tr ' ' '\n' | sort -u | xargs)
-
-          echo "full_deploy=$FULL"            >> $GITHUB_OUTPUT
-          echo "main_services=$MAIN_SVCS"     >> $GITHUB_OUTPUT
-          echo "worker_services=$WORKER_SVCS" >> $GITHUB_OUTPUT
+          # Push event: always full deploy
+          echo "full_deploy=true"  >> $GITHUB_OUTPUT
+          echo "main_services="   >> $GITHUB_OUTPUT
+          echo "worker_services=" >> $GITHUB_OUTPUT
 
       # ── Topology detection ─────────────────────────────────────────────────
       - name: Detect topology and build worker inventory
