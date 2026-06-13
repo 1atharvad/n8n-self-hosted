@@ -173,7 +173,7 @@ if [[ -n "$TABLES_JSON" && "$TABLES_JSON" != "null" ]]; then
     echo "  ✅ ${table_name}: ${rows} row(s)"
   done < <(echo "$TABLES_JSON" | jq -c '.[]')
 else
-  echo "ℹ️  No data tables found"
+  echo "    No data tables found"
 fi
 
 # Commit and push only if --commit flag is passed and something changed
@@ -181,9 +181,11 @@ if [[ "$COMMIT" = true ]]; then
   if [[ "$GIT_WRITABLE" = false ]]; then
     echo "⚠️  Git is read-only (container mount) — skipping commit. Run with --commit on the host."
   elif [[ -n $(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then
-    if [[ "$BRANCH" == "unknown" ]]; then
-      echo "❌ Cannot determine branch — skipping push. Check git HEAD."
-      exit 1
+    # Always commit and push on main
+    CURRENT_BRANCH=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+    if [[ "$CURRENT_BRANCH" != "main" ]]; then
+      echo "🔀 Switching from '$CURRENT_BRANCH' to 'main'..."
+      git -C "$PROJECT_ROOT" checkout main
     fi
     git -C "$PROJECT_ROOT" add n8n-workflows/
     git -C "$PROJECT_ROOT" commit -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')" -- n8n-workflows/
@@ -198,7 +200,7 @@ if [[ "$COMMIT" = true ]]; then
     ORIGIN=$(git -C "$PROJECT_ROOT" remote get-url origin 2>/dev/null || echo "")
     if [[ -n "$GIT_PUSH_TOKEN" && "$ORIGIN" == https://* ]]; then
       PUSH_URL="https://x-access-token:${GIT_PUSH_TOKEN}@${ORIGIN#https://}"
-      git -C "$PROJECT_ROOT" push "$PUSH_URL" "$BRANCH"
+      git -C "$PROJECT_ROOT" push "$PUSH_URL" main
     else
       echo "⚠️  No GitHub token available — skipping push. Set it in Personal Settings."
     fi
