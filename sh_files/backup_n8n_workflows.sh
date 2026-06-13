@@ -53,6 +53,7 @@ POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-postgres}"
 MANIFEST="$PROJECT_ROOT/n8n-workflows/manifest.json"
 
 mkdir -p "$WORKFLOWS_DIR"
+chmod 777 "$WORKFLOWS_DIR"
 
 # Clear stale exports so deleted workflows don't persist in git
 rm -f "$WORKFLOWS_DIR"/*.json
@@ -117,6 +118,7 @@ echo ""
 echo "📦 Exporting data tables..."
 DATA_DIR="$PROJECT_ROOT/n8n-workflows/data"
 mkdir -p "$DATA_DIR"
+chmod 777 "$DATA_DIR"
 
 TABLES_JSON=$(docker exec "$POSTGRES_CONTAINER" bash -c \
   'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c \
@@ -139,6 +141,7 @@ if [[ -n "$TABLES_JSON" && "$TABLES_JSON" != "null" ]]; then
   # Per-table CSVs for readability (data_table_user_<id> has real columns)
   TABLES_DIR="$DATA_DIR/tables"
   mkdir -p "$TABLES_DIR"
+  chmod 777 "$TABLES_DIR"
   rm -f "$TABLES_DIR"/*.csv
 
   while IFS= read -r row; do
