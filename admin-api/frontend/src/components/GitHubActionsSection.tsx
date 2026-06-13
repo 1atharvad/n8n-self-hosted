@@ -1,5 +1,5 @@
 import { CheckCircle2, XCircle, Loader2, Clock, RefreshCw, ChevronRight, Circle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, timeAgo } from '@/lib/utils';
 import type { WorkflowRun } from '@/api/env';
 
 interface GitHubActionsSectionProps {
@@ -12,14 +12,6 @@ interface GitHubActionsSectionProps {
   onLoadMore: () => void;
   onRunClick: (run: WorkflowRun) => void;
 }
-
-const timeAgo = (iso: string): string => {
-  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (secs < 60) return 'just now';
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
-  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
-  return `${Math.floor(secs / 86400)}d ago`;
-};
 
 const durationStr = (created: string, updated: string, status: string): string | null => {
   if (status !== 'completed') return null;

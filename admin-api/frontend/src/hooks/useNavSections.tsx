@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ScrollText, Cpu, Network, Database, Settings, GitBranch, ShieldCheck, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, ScrollText, Cpu, Network, Database, Settings, GitBranch, ShieldCheck, BarChart2, Rocket, Archive } from 'lucide-react';
 import type { SidebarSection } from '@/components/AppSidebar';
 
-export type ActivePage = 'dashboard' | 'logs' | 'performance' | 'infrastructure' | 'workflows' | 'audit' | 'reports' | 'db-admin' | 'settings';
+export type ActivePage = 'dashboard' | 'logs' | 'performance' | 'infrastructure' | 'workflows' | 'audit' | 'reports' | 'db-admin' | 'settings' | 'deployments' | 'backups';
 
 export const useNavSections = (active: ActivePage): SidebarSection[] => {
   const navigate = useNavigate();
@@ -21,6 +21,8 @@ export const useNavSections = (active: ActivePage): SidebarSection[] => {
         { icon: <Cpu className="h-4 w-4" />, label: 'Performance', onClick: () => navigate('/performance'), active: active === 'performance' },
         { icon: <Network className="h-4 w-4" />, label: 'Infrastructure', onClick: () => navigate('/infrastructure'), active: active === 'infrastructure' },
         { icon: <GitBranch className="h-4 w-4" />, label: 'Workflows', onClick: () => navigate('/workflows'), active: active === 'workflows' },
+        { icon: <Rocket className="h-4 w-4" />, label: 'Deployments', onClick: () => navigate('/deployments'), active: active === 'deployments' },
+        { icon: <Archive className="h-4 w-4" />, label: 'Backups', onClick: () => navigate('/backups'), active: active === 'backups' },
         { icon: <ShieldCheck className="h-4 w-4" />, label: 'Audit Log', onClick: () => navigate('/audit'), active: active === 'audit' },
         { icon: <BarChart2 className="h-4 w-4" />, label: 'Reports', onClick: () => navigate('/reports'), active: active === 'reports' },
       ],

@@ -241,6 +241,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      MEDIA_API_URL: http://media-api:9374
+      MEDIA_API_KEY: ${API_KEY}
     volumes:
       - ${HOST_PROJECT_DIR}/admin-api-data:/app/data
     depends_on:

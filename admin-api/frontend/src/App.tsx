@@ -10,6 +10,8 @@ import InfrastructurePage from '@/pages/InfrastructurePage'
 import WorkflowsPage from '@/pages/WorkflowsPage'
 import AuditPage from '@/pages/AuditPage'
 import ReportsPage from '@/pages/ReportsPage'
+import DeploymentsPage from '@/pages/DeploymentsPage'
+import BackupsPage from '@/pages/BackupsPage'
 
 export default function App() {
   useTheme()
@@ -87,6 +89,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deployments"
+          element={
+            <ProtectedRoute>
+              <DeploymentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/backups"
+          element={
+            <ProtectedRoute>
+              <BackupsPage />
             </ProtectedRoute>
           }
         />

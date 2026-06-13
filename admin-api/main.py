@@ -15,6 +15,7 @@ from limiter import limiter
 from db.crud import seed_admin_if_empty
 from db.database import async_engine, async_session
 from db.models import Base
+from backups import router as backups_router
 from env import router as env_router
 from n8n import router as n8n_router
 from logs import router, audit_router
@@ -66,3 +67,4 @@ app.include_router(audit_router)
 app.include_router(auth_router, prefix="/auth")
 app.include_router(n8n_router)
 app.include_router(env_router)
+app.include_router(backups_router)

@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import require_admin
 from db.crud import create_audit_log, delete_app_config, delete_env_var, get_app_config, get_env_var, list_env_vars, set_app_config, set_env_var
+from db.postgres import pg_delete, pg_set
 from db.database import get_session
 from db.models import User
 from limiter import limiter
@@ -209,8 +210,10 @@ async def save_github_config(
     if body.token is not None:
         if body.token:
             await set_app_config(session, "github_token", _enc(body.token))
+            await pg_set("github_token", body.token)
         else:
             await delete_app_config(session, "github_token")
+            await pg_delete("github_token")
     if body.repo is not None:
         if body.repo:
             await set_app_config(session, "github_repo", body.repo)

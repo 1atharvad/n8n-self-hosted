@@ -5,15 +5,14 @@ import { Header } from '@/components/Header';
 import { Button } from 'advi-ui';
 import { AppSidebar } from '@/components/AppSidebar';
 import type { SidebarSection } from '@/components/AppSidebar';
-import { LogOut, ChevronLeft, User, Box, Users, KeyRound, Rocket } from 'lucide-react';
+import { LogOut, ChevronLeft, User, Box, Users, KeyRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PersonalTab } from '@/components/PersonalTab';
 import { ContainersTab } from '@/components/ContainersTab';
 import { EnvironmentTab } from '@/components/EnvironmentTab';
-import { DeploymentTab } from '@/components/DeploymentTab';
 import { UserManagement } from '@/components/UserManagement';
 
-type Tab = 'personal' | 'containers' | 'users' | 'environment' | 'deployment';
+type Tab = 'personal' | 'containers' | 'users' | 'environment';
 
 export const SettingsPage = () => {
   const navigate = useNavigate();
@@ -38,7 +37,6 @@ export const SettingsPage = () => {
         ...(isAdmin ? [
           { icon: <Users className="h-4 w-4" />, label: 'Users', onClick: () => setActiveTab('users'), active: activeTab === 'users' },
           { icon: <KeyRound className="h-4 w-4" />, label: 'Environment', onClick: () => setActiveTab('environment'), active: activeTab === 'environment' },
-          { icon: <Rocket className="h-4 w-4" />, label: 'Deployment', onClick: () => setActiveTab('deployment'), active: activeTab === 'deployment' },
         ] : []),
       ],
     },
@@ -94,7 +92,6 @@ export const SettingsPage = () => {
               </section>
             )}
             {activeTab === 'environment' && isAdmin && <EnvironmentTab />}
-            {activeTab === 'deployment' && isAdmin && <DeploymentTab />}
           </div>
         </main>
       </div>
