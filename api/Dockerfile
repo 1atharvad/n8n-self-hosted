@@ -47,7 +47,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get update \
  && apt-get install -y --no-install-recommends docker-ce-cli \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
- && git config --global --add safe.directory /workspace
+ && git config --global --add safe.directory /workspace \
+ && git config --global user.email "backup@n8n.local" \
+ && git config --global user.name "n8n Backup"
 
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin/uvicorn /usr/local/bin/uvicorn
