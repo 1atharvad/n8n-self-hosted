@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-draw \
     poppler-utils \
     git \
+    jq \
     ca-certificates \
     curl \
  && install -m 0755 -d /etc/apt/keyrings \
