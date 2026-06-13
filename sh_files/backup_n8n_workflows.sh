@@ -26,17 +26,17 @@ N8N_CONTAINER="n8n"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
 WORKFLOWS_DIR="$PROJECT_ROOT/n8n-workflows/workflows"
-BRANCH=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD)
+BRANCH=$(git --no-optional-locks -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD)
 
 echo "📂 Project root: $PROJECT_ROOT"
 echo "🌿 Branch: $BRANCH"
 
 # Show any uncommitted workflow changes so user can decide
-DIRTY=$(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows 2>/dev/null)
+DIRTY=$(git --no-optional-locks -C "$PROJECT_ROOT" status --porcelain n8n-workflows 2>/dev/null)
 if [[ -n "$DIRTY" ]]; then
   echo ""
   echo "⚠️  You have uncommitted changes in n8n-workflows/:"
-  git -C "$PROJECT_ROOT" status --short n8n-workflows
+  git --no-optional-locks -C "$PROJECT_ROOT" status --short n8n-workflows
   echo ""
 fi
 
@@ -164,7 +164,7 @@ fi
 
 # Commit and push only if --commit flag is passed and something changed
 if [[ "$COMMIT" = true ]]; then
-  if [[ -n $(git -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then
+  if [[ -n $(git --no-optional-locks -C "$PROJECT_ROOT" status --porcelain n8n-workflows) ]]; then
     git -C "$PROJECT_ROOT" add n8n-workflows/
     git -C "$PROJECT_ROOT" commit -- n8n-workflows/ -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')"
     git -C "$PROJECT_ROOT" push origin "$BRANCH"
