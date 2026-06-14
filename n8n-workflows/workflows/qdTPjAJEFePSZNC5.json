@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-13T15:28:46.021Z",
+  "updatedAt": "2026-06-14T02:58:11.560Z",
   "createdAt": "2026-05-16T22:34:38.277Z",
   "id": "qdTPjAJEFePSZNC5",
   "name": "Youtube Video Upload",
@@ -1306,7 +1306,7 @@
         "query": "SELECT \n  COUNT(*)::int AS video_count,\n  (SELECT id FROM job_listing.job_links\n   WHERE date = $1\n     AND video_type = $2\n     AND video_created = FALSE\n   ORDER BY id ASC\n   LIMIT 1) AS first_job_id\nFROM job_listing.job_links\nWHERE date = $1\n  AND video_type = $2\n  AND video_created = FALSE;",
         "options": {
           "connectionTimeout": 30,
-          "queryReplacement": "={{ $('Input Parameters').first().json.date }},{{ $('Input Parameters').first().json.video_type }}"
+          "queryReplacement": "={{ [\n  $('Input Parameters').first().json.date,\n  $('Input Parameters').first().json.video_type\n] }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
@@ -1364,7 +1364,7 @@
         "operation": "executeQuery",
         "query": "SELECT count(*) as jobs_pending\nFROM job_listing.job_links\nWHERE date = $1\n  AND id >= $2::int\n  AND video_type = $4\n  AND (audio_added = FALSE OR script_added = FALSE)\nLIMIT $3::int;",
         "options": {
-          "queryReplacement": "={{ [\n  $('Input Parameters').first().json.date,\n  Math.min($('Job Scrapper').isExecuted\n    ? $('Job Scrapper').item.json.first_job_id\n    : Infinity,\n  $('Pending video count').item.json.first_job_id),\n  $('Input Parameters').first().json.video_count,\n  $('Input Parameters').first().json.video_type\n] }}"
+          "queryReplacement": "={{ [\n  $('Input Parameters').first().json.date,\n  Math.min(\n    $('Job Scrapper').isExecuted && $('Job Scrapper').item.json.first_job_id\n      ? $('Job Scrapper').item.json.first_job_id\n      : Infinity,\n    $('Pending video count').item.json.first_job_id\n      ? $('Pending video count').item.json.first_job_id\n      : Infinity\n  ),\n  $('Input Parameters').first().json.video_count,\n  $('Input Parameters').first().json.video_type\n] }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
@@ -2102,9 +2102,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "446ca773-57f4-4e90-b095-28e8d05cb1a3",
-  "activeVersionId": "446ca773-57f4-4e90-b095-28e8d05cb1a3",
-  "versionCounter": 555,
+  "versionId": "093ca9b1-9453-45d6-93b4-34b143b9c3f0",
+  "activeVersionId": "093ca9b1-9453-45d6-93b4-34b143b9c3f0",
+  "versionCounter": 575,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "tags": [
@@ -2142,7 +2142,7 @@
     }
   ],
   "versionMetadata": {
-    "name": "Version 446ca773",
+    "name": "Version 093ca9b1",
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
