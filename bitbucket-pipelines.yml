@@ -1,0 +1,91 @@
+image: python:3.11
+
+definitions:
+  steps:
+    - step: &lint-frontend
+        name: Lint frontend
+        image: node:20
+        caches:
+          - node
+        script:
+          - cd admin-api/frontend
+          - npm ci
+          - npm run lint
+
+    - step: &lint-api
+        name: Lint API
+        script:
+          - pip install --quiet black isort ruff
+          - cd api
+          - python -m isort --check .
+          - python -m black --check .
+          - python -m ruff check .
+
+    - step: &deploy
+        name: Deploy
+        deployment: production
+        script:
+          - |
+            CHANGED=$(git diff --name-only ${BITBUCKET_COMMIT}^..${BITBUCKET_COMMIT} 2>/dev/null || git diff --name-only HEAD~1..HEAD)
+            if ! echo "$CHANGED" | grep -qv '^n8n-workflows/'; then
+              echo "Only n8n-workflows/ changed — skipping deploy"
+              exit 0
+            fi
+          - pip install --quiet ansible
+          - mkdir -p ~/.ssh
+          - echo "$CONTABO_SSH_KEY" > ~/.ssh/id_ed25519
+          - chmod 600 ~/.ssh/id_ed25519
+          - |
+            export ANSIBLE_CONFIG=ansible/ansible.cfg
+            if [ -z "$CONTABO_WORKER_IP" ]; then
+              ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy_main.yml \
+                -e "full_deploy=true" -e "services="
+            else
+              bash sh_files/gen_workers_inventory.sh
+              ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy_main.yml \
+                -e "full_deploy=true" -e "services="
+              ansible-playbook -i ansible/inventory/multi/workers_dynamic.yml ansible/playbooks/deploy_workers.yml \
+                -e "full_deploy=true" -e "worker_services="
+            fi
+
+pipelines:
+  branches:
+    main:
+      - step: *lint-frontend
+      - step: *lint-api
+      - step: *deploy
+
+  custom:
+    deploy-services:
+      - variables:
+          - name: services
+            default: all
+      - step: *lint-frontend
+      - step: *lint-api
+      - step:
+          name: Deploy (targeted)
+          deployment: production
+          script:
+            - pip install --quiet ansible
+            - mkdir -p ~/.ssh
+            - echo "$CONTABO_SSH_KEY" > ~/.ssh/id_ed25519
+            - chmod 600 ~/.ssh/id_ed25519
+            - |
+              export ANSIBLE_CONFIG=ansible/ansible.cfg
+              if [ "$services" = "all" ] || [ -z "$services" ]; then
+                FULL_DEPLOY=true
+                SVC=""
+              else
+                FULL_DEPLOY=false
+                SVC="$services"
+              fi
+              if [ -z "$CONTABO_WORKER_IP" ]; then
+                ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy_main.yml \
+                  -e "full_deploy=$FULL_DEPLOY" -e "services=$SVC"
+              else
+                bash sh_files/gen_workers_inventory.sh
+                ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy_main.yml \
+                  -e "full_deploy=$FULL_DEPLOY" -e "services=$SVC"
+                ansible-playbook -i ansible/inventory/multi/workers_dynamic.yml ansible/playbooks/deploy_workers.yml \
+                  -e "full_deploy=$FULL_DEPLOY" -e "worker_services=$SVC"
+              fi
