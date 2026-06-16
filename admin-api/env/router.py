@@ -23,8 +23,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import require_admin
 from db.crud import create_audit_log, delete_app_config, delete_env_var, get_app_config, get_env_var, list_env_vars, set_app_config, set_env_var
-from db.postgres import pg_delete, pg_set
 from db.database import get_session
+from db.postgres import pg_delete, pg_set
 from db.models import User
 from limiter import limiter
 

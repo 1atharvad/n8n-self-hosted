@@ -3,7 +3,6 @@ set -e
 
 FORCE=false
 COMMIT=false
-GIT_PUSH_TOKEN=""
 
 for arg in "$@"; do
   case $arg in
@@ -15,13 +14,9 @@ for arg in "$@"; do
       COMMIT=true
       shift
       ;;
-    --token=*)
-      GIT_PUSH_TOKEN="${arg#*=}"
-      shift
-      ;;
     *)
       echo "Unknown option: $arg"
-      echo "Usage: $0 [--force] [--commit] [--token=<github_token>]"
+      echo "Usage: $0 [--force] [--commit]"
       exit 1
       ;;
   esac
@@ -189,15 +184,11 @@ if [[ "$COMMIT" = true ]]; then
     fi
     git -C "$PROJECT_ROOT" add n8n-workflows/
     git -C "$PROJECT_ROOT" commit -m "Backup: $(date '+%Y-%m-%d %H:%M:%S')" -- n8n-workflows/
-    # Fall back to Postgres admin_config if token not passed as arg
-    if [[ -z "$GIT_PUSH_TOKEN" ]]; then
-      GIT_PUSH_TOKEN=$(docker exec "$POSTGRES_CONTAINER" bash -c \
-        'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c \
-         "SELECT value FROM admin_config WHERE key='"'"'github_token'"'"'"' \
-        2>/dev/null || echo "")
-    fi
-
     ORIGIN=$(git -C "$PROJECT_ROOT" remote get-url origin 2>/dev/null || echo "")
+    GIT_PUSH_TOKEN=$(docker exec "$POSTGRES_CONTAINER" bash -c \
+      'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c \
+       "SELECT value FROM admin_config WHERE key='"'"'github_token'"'"'"' \
+      2>/dev/null || echo "")
     if [[ -n "$GIT_PUSH_TOKEN" && "$ORIGIN" == https://* ]]; then
       PUSH_URL="https://x-access-token:${GIT_PUSH_TOKEN}@${ORIGIN#https://}"
       git -C "$PROJECT_ROOT" push "$PUSH_URL" main

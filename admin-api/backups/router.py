@@ -3,11 +3,7 @@ import re
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from auth.security import get_current_user
-from db.database import get_session
-from env.router import _get_github_config
 
 router = APIRouter(prefix="/backups", tags=["Backups"])
 
@@ -23,25 +19,31 @@ async def _execute(command: str | None = None, script: str | None = None) -> dic
         payload["command"] = command
     if script is not None:
         payload["script"] = script
-    async with httpx.AsyncClient(timeout=300) as client:
-        resp = await client.post(
-            f"{_MEDIA_API_URL}/execute",
-            json=payload,
-            headers={"X-API-Key": _MEDIA_API_KEY},
-        )
+    try:
+        async with httpx.AsyncClient(timeout=300) as client:
+            resp = await client.post(
+                f"{_MEDIA_API_URL}/execute",
+                json=payload,
+                headers={"X-API-Key": _MEDIA_API_KEY},
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"media-api unreachable: {exc}") from exc
     if resp.status_code == 403:
-        raise HTTPException(status_code=403, detail=resp.json().get("detail", "Forbidden"))
+        try:
+            detail = resp.json().get("detail", "Forbidden")
+        except Exception:
+            detail = "Forbidden"
+        raise HTTPException(status_code=403, detail=detail)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"media-api error {resp.status_code}: {resp.text[:200]}")
     return resp.json()
 
 
 @router.post("")
 async def backup_workflows(
     _user=Depends(get_current_user),
-    session: AsyncSession = Depends(get_session),
 ):
-    token, _ = await _get_github_config(session)
-    token_arg = f"--token={token}" if token else ""
-    return await _execute(command=f"/sh_files/backup_n8n_workflows.sh --force --commit {token_arg}".strip())
+    return await _execute(command="/sh_files/backup_n8n_workflows.sh --force --commit")
 
 
 @router.get("")
