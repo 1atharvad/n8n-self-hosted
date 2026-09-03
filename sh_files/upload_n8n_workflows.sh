@@ -212,10 +212,12 @@ DATA_DIR="$PROJECT_ROOT/n8n-workflows/data"
 if [ -f "$DATA_DIR/data_tables_restore.sql" ]; then
   echo ""
   echo "📦 Restoring data tables..."
-  docker exec -i "$POSTGRES_CONTAINER" bash -c \
-    'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1' \
-    < "$DATA_DIR/data_tables_restore.sql" > /dev/null
-  echo "✅ Data tables restored"
+  TABLES=$(grep -oP '(?<=INSERT INTO public\.)[^\s(]+' "$DATA_DIR/data_tables_restore.sql" | sort -u | tr '\n' ' ')
+  grep -Ev "^\\\\(un)?restrict" "$DATA_DIR/data_tables_restore.sql" | \
+    sed "s/__PROJECT_ID__/$N8N_PROJECT_ID/g" | \
+    docker exec -i "$POSTGRES_CONTAINER" bash -c \
+      'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1' > /dev/null
+  echo "✅ Data tables restored: $TABLES"
 else
   echo ""
   echo "ℹ️  No data_tables_restore.sql found — skipping data table restore"

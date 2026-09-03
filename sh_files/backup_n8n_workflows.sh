@@ -136,6 +136,8 @@ TABLES_JSON=$(docker exec "$POSTGRES_CONTAINER" bash -c \
 
 if [[ -n "$TABLES_JSON" && "$TABLES_JSON" != "null" ]]; then
   # pg_dump all data_table* tables — run inside container to handle mixed-case table names
+  LOCAL_PROJECT_ID=$(docker exec "$POSTGRES_CONTAINER" bash -c \
+    'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c "SELECT id FROM public.project WHERE type='"'"'personal'"'"' LIMIT 1;"' 2>/dev/null | tr -d '[:space:]')
   docker exec "$POSTGRES_CONTAINER" bash -c '
     TABLES=$(psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c "SELECT table_name FROM information_schema.tables WHERE table_name LIKE '"'"'data_table_user_%'"'"' AND table_schema='"'"'public'"'"' ORDER BY table_name;")
     ARGS=(-t public.data_table -t public.data_table_column)
@@ -143,8 +145,8 @@ if [[ -n "$TABLES_JSON" && "$TABLES_JSON" != "null" ]]; then
       [[ -z "$tbl" ]] && continue
       ARGS+=(-t "public.\"${tbl}\"")
     done <<< "$TABLES"
-    pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --column-inserts "${ARGS[@]}"
-  ' 2>/dev/null > "$DATA_DIR/data_tables_restore.sql"
+    pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --column-inserts --no-owner --no-acl "${ARGS[@]}"
+  ' 2>/dev/null | grep -Ev "^\\\\(un)?restrict" | sed "s/$LOCAL_PROJECT_ID/__PROJECT_ID__/g" > "$DATA_DIR/data_tables_restore.sql"
   echo "✅ data_tables_restore.sql written"
 
   # Per-table CSVs for readability (data_table_user_<id> has real columns)

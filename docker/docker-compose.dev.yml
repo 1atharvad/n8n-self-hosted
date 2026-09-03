@@ -2,6 +2,7 @@ name: n8n-automation
 
 services:
   n8n:
+    profiles: ["n8n"]
     image: n8nio/n8n:latest
     container_name: n8n
     restart: unless-stopped
@@ -64,6 +65,7 @@ services:
       - baota_net
 
   n8n-worker:
+    profiles: ["n8n"]
     image: n8nio/n8n:latest
     command: worker
     restart: unless-stopped
@@ -237,7 +239,6 @@ services:
       N8N_BASE_URL: ${N8N_BASE_URL:-http://n8n:5678}
       N8N_API_KEY: ${N8N_API_KEY:-}
       INTERNAL_SECRET: ${INTERNAL_SECRET:-}
-      GITHUB_ENV: development
       DEV_DOTENV_PATH: /workspace/.env
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
@@ -270,6 +271,20 @@ services:
     networks:
       - baota_net
 
+  docs:
+    build:
+      context: ${HOST_PROJECT_DIR}/docs
+      dockerfile: Dockerfile.dev
+    container_name: docs
+    restart: unless-stopped
+    expose:
+      - "4321"
+    volumes:
+      - ${HOST_PROJECT_DIR}/docs:/app
+      - /app/node_modules
+    networks:
+      - baota_net
+
   nginx:
     image: nginx:alpine
     container_name: nginx
@@ -277,17 +292,18 @@ services:
     ports:
       - "6060:6060"
     volumes:
-      - ${HOST_PROJECT_DIR}/nginx/nginx.dev.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ${HOST_PROJECT_DIR}/nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - n8n
       - fastapi
       - minio
       - admin-api
       - frontend
+      - docs
     networks:
       - baota_net
 
   loki:
+    profiles: ["n8n"]
     image: grafana/loki:latest
     container_name: loki
     restart: unless-stopped
@@ -302,6 +318,7 @@ services:
       - baota_net
 
   promtail:
+    profiles: ["n8n"]
     image: grafana/promtail:latest
     container_name: promtail
     restart: unless-stopped
@@ -317,7 +334,7 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflare
-    restart: always
+    restart: unless-stopped
     command: tunnel --config /etc/cloudflared/config.yml run
     volumes:
       - ${HOST_PROJECT_DIR}/cloudflared:/etc/cloudflared
