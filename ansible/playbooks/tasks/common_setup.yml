@@ -1,8 +1,46 @@
-- name: Pull latest code
+- name: Add GitHub to known_hosts
+  shell: ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
+  args:
+    executable: /bin/bash
+
+- name: Test SSH to GitHub
+  shell: ssh -T -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=15 git@github.com 2>&1 || true
+  args:
+    executable: /bin/bash
+  register: ssh_test
+
+- name: Show SSH test result
+  debug:
+    msg: "{{ ssh_test.stdout }}"
+
+- name: Git fetch origin/{{ deploy_branch }}
   shell: |
-    cd {{ deploy_path }}
-    git fetch origin main
-    git reset --hard origin/main
+    set -euo pipefail
+    GIT_SSH_COMMAND='ssh -i /root/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=10 -o ServerAliveCountMax=3' \
+      git fetch origin {{ deploy_branch }}
+  args:
+    chdir: "{{ deploy_path }}"
+    executable: /bin/bash
+
+- name: Checkout {{ deploy_branch }}
+  shell: |
+    set -euo pipefail
+    git checkout -- .
+    git checkout -B {{ deploy_branch }} FETCH_HEAD
+  args:
+    chdir: "{{ deploy_path }}"
+    executable: /bin/bash
+  register: checkout_result
+
+- name: Current commit
+  shell: git rev-parse --short HEAD
+  args:
+    chdir: "{{ deploy_path }}"
+  register: current_commit
+
+- name: Show current commit
+  debug:
+    msg: "Now on {{ deploy_branch }} @ {{ current_commit.stdout }}"
 
 - name: Copy .env file
   copy:
@@ -45,12 +83,60 @@
       LOGS_ADMIN_USERNAME={{ LOGS_ADMIN_USERNAME }}
       ADMIN_USERNAME={{ ADMIN_USERNAME }}
 
+- name: Strip Windows line endings from .env
+  shell: sed -i 's/\r//' {{ deploy_path }}/.env
+  args:
+    executable: /bin/bash
+
+- name: Validate required env vars
+  shell: |
+    cd {{ deploy_path }}
+    MISSING=""
+    while IFS= read -r line; do
+      case "$line" in \#*|"") continue ;; esac
+      case "$line" in *"# REQUIRED"*) ;; *) continue ;; esac
+      VAR="${line%%=*}"
+      VALUE=$(awk -F'=' -v v="$VAR" 'index($0, v"=") == 1 { sub(/^[^=]*=/, ""); gsub(/[[:space:]]/, ""); print; exit }' .env 2>/dev/null)
+      if [ -z "$VALUE" ]; then
+        MISSING="$MISSING $VAR"
+      fi
+    done < .env.example
+    if [ -n "$MISSING" ]; then
+      echo "$MISSING"
+      exit 1
+    fi
+  args:
+    executable: /bin/bash
+  register: env_validation
+  failed_when: false
+  no_log: true
+
+- name: Env vars missing — deploy aborted
+  fail:
+    msg: |
+      Required env vars not set in .env:
+      {% for var in env_validation.stdout.split() %}
+        - {{ var }}
+      {% endfor %}
+  when: env_validation.rc != 0
+
+- name: Env vars OK
+  debug:
+    msg: "All required env vars present"
+  when: env_validation.rc == 0
+
 - name: Install node dependencies
-  shell: npm install
+  shell: |
+    set -euo pipefail
+    npm install
   args:
     chdir: "{{ deploy_path }}"
+    executable: /bin/bash
 
 - name: Run setup script (dirs, assets, custom n8n nodes)
-  shell: sh sh_files/setup_n8n_files.sh
+  shell: |
+    set -euo pipefail
+    sh sh_files/setup_n8n_files.sh
   args:
     chdir: "{{ deploy_path }}"
+    executable: /bin/bash

@@ -2,9 +2,6 @@
   hosts: all
   become: true
 
-  vars:
-    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
-
   tasks:
     - name: Revert to previous commit
       shell: |

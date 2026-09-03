@@ -3,28 +3,77 @@
   become: true
 
   vars:
-    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
     full_deploy: false
     worker_services: ""
 
   tasks:
-    - include_tasks: tasks/common_setup.yml
+    - import_tasks: tasks/common_setup.yml
 
-    - name: Full deploy
-      shell: |
-        cd {{ deploy_path }}
-        docker pull n8nio/n8n
-        docker pull grafana/promtail:latest
-        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down
-        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+    - block:
+        - name: Pull latest Docker images
+          shell: |
+            set -euo pipefail
+            docker pull n8nio/n8n
+            docker pull grafana/promtail:latest
+          args:
+            executable: /bin/bash
+
+        - name: Bring containers down
+          shell: |
+            set -euo pipefail
+            cd {{ deploy_path }}
+            HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down || true
+          args:
+            executable: /bin/bash
+
+        - name: Start containers
+          shell: |
+            set -euo pipefail
+            cd {{ deploy_path }}
+            HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+          args:
+            executable: /bin/bash
+          async: 600
+          poll: 30
+
+        - name: Container status
+          shell: |
+            set -euo pipefail
+            cd {{ deploy_path }}
+            HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} ps
+          args:
+            executable: /bin/bash
+          register: container_status
+
+        - name: Show container status
+          debug:
+            msg: "{{ container_status.stdout }}"
+
+      rescue:
+        - name: Dump container list on failure
+          shell: docker ps -a --format "table {{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}\t{{ '{{' }}.Ports{{ '}}' }}"
+          args:
+            executable: /bin/bash
+          register: ps_output
+          failed_when: false
+
+        - name: Show container list
+          debug:
+            msg: "{{ ps_output.stdout }}"
+
+        - name: Fail with deploy error
+          fail:
+            msg: "Deploy failed — see container list above"
+
       when: full_deploy | bool
-      async: 600
-      poll: 30
 
     - name: Targeted restart
       shell: |
+        set -euo pipefail
         cd {{ deploy_path }}
         HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up -d --build --no-deps {{ worker_services }}
+      args:
+        executable: /bin/bash
       when:
         - not (full_deploy | bool)
         - worker_services | length > 0

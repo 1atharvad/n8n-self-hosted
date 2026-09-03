@@ -140,6 +140,7 @@ jobs:
         env:
           CONTABO_MAIN_IP: ${{ secrets.CONTABO_MAIN_IP }}
           ANSIBLE_CONFIG: ansible/ansible.cfg
+          GIT_BRANCH: ${{ github.ref_name }}
         run: |
           ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/deploy_main.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
@@ -151,6 +152,7 @@ jobs:
         env:
           CONTABO_MAIN_IP: ${{ secrets.CONTABO_MAIN_IP }}
           ANSIBLE_CONFIG: ansible/ansible.cfg
+          GIT_BRANCH: ${{ github.ref_name }}
         run: |
           ansible-playbook -i ansible/inventory/multi/main.yml ansible/playbooks/deploy_main.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \
@@ -160,6 +162,7 @@ jobs:
         if: steps.topology.outputs.topology == 'multi'
         env:
           ANSIBLE_CONFIG: ansible/ansible.cfg
+          GIT_BRANCH: ${{ github.ref_name }}
         run: |
           ansible-playbook -i ansible/inventory/multi/workers_dynamic.yml ansible/playbooks/deploy_workers.yml \
             -e "full_deploy=${{ steps.changes.outputs.full_deploy }}" \

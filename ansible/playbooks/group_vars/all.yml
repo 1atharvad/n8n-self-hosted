@@ -1,4 +1,9 @@
 # Static config — committed to repo, no secrets here.
+
+# --- server ---
+deploy_path: "{{ lookup('env', 'DEPLOY_PATH') }}"
+deploy_branch: "{{ lookup('env', 'GIT_BRANCH') | default('main') }}"
+
 # Ansible appends these to .env on every deploy via common_setup.yml.
 # Change here → redeploy → all servers updated.
 

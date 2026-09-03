@@ -3,34 +3,131 @@
   become: true
 
   vars:
-    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
     full_deploy: false
     services: ""
 
   tasks:
-    - include_tasks: tasks/common_setup.yml
+    - import_tasks: tasks/common_setup.yml
 
-    - name: Full deploy
-      shell: |
-        cd {{ deploy_path }}
-        docker pull n8nio/n8n
-        docker pull nginx:alpine
-        docker pull postgres:15
-        docker pull redis:7-alpine
-        docker pull minio/minio:latest
-        docker pull grafana/loki:latest
-        docker pull grafana/promtail:latest
-        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down
-        rm -rf loki-data/*
-        HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+    - block:
+        - name: Pull latest Docker images
+          shell: |
+            set -euo pipefail
+            docker pull n8nio/n8n
+            docker pull nginx:alpine
+            docker pull postgres:15
+            docker pull redis:7-alpine
+            docker pull minio/minio:latest
+            docker pull grafana/loki:latest
+            docker pull grafana/promtail:latest
+          args:
+            executable: /bin/bash
+
+        - name: Bring containers down
+          shell: |
+            set -euo pipefail
+            cd {{ deploy_path }}
+            HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} down || true
+            rm -rf loki-data/*
+          args:
+            executable: /bin/bash
+
+        - name: Start containers
+          shell: |
+            set -euo pipefail
+            cd {{ deploy_path }}
+            HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
+          args:
+            executable: /bin/bash
+          async: 600
+          poll: 30
+
+        - name: Wait for all containers to be running
+          shell: |
+            set -uo pipefail
+            for i in $(seq 1 60); do
+              RUNNING=$(docker ps --filter "status=running" --quiet 2>/dev/null | wc -l | tr -d '[:space:]')
+              NOT_RUNNING=$(docker ps --filter "status=exited" --filter "status=restarting" --filter "status=created" --quiet 2>/dev/null | wc -l | tr -d '[:space:]')
+              echo "Attempt $i: $RUNNING running, $NOT_RUNNING not ready"
+              if [ "$NOT_RUNNING" -eq 0 ] && [ "$RUNNING" -gt 0 ]; then
+                echo "All containers running after $((i * 5))s"
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "ERROR: Not all containers started in 300s"
+            docker ps -a
+            exit 1
+          args:
+            executable: /bin/bash
+
+        - name: Container status
+          shell: |
+            set -euo pipefail
+            cd {{ deploy_path }}
+            HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} ps
+          args:
+            executable: /bin/bash
+          register: container_status
+
+        - name: Show container status
+          debug:
+            msg: "{{ container_status.stdout }}"
+
+        - name: Run database migrations
+          shell: |
+            set -uo pipefail
+            cd {{ deploy_path }}
+            set +e
+            OUTPUT=$(HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} exec -T fastapi alembic upgrade head 2>&1)
+            EXIT_CODE=$?
+            set -e
+            if [ $EXIT_CODE -ne 0 ]; then
+              if echo "$OUTPUT" | grep -qi "already exists\|DuplicateTable"; then
+                echo "Tables already exist outside alembic — stamping head to sync"
+                HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} exec -T fastapi alembic stamp head
+                HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} exec -T fastapi alembic upgrade head
+              else
+                echo "ERROR: Migration failed — $OUTPUT"
+                exit 1
+              fi
+            else
+              echo "$OUTPUT"
+            fi
+          args:
+            executable: /bin/bash
+          register: migration_result
+
+        - name: Show migration output
+          debug:
+            msg: "{{ migration_result.stdout }}"
+
+
+      rescue:
+        - name: Dump container list on failure
+          shell: docker ps -a --format "table {{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}\t{{ '{{' }}.Ports{{ '}}' }}"
+          args:
+            executable: /bin/bash
+          register: ps_output
+          failed_when: false
+
+        - name: Show container list
+          debug:
+            msg: "{{ ps_output.stdout }}"
+
+        - name: Fail with deploy error
+          fail:
+            msg: "Deploy failed — see container list above"
+
       when: full_deploy | bool
-      async: 600
-      poll: 30
 
     - name: Targeted restart
       shell: |
+        set -euo pipefail
         cd {{ deploy_path }}
         HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up -d --build --no-deps {{ services }}
+      args:
+        executable: /bin/bash
       when:
         - not (full_deploy | bool)
         - services | length > 0

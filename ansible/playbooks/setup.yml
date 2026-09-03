@@ -3,7 +3,6 @@
   become: true
 
   vars:
-    deploy_path: /www/wwwroot/n8n.atharvadevasthali.com
     repo_url: git@github.com:{{ lookup('env', 'GITHUB_REPO') }}.git
 
   tasks:
@@ -57,7 +56,7 @@
     # ── SSH key for GitHub (deploy key) ────────────────────────────────────
     - name: Generate SSH keypair for GitHub access
       openssh_keypair:
-        path: "{{ github_deploy_key_path }}"
+        path: "{{ deploy_key_path }}"
         type: ed25519
         comment: "deploy@{{ inventory_hostname }}"
         force: false  # skip if key already exists
@@ -71,7 +70,7 @@
 
     - name: Read deploy public key
       slurp:
-        src: "{{ github_deploy_key_path }}.pub"
+        src: "{{ deploy_key_path }}.pub"
       register: deploy_pubkey
 
     - name: Print deploy public key
@@ -93,7 +92,7 @@
       git:
         repo: "{{ repo_url }}"
         dest: "{{ deploy_path }}"
-        version: main
+        version: "{{ deploy_branch }}"
         accept_hostkey: true
       ignore_errors: true
       register: clone_result
