@@ -25,6 +25,24 @@ export class RemoteExecute implements INodeType {
     ],
     properties: [
       {
+        displayName: 'Mode',
+        name: 'mode',
+        type: 'options',
+        options: [
+          {
+            name: 'Command',
+            value: 'command',
+            description: 'Run a single command directly (no shell — no pipes, variables, or control flow)',
+          },
+          {
+            name: 'Script',
+            value: 'script',
+            description: 'Run a multi-line bash script (supports pipes, variables, loops, conditionals)',
+          },
+        ],
+        default: 'command',
+      },
+      {
         displayName: 'Command',
         name: 'command',
         type: 'string',
@@ -33,6 +51,18 @@ export class RemoteExecute implements INodeType {
         placeholder: 'echo "Hello, World!"',
         description: 'Shell command to execute on the FastAPI server',
         noDataExpression: false,
+        displayOptions: { show: { mode: ['command'] } },
+      },
+      {
+        displayName: 'Script',
+        name: 'script',
+        type: 'string',
+        typeOptions: { rows: 10 },
+        default: '',
+        placeholder: '#!/bin/bash\necho "Hello, World!"',
+        description: 'Bash script to execute on the FastAPI server',
+        noDataExpression: false,
+        displayOptions: { show: { mode: ['script'] } },
       },
     ],
   };
@@ -45,7 +75,11 @@ export class RemoteExecute implements INodeType {
     const returnItems: INodeExecutionData[] = [];
 
     for (let i = 0; i < items.length; i++) {
-      const command = this.getNodeParameter('command', i) as string;
+      const mode = this.getNodeParameter('mode', i) as 'command' | 'script';
+      const body =
+        mode === 'script'
+          ? { script: this.getNodeParameter('script', i) as string }
+          : { command: this.getNodeParameter('command', i) as string };
 
       const response = await this.helpers.httpRequestWithAuthentication.call(
         this,
@@ -53,12 +87,12 @@ export class RemoteExecute implements INodeType {
         {
           method: 'POST',
           url: `${baseUrl}/execute`,
-          body: { command },
+          body,
           json: true,
         },
       );
 
-      returnItems.push({ json: response as { stdout: string; stderr: string; returnCode: number } });
+      returnItems.push({ json: response as { output: string; returnCode: number } });
     }
 
     return this.prepareOutputData(returnItems);

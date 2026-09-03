@@ -13,26 +13,39 @@ const makeMock = (params: Record<string, unknown>, httpFn: MockHttpFn): IExecute
   }) as unknown as IExecuteFunctions;
 
 describe('RemoteExecute Node', () => {
-  it('returns stdout/stderr/returnCode from the API response', async () => {
+  it('returns output/returnCode from the API response', async () => {
     const node = new RemoteExecute();
-    const mockResponse = { stdout: 'hello\n', stderr: '', returnCode: 0 };
-    const context = makeMock({ command: 'echo hello' }, async () => mockResponse);
+    const mockResponse = { output: 'hello', returnCode: 0 };
+    const context = makeMock({ mode: 'command', command: 'echo hello' }, async () => mockResponse);
 
     const result = await node.execute.call(context);
 
     expect(result[0][0].json).toEqual(mockResponse);
   });
 
-  it('sends command in request body', async () => {
+  it('sends command in request body when mode is command', async () => {
     const node = new RemoteExecute();
     let capturedBody: unknown;
     const context = makeMock(
-      { command: 'ls' },
-      async (_cred, opts) => { capturedBody = opts.body; return { stdout: '', stderr: '', returnCode: 0 }; },
+      { mode: 'command', command: 'ls' },
+      async (_cred, opts) => { capturedBody = opts.body; return { output: '', returnCode: 0 }; },
     );
 
     await node.execute.call(context);
 
     expect(capturedBody).toEqual({ command: 'ls' });
+  });
+
+  it('sends script in request body when mode is script', async () => {
+    const node = new RemoteExecute();
+    let capturedBody: unknown;
+    const context = makeMock(
+      { mode: 'script', script: 'echo one\necho two' },
+      async (_cred, opts) => { capturedBody = opts.body; return { output: '', returnCode: 0 }; },
+    );
+
+    await node.execute.call(context);
+
+    expect(capturedBody).toEqual({ script: 'echo one\necho two' });
   });
 });
