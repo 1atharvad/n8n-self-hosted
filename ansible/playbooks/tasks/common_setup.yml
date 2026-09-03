@@ -1,7 +1,9 @@
 - name: Add GitHub to known_hosts
-  shell: ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
-  args:
-    executable: /bin/bash
+  known_hosts:
+    name: github.com
+    key: "{{ lookup('pipe', 'ssh-keyscan github.com 2>/dev/null') }}"
+    path: /root/.ssh/known_hosts
+    state: present
 
 - name: Test SSH to GitHub
   shell: ssh -T -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=15 git@github.com 2>&1 || true
