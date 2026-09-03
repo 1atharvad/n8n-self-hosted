@@ -150,22 +150,33 @@ async def execute_command(req: ExecuteRequest):
         try:
             with os.fdopen(fd, "w") as f:
                 f.write(req.script)
-            proc = await asyncio.create_subprocess_exec(
-                "bash",
-                tmp_path,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
+            try:
+                proc = await asyncio.create_subprocess_exec(
+                    "bash",
+                    tmp_path,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+            except OSError as e:
+                raise HTTPException(
+                    status_code=400, detail=f"Failed to execute script: {e}"
+                ) from e
             stdout, stderr = await proc.communicate()
         finally:
             os.unlink(tmp_path)
     else:
         parts = _validate_command(req.command)  # type: ignore[arg-type]
-        proc = await asyncio.create_subprocess_exec(
-            *parts,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *parts,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+        except OSError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to execute '{parts[0]}': {e}",
+            ) from e
         stdout, stderr = await proc.communicate()
 
     output = "\n".join(
