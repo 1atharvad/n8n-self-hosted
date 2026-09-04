@@ -1,0 +1,1010 @@
+/* ─── Fonts ──────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ─── Design tokens ──────────────────────────────────────────────────────────
+   All colours flow from these variables.
+   WCAG AA: body text ≥ 4.5:1, large/bold ≥ 3:1, UI components ≥ 3:1.
+
+   Dark (default)
+     bg:          #0d1117   sidebar: #10141a
+     text:        #e6edf3   (~16:1 on bg)
+     accent:      #0d9488   (teal-600, 5.3:1 on bg)
+     accent-high: #5eead4   (teal-300, ~14:1 on bg — used for links/labels)
+
+   Light
+     bg:          #ffffff   sidebar: #f4f6f6
+     text:        #1a202c   (~18:1 on bg)
+     accent:      #0d9488   (teal-600, 4.6:1 on white)
+     accent-high: #0f766e   (teal-700, 5.4:1 on white — used for links/labels)
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* ── Dark mode (default + explicit) ── */
+:root,
+[data-theme='dark'] {
+  --sl-font:      'Inter', system-ui, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Starlight accent slots */
+  --sl-color-accent-low:  #042f2e;
+  --sl-color-accent:      #0d9488;
+  --sl-color-accent-high: #5eead4;
+
+  /* Backgrounds */
+  --sl-color-bg:             #0d1117;
+  --sl-color-bg-nav:         #0d1117;
+  --sl-color-bg-sidebar:     #10141a;
+  --sl-color-bg-inline-code: #0a2420;
+
+  /* Text */
+  --sl-color-text:        #e6edf3;
+  --sl-color-text-accent: #5eead4;
+  --sl-color-text-invert: #0d1117;
+
+  /* Gray ramp */
+  --sl-color-gray-1: #b1bac4;
+  --sl-color-gray-2: #8b949e;
+  --sl-color-gray-3: #6e7681;
+  --sl-color-gray-4: #30363d;
+  --sl-color-gray-5: #21262d;
+  --sl-color-gray-6: #161b22;
+  --sl-color-black:  #010409;
+  --sl-color-white:  #f0f6fc;
+
+  /* Borders */
+  --sl-color-hairline-light: rgba(110, 118, 129, 0.2);
+  --sl-color-hairline:       rgba(110, 118, 129, 0.35);
+
+  /* Shadows */
+  --sl-shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 0 0 1px rgba(110,118,129,.12);
+  --sl-shadow-md: 0 4px 12px rgba(0,0,0,.5), 0 0 0 1px rgba(110,118,129,.12);
+
+  /* App-level semantic tokens */
+  --docs-link:        var(--sl-color-accent-high);
+  --docs-link-hover:  var(--sl-color-white);
+  --docs-nav-active-bg:   rgba(13, 148, 136, .16);
+  --docs-nav-active-text: var(--sl-color-accent-high);
+}
+
+/* ── Light mode overrides ── */
+[data-theme='light'] {
+  --sl-color-accent-low:  #ccfbf1;
+  --sl-color-accent:      #0d9488;   /* 4.6:1 on white ✓ AA */
+  --sl-color-accent-high: #0f766e;   /* 5.4:1 on white ✓ AA */
+
+  --sl-color-bg:             #ffffff;
+  --sl-color-bg-nav:         #f8fafb;
+  --sl-color-bg-sidebar:     #f4f6f6;
+  --sl-color-bg-inline-code: #e6fffa; /* teal-50 — visible on white ✓ */
+
+  --sl-color-text:        #1a202c;   /* ~18:1 on white ✓ AAA */
+  --sl-color-text-accent: #0f766e;
+  --sl-color-text-invert: #ffffff;
+
+  --sl-color-gray-1: #1a202c;
+  --sl-color-gray-2: #4a5568;
+  --sl-color-gray-3: #64748b;        /* slightly darker than #718096 for better contrast */
+  --sl-color-gray-4: #cbd5e0;
+  --sl-color-gray-5: #e2e8f0;
+  --sl-color-gray-6: #edf2f7;
+  --sl-color-black:  #000000;
+  /* "white" in light mode = darkest foreground, not literal white.
+     Starlight uses this as the primary text-on-bg color; literal #fff
+     would be invisible on a white background. */
+  --sl-color-white:  #1a202c;
+
+  --sl-color-hairline-light: rgba(0,0,0,.08);
+  --sl-color-hairline:       rgba(0,0,0,.15);
+
+  /* Shadows — lighter in light mode */
+  --sl-shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.06);
+  --sl-shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.06);
+
+  /* App semantic tokens (light) */
+  --docs-link:        #0f766e;       /* 5.4:1 on white ✓ AA */
+  --docs-link-hover:  #134e4a;       /* 7.7:1 on white ✓ AAA */
+  --docs-nav-active-bg:   rgba(13, 148, 136, .12);
+  --docs-nav-active-text: #134e4a;   /* 7.7:1 on tinted bg ✓ AA */
+}
+
+/* ─── Typography ──────────────────────────────────────────────────────────── */
+
+body {
+  font-feature-settings: 'cv02','cv03','cv04','cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4,
+.sl-markdown-content h5,
+.sl-markdown-content h6 {
+  font-weight: 600;
+  letter-spacing: -.025em;
+  color: var(--sl-color-white);
+}
+
+/* Light mode: headings must be dark text, not white */
+[data-theme='light'] .sl-markdown-content h1,
+[data-theme='light'] .sl-markdown-content h2,
+[data-theme='light'] .sl-markdown-content h3,
+[data-theme='light'] .sl-markdown-content h4,
+[data-theme='light'] .sl-markdown-content h5,
+[data-theme='light'] .sl-markdown-content h6 {
+  color: var(--sl-color-text) !important;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--sl-color-hairline-light);
+}
+
+.sl-markdown-content h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.sl-markdown-content p {
+  line-height: 1.75;
+  color: var(--sl-color-text);
+}
+
+/* ─── Links ───────────────────────────────────────────────────────────────── */
+
+.sl-markdown-content a {
+  color: var(--docs-link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--docs-link) 35%, transparent);
+  text-underline-offset: 2px;
+  transition: color .15s ease, text-decoration-color .15s ease;
+}
+
+.sl-markdown-content a:hover {
+  color: var(--docs-link-hover);
+  text-decoration-color: var(--docs-link-hover);
+}
+
+/* ─── Focus (WCAG 2.4.7 / 2.4.11) ───────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+header.header {
+  background: var(--sl-color-bg-nav) !important;
+  border-bottom: 1px solid var(--sl-color-hairline);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.site-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -.02em;
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────────────────────── */
+
+.sidebar-pane {
+  background: var(--sl-color-bg-sidebar) !important;
+  border-right: 1px solid var(--sl-color-hairline) !important;
+}
+
+.group-label span {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-2);
+}
+
+[data-theme='light'] .group-label span {
+  color: #0f766e !important;             /* teal-700 — branded accent for group headings */
+}
+
+.sidebar-content a {
+  border-radius: 6px;
+  padding: .35rem .65rem;
+  font-size: .875rem;
+  font-weight: 400;
+  color: var(--sl-color-gray-1);
+  transition: background .12s ease, color .12s ease;
+  text-decoration: none;
+}
+
+.sidebar-content a:hover {
+  background: var(--sl-color-gray-5);
+  color: var(--sl-color-white);
+}
+
+[data-theme='light'] .sidebar-content a:hover {
+  background: var(--sl-color-gray-5);
+  color: var(--sl-color-gray-1);      /* dark text on light hover bg ✓ */
+}
+
+.sidebar-content a[aria-current='page'] {
+  background: var(--docs-nav-active-bg) !important;
+  color: var(--docs-nav-active-text) !important;
+  font-weight: 500;
+  border-left: 2px solid var(--sl-color-accent);
+  padding-left: calc(.65rem - 2px);
+}
+
+/* ─── Main content ────────────────────────────────────────────────────────── */
+
+.content-panel {
+  background: var(--sl-color-bg);
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--sl-color-white) 0%, var(--sl-color-accent-high) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme='light'] .page-title {
+  background: linear-gradient(135deg, #134e4a 0%, #0d9488 60%, #0891b2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Search / Pagefind ───────────────────────────────────────────────────── */
+
+/* Pass Starlight vars into the Pagefind CSS-variable layer */
+:root,
+[data-theme='light'] {
+  --pagefind-ui-primary:   var(--sl-color-accent);
+  --pagefind-ui-text:      var(--sl-color-text);
+  --pagefind-ui-background: var(--sl-color-bg-nav);
+  --pagefind-ui-border:    var(--sl-color-hairline);
+  --pagefind-ui-font:      var(--sl-font);
+  --pagefind-ui-input-active-border-color: var(--sl-color-accent);
+}
+
+/* Search trigger button in the header —
+   --sl-color-white is #1a202c in light mode which makes the button bg near-black.
+   Reset it to a light surface with a visible border. */
+[data-theme='light'] .search-btn,
+[data-theme='light'] site-search > button,
+[data-theme='light'] button[data-open-modal] {
+  background-color: #ffffff !important;
+  color: #4a5568 !important;
+  border: 1px solid #cbd5e0 !important;
+  border-radius: 6px !important;
+}
+
+[data-theme='light'] .search-btn:hover,
+[data-theme='light'] site-search > button:hover,
+[data-theme='light'] button[data-open-modal]:hover {
+  background-color: #f4f6f6 !important;
+  border-color: #0d9488 !important;
+  color: #0f766e !important;
+}
+
+[data-theme='light'] .search-btn svg,
+[data-theme='light'] site-search > button svg,
+[data-theme='light'] button[data-open-modal] svg {
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+dialog.search-dialog {
+  border-radius: 12px !important;
+  border: 1px solid var(--sl-color-hairline) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55) !important;
+  background: var(--sl-color-bg-nav) !important;
+}
+
+/* Pagefind injects its own stylesheet; we beat it with specificity, not !important */
+[data-theme='light'] dialog.search-dialog {
+  background: #ffffff !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.12) !important;
+}
+
+/* The actual text input inside Pagefind */
+[data-theme='light'] site-search input[type='search'],
+[data-theme='light'] .pagefind-ui input[type='search'],
+[data-theme='light'] .pagefind-ui__search-input {
+  background: #ffffff !important;
+  color: #1a202c !important;         /* 18:1 on white ✓ AAA */
+  border-color: #cbd5e0 !important;
+  caret-color: var(--sl-color-accent);
+}
+
+[data-theme='light'] site-search input[type='search']::placeholder,
+[data-theme='light'] .pagefind-ui__search-input::placeholder {
+  color: #718096;                    /* 4.6:1 on white ✓ AA */
+}
+
+/* ─── Inline code ─────────────────────────────────────────────────────────── */
+
+:not(pre) > code {
+  background: var(--sl-color-bg-inline-code) !important;
+  color: var(--sl-color-accent-high) !important;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 4px;
+  padding: .12em .4em;
+  font-size: .875em;
+  font-family: var(--sl-font-mono);
+}
+
+[data-theme='light'] :not(pre) > code {
+  background: #e6fffa !important;       /* teal-50 */
+  color: #0f766e !important;            /* teal-700, 5.4:1 on teal-50 ✓ AA */
+  border-color: #99f6e4 !important;     /* teal-200 */
+}
+
+/* ─── Code blocks (Expressive Code) ──────────────────────────────────────── */
+
+.expressive-code {
+  border-radius: 10px !important;
+  overflow: hidden;
+  border: 1px solid var(--sl-color-hairline) !important;
+  box-shadow: var(--sl-shadow-sm);
+  margin: 1.25rem 0;
+}
+
+.expressive-code .frame {
+  background: #161b22 !important;
+}
+
+[data-theme='light'] .expressive-code .frame {
+  background: #f6f8fa !important;
+}
+
+.expressive-code .header {
+  background: #1c2128 !important;
+  border-bottom: 1px solid var(--sl-color-hairline) !important;
+  padding: .5rem .85rem !important;
+}
+
+[data-theme='light'] .expressive-code .header {
+  background: #eaecef !important;
+  border-bottom-color: #d0d7de !important;
+}
+
+/* ─── Tables ──────────────────────────────────────────────────────────────── */
+
+/* Expand any overflow wrapper Starlight injects */
+.sl-markdown-content :where(figure, div):has(> table) {
+  width: 100%;
+  max-width: 100%;
+}
+
+.sl-markdown-content table {
+  width: 100%;
+  min-width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--sl-color-hairline);
+  margin: 1.25rem 0;
+  font-size: .9rem;
+}
+
+/* First column (labels / keys): shrink to content, don't wrap */
+.sl-markdown-content td:first-child,
+.sl-markdown-content th:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Last column: take all remaining space, allow wrapping */
+.sl-markdown-content td:last-child,
+.sl-markdown-content th:last-child {
+  width: auto;
+}
+
+.sl-markdown-content thead {
+  background: var(--sl-color-gray-5);
+}
+
+.sl-markdown-content thead th {
+  padding: .65rem 1rem;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-2);
+  border-bottom: 1px solid var(--sl-color-hairline);
+  text-align: left;
+}
+
+.sl-markdown-content tbody tr {
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+  transition: background .1s ease;
+}
+
+.sl-markdown-content tbody tr:last-child {
+  border-bottom: none;
+}
+
+.sl-markdown-content tbody tr:hover {
+  background: rgba(13, 148, 136, .06);
+}
+
+.sl-markdown-content tbody td {
+  padding: .6rem 1rem;
+  vertical-align: top;
+  color: var(--sl-color-text);
+}
+
+[data-theme='light'] .sl-markdown-content table {
+  border-color: var(--sl-color-hairline);
+}
+
+[data-theme='light'] .sl-markdown-content thead {
+  background: var(--sl-color-gray-6);  /* #edf2f7, clear on white ✓ */
+}
+
+[data-theme='light'] .sl-markdown-content thead th {
+  color: var(--sl-color-gray-2);       /* #4a5568, 5.9:1 on #edf2f7 ✓ AA */
+}
+
+[data-theme='light'] .sl-markdown-content tbody td {
+  color: var(--sl-color-text);
+}
+
+[data-theme='light'] .sl-markdown-content tbody tr {
+  border-bottom-color: var(--sl-color-gray-5);
+}
+
+/* ─── Blockquotes ─────────────────────────────────────────────────────────── */
+
+.sl-markdown-content blockquote {
+  border-left: 3px solid var(--sl-color-accent);
+  background: rgba(13, 148, 136, .08);
+  border-radius: 0 6px 6px 0;
+  padding: .75rem 1.1rem;
+  margin: 1rem 0;
+  color: var(--sl-color-gray-1);
+}
+
+[data-theme='light'] .sl-markdown-content blockquote {
+  background: #f0fdfb !important;        /* teal-50 tint */
+  border-left-color: #0d9488 !important;
+  color: #1a202c !important;
+}
+
+.sl-markdown-content blockquote p { margin: 0; }
+
+/* ─── Asides (:::note, :::tip, :::caution, :::danger) ────────────────────── */
+
+.starlight-aside {
+  border-radius: 8px !important;
+  border: 1px solid !important;
+}
+
+.starlight-aside--note    { background: rgba(13,148,136,.08)  !important; border-color: rgba(13,148,136,.35)  !important; }
+.starlight-aside--tip     { background: rgba(16,185,129,.08)  !important; border-color: rgba(16,185,129,.35)  !important; }
+.starlight-aside--caution { background: rgba(245,158,11,.08)  !important; border-color: rgba(245,158,11,.35)  !important; }
+.starlight-aside--danger  { background: rgba(239,68,68,.08)   !important; border-color: rgba(239,68,68,.35)   !important; }
+
+/* Light mode: stronger tints so the aside pops against white */
+[data-theme='light'] .starlight-aside--note    { background: #f0fdfb !important; border-color: #0d9488 !important; }
+[data-theme='light'] .starlight-aside--tip     { background: #f0fdf4 !important; border-color: #10b981 !important; }
+[data-theme='light'] .starlight-aside--caution { background: #fffbeb !important; border-color: #f59e0b !important; }
+[data-theme='light'] .starlight-aside--danger  { background: #fff5f5 !important; border-color: #ef4444 !important; }
+
+/* Ensure aside body text is dark in light mode */
+[data-theme='light'] .starlight-aside p,
+[data-theme='light'] .starlight-aside li { color: #1a202c !important; }
+
+/* ─── Hero (landing page) ────────────────────────────────────────────────── */
+
+.hero {
+  padding: 4rem 1.5rem !important;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #f0f6fc 0%, #5eead4 50%, #0d9488 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+[data-theme='light'] .hero h1 {
+  background: linear-gradient(135deg, #134e4a 0%, #0d9488 50%, #0891b2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero .tagline {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--sl-color-gray-2);
+  max-width: 36rem;
+  margin: 0 auto 2rem;
+}
+
+[data-theme='light'] .hero .tagline {
+  color: #4a5568 !important;             /* #4a5568 on white = 8:1 ✓ AAA */
+}
+
+.hero .action {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: .9rem !important;
+  padding: .65rem 1.5rem !important;
+  transition: transform .15s ease, box-shadow .15s ease !important;
+}
+
+.hero .action:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, .4) !important;
+}
+
+.hero .action.primary {
+  background: var(--sl-color-accent) !important;
+  border-color: var(--sl-color-accent) !important;
+  color: #ffffff !important;           /* white on #0d9488, 4.6:1 ✓ AA */
+}
+
+.hero .action.secondary {
+  border-color: var(--sl-color-hairline) !important;
+  color: var(--sl-color-gray-1) !important;
+}
+
+/* ─── Link buttons (sl-link-button) ──────────────────────────────────────── */
+
+/* Starlight uses --sl-color-white for button text; in light mode that's #1a202c
+   (black) on a teal background. Force white text on any filled/primary variant. */
+[data-theme='light'] .sl-link-button,
+[data-theme='light'] a.sl-link-button {
+  color: #ffffff !important;
+}
+
+/* Secondary / outline variant: teal text on transparent bg */
+[data-theme='light'] .sl-link-button[data-variant='secondary'],
+[data-theme='light'] a.sl-link-button[data-variant='secondary'] {
+  color: #0f766e !important;
+  border-color: #0d9488 !important;
+  background: transparent !important;
+}
+
+[data-theme='light'] .sl-link-button[data-variant='secondary']:hover,
+[data-theme='light'] a.sl-link-button[data-variant='secondary']:hover {
+  background: rgba(13, 148, 136, .08) !important;
+  color: #134e4a !important;
+}
+
+/* Minimal variant: just teal text, no border */
+[data-theme='light'] .sl-link-button[data-variant='minimal'],
+[data-theme='light'] a.sl-link-button[data-variant='minimal'] {
+  color: #0f766e !important;
+  background: transparent !important;
+}
+
+[data-theme='light'] .sl-link-button[data-variant='minimal']:hover,
+[data-theme='light'] a.sl-link-button[data-variant='minimal']:hover {
+  color: #134e4a !important;
+}
+
+/* ─── Card grid ───────────────────────────────────────────────────────────── */
+
+.card-grid { gap: 1rem !important; }
+
+.card {
+  background: var(--sl-color-bg-sidebar) !important;
+  border: 1px solid var(--sl-color-hairline) !important;
+  border-radius: 10px !important;
+  padding: 1.4rem 1.5rem !important;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease !important;
+  box-shadow: none !important;
+}
+
+.card:hover {
+  border-color: var(--sl-color-accent) !important;
+  box-shadow: 0 4px 20px rgba(13, 148, 136, .18) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Dark: white title on dark card bg — high contrast ✓ */
+.card .title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--sl-color-white) !important;
+}
+
+.card .body {
+  font-size: .875rem !important;
+  color: var(--sl-color-gray-2) !important;
+  line-height: 1.6 !important;
+}
+
+[data-theme='light'] .card {
+  background: #ffffff !important;
+  border-color: var(--sl-color-gray-5) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06) !important;
+}
+
+[data-theme='light'] .card:hover {
+  border-color: var(--sl-color-accent) !important;
+  box-shadow: 0 4px 20px rgba(13, 148, 136, .12) !important;
+}
+
+/* Light: dark title on white card — high contrast ✓ */
+[data-theme='light'] .card .title {
+  color: var(--sl-color-gray-1) !important;   /* #1a202c, ~18:1 on white ✓ AAA */
+}
+
+[data-theme='light'] .card .body {
+  color: var(--sl-color-gray-2) !important;   /* #4a5568, ~8:1 on white ✓ AAA */
+}
+
+/* ─── Table of contents (right sidebar) ──────────────────────────────────── */
+
+.right-sidebar {
+  border-left: 1px solid var(--sl-color-hairline) !important;
+}
+
+.right-sidebar a {
+  font-size: .82rem !important;
+  color: var(--sl-color-gray-3) !important;
+  transition: color .12s ease !important;
+  text-decoration: none;
+}
+
+.right-sidebar a:hover,
+.right-sidebar a[aria-current='true'] {
+  color: var(--sl-color-accent-high) !important;
+}
+
+[data-theme='light'] .right-sidebar a {
+  color: #64748b !important;             /* slate-500, 4.7:1 on white ✓ AA */
+}
+
+[data-theme='light'] .right-sidebar a:hover,
+[data-theme='light'] .right-sidebar a[aria-current='true'] {
+  color: #0f766e !important;             /* teal-700, 5.4:1 on white ✓ AA */
+}
+
+/* ─── Breadcrumbs ────────────────────────────────────────────────────────── */
+
+.sl-breadcrumbs { font-size: .8rem; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: var(--sl-color-gray-4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sl-color-gray-3); }
+
+/* ─── Pagination ─────────────────────────────────────────────────────────── */
+
+.pagination-links a {
+  border-radius: 8px !important;
+  border: 1px solid var(--sl-color-hairline) !important;
+  transition: border-color .15s ease, background .15s ease !important;
+}
+
+.pagination-links a:hover {
+  border-color: var(--sl-color-accent) !important;
+  background: rgba(13, 148, 136, .08) !important;
+}
+
+/* ─── Badge ───────────────────────────────────────────────────────────────── */
+
+.sl-badge {
+  border-radius: 4px !important;
+  font-size: .7rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .05em !important;
+}
+
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 72rem) {
+  .hero h1 { font-size: clamp(1.75rem, 8vw, 2.5rem); }
+}
+
+/* ─── Mermaid ─────────────────────────────────────────────────────────────── */
+
+.mermaid {
+  background: var(--sl-color-bg-sidebar);
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  text-align: center;
+  /* Constrain width so vertical diagrams don't sprawl horizontally and
+     shrink their font size to compensate. Horizontal scroll handles the
+     rare wide diagram without affecting font size. */
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid svg {
+  /* Let the SVG size to its content; cap at the container width.
+     Do NOT force width:100% — that stretches TD diagrams horizontally
+     and Mermaid scales the font down to match. */
+  max-width: 100%;
+  height: auto;
+  width: auto;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Mermaid theme overrides
+   Strategy:
+   1. Set `color` on the .mermaid container so all HTML descendants
+      (including <span> inside <foreignObject>) inherit it automatically.
+   2. Back that up with a wildcard `foreignObject *` rule to beat any inline
+      styles Mermaid injects.
+   3. Override SVG `fill` on every shape class Mermaid v9-v11 uses.
+   :root covers the initial page load before Starlight sets data-theme.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dark mode base ── */
+:root .mermaid,
+[data-theme='dark'] .mermaid {
+  color: #e6edf3;   /* all HTML label descendants inherit this */
+}
+
+/* All HTML inside foreignObject — span / div / p / anything */
+:root .mermaid foreignObject *,
+[data-theme='dark'] .mermaid foreignObject *,
+:root .mermaid .nodeLabel,
+:root .mermaid .nodeLabel *,
+:root .mermaid .edgeLabel,
+[data-theme='dark'] .mermaid .nodeLabel,
+[data-theme='dark'] .mermaid .nodeLabel *,
+[data-theme='dark'] .mermaid .edgeLabel { color: #e6edf3 !important; }
+
+/* SVG text */
+:root .mermaid svg text,
+[data-theme='dark'] .mermaid svg text { fill: #e6edf3 !important; }
+
+/* Node shapes — v9: .node > rect/circle etc.  v10/11: .label-container / .basic */
+:root .mermaid svg .node > rect,
+:root .mermaid svg .node > circle,
+:root .mermaid svg .node > ellipse,
+:root .mermaid svg .node > polygon,
+:root .mermaid svg .node > path,
+:root .mermaid svg .label-container,
+:root .mermaid svg .basic,
+[data-theme='dark'] .mermaid svg .node > rect,
+[data-theme='dark'] .mermaid svg .node > circle,
+[data-theme='dark'] .mermaid svg .node > ellipse,
+[data-theme='dark'] .mermaid svg .node > polygon,
+[data-theme='dark'] .mermaid svg .node > path,
+[data-theme='dark'] .mermaid svg .label-container,
+[data-theme='dark'] .mermaid svg .basic { fill: #10141a !important; stroke: #0f766e !important; }
+
+/* Edges */
+:root .mermaid svg .edgePath .path,
+:root .mermaid svg .flowchart-link,
+[data-theme='dark'] .mermaid svg .edgePath .path,
+[data-theme='dark'] .mermaid svg .flowchart-link { stroke: #8b949e !important; }
+
+:root .mermaid svg .arrowheadPath,
+[data-theme='dark'] .mermaid svg .arrowheadPath { fill: #8b949e !important; stroke: #8b949e !important; }
+
+/* Edge labels */
+:root .mermaid svg .edgeLabel rect,
+[data-theme='dark'] .mermaid svg .edgeLabel rect { fill: #10141a !important; }
+
+/* Clusters / subgraphs */
+:root .mermaid svg .cluster rect,
+[data-theme='dark'] .mermaid svg .cluster rect { fill: #161b22 !important; stroke: #30363d !important; }
+
+:root .mermaid svg .cluster span,
+[data-theme='dark'] .mermaid svg .cluster span { color: #5eead4 !important; }
+
+/* Sequence — actors, messages, notes */
+:root .mermaid svg .actor,
+[data-theme='dark'] .mermaid svg .actor { fill: #10141a !important; stroke: #0d9488 !important; }
+
+:root .mermaid svg .actor > line,
+[data-theme='dark'] .mermaid svg .actor > line { stroke: #8b949e !important; }
+
+:root .mermaid svg .messageLine0,
+:root .mermaid svg .messageLine1,
+[data-theme='dark'] .mermaid svg .messageLine0,
+[data-theme='dark'] .mermaid svg .messageLine1 { stroke: #5eead4 !important; }
+
+:root .mermaid svg .note,
+[data-theme='dark'] .mermaid svg .note { fill: #042f2e !important; stroke: #0f766e !important; }
+
+/* ── Light mode container ── */
+[data-theme='light'] .mermaid {
+  background: #f8fafb !important;
+  border-color: #cbd5e0 !important;
+  color: #ffffff;   /* white — node labels inherit this */
+}
+
+/* White text on dark teal nodes — all HTML inside foreignObject */
+[data-theme='light'] .mermaid foreignObject *,
+[data-theme='light'] .mermaid .nodeLabel,
+[data-theme='light'] .mermaid .nodeLabel *,
+[data-theme='light'] .mermaid .edgeLabel { color: #ffffff !important; }
+
+/* SVG text inside nodes */
+[data-theme='light'] .mermaid svg text { fill: #ffffff !important; }
+
+/* Node shapes — teal-700 fill so white text is readable (5.4:1 ✓ AA) */
+[data-theme='light'] .mermaid svg .node > rect,
+[data-theme='light'] .mermaid svg .node > circle,
+[data-theme='light'] .mermaid svg .node > ellipse,
+[data-theme='light'] .mermaid svg .node > polygon,
+[data-theme='light'] .mermaid svg .node > path,
+[data-theme='light'] .mermaid svg .label-container,
+[data-theme='light'] .mermaid svg .basic { fill: #0f766e !important; stroke: #134e4a !important; stroke-width: 1.5px !important; }
+
+/* Edges */
+[data-theme='light'] .mermaid svg .edgePath .path,
+[data-theme='light'] .mermaid svg .flowchart-link { stroke: #4a5568 !important; stroke-width: 1.5px !important; }
+
+[data-theme='light'] .mermaid svg .arrowheadPath { fill: #4a5568 !important; stroke: #4a5568 !important; }
+
+/* Edge labels — dark text on light bg */
+[data-theme='light'] .mermaid svg .edgeLabel rect { fill: #f4f6f6 !important; }
+[data-theme='light'] .mermaid svg .edgeLabel text,
+[data-theme='light'] .mermaid svg .edgeLabel foreignObject * { color: #1a202c !important; fill: #1a202c !important; }
+
+/* Clusters / subgraphs */
+[data-theme='light'] .mermaid svg .cluster rect { fill: #e2e8f0 !important; stroke: #94a3b8 !important; }
+
+[data-theme='light'] .mermaid svg .cluster span,
+[data-theme='light'] .mermaid svg .cluster .nodeLabel { color: #0f766e !important; }
+
+/* Titles / section labels */
+[data-theme='light'] .mermaid svg .titleText,
+[data-theme='light'] .mermaid svg .sectionTitle { fill: #0f766e !important; font-weight: 600 !important; }
+
+/* Sequence — actors (teal fill, white text) */
+[data-theme='light'] .mermaid svg .actor { fill: #0f766e !important; stroke: #134e4a !important; }
+
+[data-theme='light'] .mermaid svg .actor > line { stroke: #4a5568 !important; }
+
+[data-theme='light'] .mermaid svg .messageLine0,
+[data-theme='light'] .mermaid svg .messageLine1 { stroke: #0d9488 !important; }
+
+[data-theme='light'] .mermaid svg .messageText { fill: #1a202c !important; }
+
+/* Note boxes */
+[data-theme='light'] .mermaid svg .note { fill: #ccfbf1 !important; stroke: #0d9488 !important; }
+
+[data-theme='light'] .mermaid svg .noteText { fill: #134e4a !important; }
+
+/* Loop / alt boxes */
+[data-theme='light'] .mermaid svg .loopLine { stroke: #0d9488 !important; }
+
+[data-theme='light'] .mermaid svg .loopText,
+[data-theme='light'] .mermaid svg .loopText > tspan { fill: #1a202c !important; }
+
+/* Pie charts */
+[data-theme='light'] .mermaid svg .pieCircle { stroke: #ffffff !important; }
+
+[data-theme='light'] .mermaid svg .pieTitleText { fill: #0f766e !important; font-weight: 700 !important; }
+
+/* ─── n8n workflow embed ──────────────────────────────────────────────────── */
+
+.n8n-embed {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.25rem 0;
+  background: var(--sl-color-bg-sidebar);
+  aspect-ratio: 16 / 9;
+  min-height: 480px;
+}
+
+.n8n-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* ─── workflow-canvas web component ──────────────────────────────────────── */
+
+workflow-canvas {
+  display: block;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.25rem 0;
+  background: var(--sl-color-bg-sidebar);
+}
+
+.wf-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--sl-color-hairline);
+}
+
+.wf-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sl-color-text);
+}
+
+.wf-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--sl-color-bg-inline-code);
+  color: var(--sl-color-text-accent);
+  font-family: var(--sl-font-mono, monospace);
+}
+
+.wf-canvas-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem;
+}
+
+.wf-svg {
+  display: block;
+  min-width: 100%;
+  height: auto;
+}
+
+.wf-edge {
+  fill: none;
+  stroke: #8b949e;
+  stroke-width: 1.5;
+}
+
+[data-theme='light'] .wf-edge {
+  stroke: #64748b;
+}
+
+.wf-arrowhead {
+  fill: #8b949e;
+}
+
+[data-theme='light'] .wf-arrowhead {
+  fill: #64748b;
+}
+
+.wf-nl {
+  fill: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: Inter, system-ui, sans-serif;
+  pointer-events: none;
+}
+
+.wf-nt {
+  fill: rgba(255, 255, 255, 0.65);
+  font-size: 10px;
+  font-family: Inter, system-ui, sans-serif;
+  pointer-events: none;
+}
+
+.wf-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--sl-color-gray-3);
+  font-size: 0.875rem;
+}
+
+.wf-err {
+  color: var(--sl-color-red);
+}

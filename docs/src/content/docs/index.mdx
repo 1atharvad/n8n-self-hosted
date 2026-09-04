@@ -1,0 +1,48 @@
+---
+title: N8N Automation Platform
+description: Developer documentation for the self-hosted n8n automation stack with media processing, admin tooling, and CI/CD.
+template: splash
+hero:
+  tagline: Self-hosted n8n with custom media APIs, admin panel, log observability, and automated CI/CD.
+  actions:
+    - text: Local Setup
+      link: /docs/getting-started/local-setup/
+      icon: right-arrow
+      variant: primary
+    - text: Architecture
+      link: /docs/architecture/overview/
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What's in this repo
+
+<CardGrid stagger>
+  <Card title="Workflow Automation" icon="rocket">
+    n8n self-hosted — workflows covering video pipeline, schedule management, and media processing automation.
+  </Card>
+  <Card title="Media Processing API" icon="laptop">
+    FastAPI service (`api/`) handling TTS, PowerPoint generation, video encoding, and shell execution — everything too heavy for n8n nodes.
+  </Card>
+  <Card title="Admin Panel" icon="setting">
+    React + FastAPI operations dashboard. Manage env vars, view logs, restart containers, trigger deploys — no SSH needed.
+  </Card>
+  <Card title="Custom n8n Nodes" icon="puzzle">
+    Two TypeScript nodes: `JsonVariables` (persistent key-value store) and `RemoteExecute` (shell commands via Media API).
+  </Card>
+</CardGrid>
+
+## Quick navigation
+
+| Section | What you'll find |
+|---|---|
+| [Getting Started](/docs/getting-started/overview/) | Clone → configure → run in 5 steps |
+| [Architecture](/docs/architecture/overview/) | Component map, Nginx routing, data flows, Docker topologies |
+| [Services](/docs/services/media-api/) | Every endpoint on Media API, Admin API, and Worker Monitor |
+| [Workflows](/docs/n8n-workflows/overview/) | Workflow catalog — purpose, trigger, integrations |
+| [Custom Nodes](/docs/custom-nodes/json-variables/) | JsonVariables and RemoteExecute internals |
+| [Credentials](/docs/credentials/overview/) | How to configure every n8n credential, including Google CSE step-by-step |
+| [Admin Panel](/docs/admin-panel/overview/) | Page-by-page guide to the operations dashboard |
+| [Database](/docs/database/overview/) | PostgreSQL schemas, SQLite tables, Alembic migrations |
+| [Deployment](/docs/deployment/overview/) | GitHub Actions, Ansible playbooks, topology switching |
