@@ -23,7 +23,6 @@
 ### Infrastructure & DevOps
 ![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=flat-square&logo=ansible&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
-![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 
 ## ✨ Key Features
@@ -43,7 +42,7 @@
 - Docker Compose orchestration (single-server and multi-server)
 - Ansible-based provisioning and deployment
 - GitHub Actions CI/CD with lint gates and targeted container restarts
-- Nginx reverse proxy + Cloudflare Tunnel for secure access
+- Nginx reverse proxy for secure access
 - Admin panel for environment variable and deployment management
 
 ## 🚀 Local Development
@@ -53,77 +52,80 @@
 git clone https://github.com/1atharvad/n8n-self-hosted.git
 cd n8n-self-hosted
 
-# Install dependencies
+# Install required npm packages
 npm install
 
 # Set up environment
 cp .env.example .env
 nano .env
 
+# Setup files for n8n, installing custom nodes, adding required assets
+sh sh_files/setup_n8n_files.sh --clear-init
+
 # Start dev environment
 npm run docker:dev
 
 # Stop dev environment
-npm run docker-down:dev
+npm run docker:down:dev
 ```
 
 ## 🖥️ Server Provisioning (first-time setup)
 
-Requires Ansible installed locally (`pip install ansible`).
+See the [Server Setup docs](https://n8n.atharvadevasthali.com/docs/getting-started/server-setup/) (or `docs/src/content/docs/getting-started/server-setup.md` in this repo) for the full step-by-step guide covering single-server, multi-server, adding workers, rollback, and SSH key management.
+
+Quick summary:
 
 ```bash
-# Provision a single server
-npm run ansible:setup:single
+# 1. Provision (installs Docker, Node.js, generates deploy key, clones the repo)
+CONTABO_MAIN_IP="1.2.3.4" GITHUB_REPO="owner/repo" npm run ansible:setup:single
 
-# Provision multi-server (main + workers)
-npm run ansible:setup:multi
+# 2. Add the printed deploy key to GitHub → Repository settings → Deploy keys
+#    If the clone step failed because the key wasn't added yet, just re-run step 1 —
+#    every task in setup.yml is idempotent, so it picks up where it left off.
+
+# 3. First deploy (copies .env, starts containers)
+CONTABO_MAIN_IP="1.2.3.4" npm run ansible:deploy:single
 ```
 
-This installs Docker, Node.js, clones the repo, generates a GitHub deploy key, and sets up SSH access.
+## 🔑 GitHub Repository Variables
 
-After running, copy the printed deploy public key and add it to **GitHub → Settings → Deploy keys** (read-only). Then re-run with `--tags clone` to finish the repo clone:
+### Required variables (GitHub → Repository settings → Secrets and variables → Actions)
 
-```bash
-ansible-playbook -i ansible/inventory/single.yml ansible/playbooks/setup.yml --tags clone
-```
-
-## 🔑 GitHub Secrets & Variables
-
-### Required secrets (GitHub → Settings → Secrets)
-
-| Secret | Description |
-|---|---|
-| `CONTABO_SSH_KEY` | Private SSH key for connecting to all servers |
-| `CONTABO_MAIN_IP` | Main server IP |
-| `CONTABO_WORKER_IP` | Comma-separated worker IPs — **if empty, single-server mode; if set, multi-server mode** |
+| Variable            | Description                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| `CONTABO_SSH_KEY`   | Private SSH key for connecting to all servers — paste the full contents of `~/.ssh/id_ed25519` |
+| `CONTABO_MAIN_IP`   | Main server IP                                                                                 |
+| `CONTABO_WORKER_IP` | Comma-separated worker IPs — **if empty, single-server mode; if set, multi-server mode**       |
+| `GITHUB_REPO`       | GitHub repo slug used by Ansible to clone the repo (e.g. `owner/repo-name`)                    |
 
 ### App secrets (injected into `.env` on deploy)
 
-| Secret | Description |
-|---|---|
-| `JWT_SECRET` | Admin panel JWT signing secret |
-| `LOGS_ADMIN_PASSWORD` | Admin panel login password |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | PostgreSQL credentials |
-| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` / `MINIO_BUCKET_NAME` | MinIO credentials |
-| `N8N_ENCRYPTION_KEY` | n8n data encryption key |
-| `N8N_BASIC_AUTH_USER` / `N8N_BASIC_AUTH_PASSWORD` | n8n basic auth |
-| `N8N_API_KEY` | n8n API key (used internally) |
-| `API_KEY` | Media API key |
-| `ADMIN_PASSWORD` / `ADMIN_SECRET_KEY` | FastAPI admin credentials |
-| `INTERNAL_SECRET` | Internal service-to-service auth token |
-| `WEBHOOK_TUNNEL_URL` | n8n webhook URL (Cloudflare tunnel) |
-| `N8N_EDITOR_BASE_URL` | Public URL of the n8n instance |
+| Variable                                                                | Description                            |
+| ----------------------------------------------------------------------- | -------------------------------------- |
+| `JWT_SECRET`                                                            | Admin panel JWT signing secret         |
+| `LOGS_ADMIN_PASSWORD`                                                   | Admin panel login password             |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | PostgreSQL credentials                 |
+| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` / `MINIO_BUCKET_NAME`         | MinIO credentials                      |
+| `N8N_ENCRYPTION_KEY`                                                    | n8n data encryption key                |
+| `N8N_BASIC_AUTH_USER` / `N8N_BASIC_AUTH_PASSWORD`                       | n8n basic auth                         |
+| `N8N_API_KEY`                                                           | n8n API key (used internally)          |
+| `API_KEY`                                                               | Media API key                          |
+| `ADMIN_PASSWORD` / `ADMIN_SECRET_KEY`                                   | FastAPI admin credentials              |
+| `INTERNAL_SECRET`                                                       | Internal service-to-service auth token |
+| `WEBHOOK_TUNNEL_URL`                                                    | n8n webhook URL                        |
+| `N8N_EDITOR_BASE_URL`                                                   | Public URL of the n8n instance         |
+| `VUE_APP_URL_BASE_API`                                                  | Base API URL baked into the admin frontend build |
 
-### Optional secrets (have defaults)
+### Optional variables (have defaults)
 
-| Secret | Default | Description |
-|---|---|---|
-| `LOGS_ADMIN_USERNAME` | `admin` | Admin panel username |
-| `ADMIN_USERNAME` | `admin` | FastAPI admin username |
-| `JWT_EXPIRE_HOURS` | `24` | JWT token expiry |
-| `CPU_GATE_THRESHOLD` | `35` | CPU % gate for API requests |
-| `SERVER_ID` | `main` | Server identifier for worker-monitor |
-| `WORKER_MONITOR_POLL_SEC` | `30` | Worker monitor poll interval |
+| Variable                  | Default | Description                          |
+| ------------------------- | ------- | ------------------------------------ |
+| `LOGS_ADMIN_USERNAME`     | `admin` | Admin panel username                 |
+| `ADMIN_USERNAME`          | `admin` | FastAPI admin username               |
+| `JWT_EXPIRE_HOURS`        | `24`    | JWT token expiry                     |
+| `CPU_GATE_THRESHOLD`      | `35`    | CPU % gate for API requests          |
+| `SERVER_ID`               | `main`  | Server identifier for worker-monitor |
+| `WORKER_MONITOR_POLL_SEC` | `30`    | Worker monitor poll interval         |
 
 ## 🚢 Deployment
 
@@ -139,7 +141,7 @@ To add a worker: append its IP to `CONTABO_WORKER_IP` and push. No other changes
 ### Automatic (GitHub Actions)
 Every push to `main` triggers the CI/CD pipeline:
 1. **Lint** — frontend ESLint + Python black/isort/ruff
-2. **Deploy** — Ansible deploys only the affected containers based on changed paths
+2. **Deploy** — full Ansible deploy (skipped if only `n8n-workflows/` changed)
 
 ### Manual
 ```bash
@@ -156,21 +158,17 @@ CONTABO_WORKER_IP="1.2.3.4,5.6.7.8" npm run ansible:rollback:multi
 
 ### Deployment Topologies
 
-| Topology | Compose file | Services |
-|---|---|---|
-| `single` | `docker-compose.prod.yml` | Everything on one server |
-| `multi` — main | `docker-compose.prod-main.yml` | n8n, postgres, redis, nginx, minio, admin-api, loki |
-| `multi` — workers | `docker-compose.prod-worker.yml` | n8n-worker, fastapi, promtail |
+| Topology          | Compose file                     | Services                                                                                        |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `single`          | `docker-compose.prod.yml`        | Everything on one server                                                                        |
+| `multi` — main    | `docker-compose.prod-main.yml`   | n8n, worker-monitor, redis, postgres, nginx, minio, admin-api, frontend, docs, loki, promtail    |
+| `multi` — workers | `docker-compose.prod-worker.yml` | n8n-worker, worker-monitor, fastapi, promtail                                                   |
 
-### Path-based targeted restarts (push events)
+### Targeted restarts (manual / custom pipeline)
 
-| Changed path | Containers restarted |
-|---|---|
-| `admin-api/**` | `admin-api`, `frontend` (main) |
-| `api/**` | `fastapi` (workers) |
-| `processes/**` | `worker-monitor` (all) |
-| `nginx/**` | `nginx` reload (main) |
-| `docker/**`, `package*` | Full deploy (all) |
+Run the **Auto Deploy to Contabo** workflow manually (`workflow_dispatch`) in GitHub Actions to deploy only specific containers without a full redeploy. Pass a `services` input (e.g. `admin-api frontend`) to limit which containers are restarted; leave it as `all` (or empty) for a full deploy.
+
+> A `bitbucket-pipelines.yml` is also included for teams that prefer Bitbucket Pipelines instead of GitHub Actions — it mirrors the same lint/deploy/`deploy-services` steps. This repo's own CI runs on GitHub Actions.
 
 ## 📁 Project Structure
 
@@ -185,13 +183,17 @@ CONTABO_WORKER_IP="1.2.3.4,5.6.7.8" npm run ansible:rollback:multi
 │   │       └── workers_dynamic.yml # Generated at deploy time from CONTABO_WORKER_IP
 │   └── playbooks/
 │       ├── setup.yml               # First-time server provisioning
-│       ├── deploy.yml              # Application deployment
+│       ├── deploy_main.yml         # Deploy main server
+│       ├── deploy_workers.yml      # Deploy worker servers
 │       └── rollback.yml            # Rollback to previous commit
 ├── docker/                         # Docker Compose files
+├── docs/                           # Astro docs site (served at /docs)
 ├── nginx/                          # Nginx configuration
 ├── custom-n8n-nodes/               # TypeScript custom n8n nodes
 ├── processes/                      # Worker monitor service
 ├── sh_files/                       # Shell utility scripts
+├── assets/                         # Static templates/media used by media API
+├── cloudflared/                    # Cloudflare Tunnel config (dev only)
 ├── n8n_files/                      # Runtime files (audio, video, ppt, pdf)
 └── .env                            # Environment variables
 ```
@@ -201,9 +203,20 @@ CONTABO_WORKER_IP="1.2.3.4,5.6.7.8" npm run ansible:rollback:multi
 ```bash
 # Development
 npm run docker:dev              # Full dev cycle (down + up)
-npm run docker-up:dev           # Start dev containers
-npm run docker-down:dev         # Stop dev containers
+npm run docker:dev:n8n          # Full dev cycle with n8n profile (wipes loki-data, down + up)
+npm run docker:up:dev           # Start dev containers
+npm run docker:down:dev         # Stop dev containers
 npm run docker-rm-cache         # Prune all Docker cache
+
+# Production
+npm run docker:prod             # Full prod cycle (wipes loki-data, down + up)
+npm run docker:prod:main        # Full prod-main cycle (wipes loki-data, down + up)
+npm run docker:prod:worker      # Full prod-worker cycle (down + up)
+
+# Docs site
+npm run docs:dev                # Run docs site locally
+npm run docs:build              # Build docs site
+npm run docs:preview            # Preview built docs site
 
 # Linting
 npm run lint:admin              # ESLint on admin-api frontend
@@ -246,8 +259,18 @@ npm run push-workflows          # Push local workflows → n8n
 
 ### 📁 File Management
 > All endpoints require `X-API-Key` header.
-- `POST /cleanup` - Delete contents of specified n8n_files folders
-- `POST /copy-video` - Copy a video into its epoch subfolder
+- `POST /execute` - Run a whitelisted shell command or script on the host
+
+### 🧑‍💻 Job Scraper
+- `POST /job-scrape/linkedin` - Scrape LinkedIn job listings (async)
+- `POST /job-scrape/indeed` - Scrape Indeed job listings (async)
+- `GET /job-scrape-status/{job_id}` - Check scrape job status
+- `GET /job-scrape-result/{job_id}` - Get scrape job result
+
+### ⚙️ CPU Gate
+- `GET /cpu-gate` - Get current CPU EMA sample
+- `GET /cpu-gate/wait` - Block until CPU drops below threshold (or timeout)
+- `GET /cpu-gate/reset` - Reset the local EMA fallback state
 
 ## 🏛️ Infrastructure Notes
 
@@ -256,48 +279,39 @@ npm run push-workflows          # Push local workflows → n8n
 - On first deploy to an existing database, stamp to skip initial migration:
   ```bash
   docker exec media-api alembic stamp head
-  docker exec logs-api alembic stamp head
+  docker exec admin-api alembic stamp head
   ```
 
 ### Adding environment variables
 Manage env vars through the **Admin Panel** → Environment tab. Changes trigger an automatic full deploy via GitHub Actions.
 
-## ⚙️ Worker Autoscaler
+## ⚙️ Worker Monitor
 
-The `worker-autoscaler` container dynamically scales `n8n-worker` replicas based on host CPU and Redis queue depth.
+The `worker-monitor` container polls host CPU, the n8n execution API, and running Docker containers, then pushes a snapshot to Redis. The admin dashboard reads these snapshots to display live server metrics.
 
 ### Algorithm: Asymmetric EWMA
 
+CPU is smoothed using an asymmetric EWMA — reacts fast to spikes, decays slowly after:
+
 ```
 if cpu_raw > cpu_ema:
-    cpu_ema = α_up   × cpu_raw + (1 − α_up)   × cpu_ema   # reacts fast to spikes
+    cpu_ema = α_up   × cpu_raw + (1 − α_up)   × cpu_ema
 else:
-    cpu_ema = α_down × cpu_raw + (1 − α_down) × cpu_ema   # decays slowly after spike
+    cpu_ema = α_down × cpu_raw + (1 − α_down) × cpu_ema
 ```
 
 Defaults: `α_up = 0.5`, `α_down = 0.1`.
 
-### Scaling Rules
-
-| Condition | Action |
-|---|---|
-| `waiting > 0` and `ema < 65%` and `raw < 65%` | Scale up +1 worker |
-| `max(ema, raw) > 88%` and `workers > min` | Emergency scale down −1 worker |
-| Queue idle for 120s and `workers > min` | Scale down −1 worker |
-
 ### Configuration
 
-| Variable | Default | Description |
-|---|---|---|
-| `MIN_WORKERS` | 1 | Minimum workers always running |
-| `MAX_WORKERS` | 4 | Maximum workers allowed |
-| `CPU_SCALE_UP_MAX` | 65 | Scale up only if CPU below this % |
-| `CPU_SCALE_DOWN_EMERGENCY` | 88 | Force remove worker if CPU above this % |
-| `IDLE_BEFORE_SCALEDOWN_SEC` | 120 | Seconds idle before scaling down |
-| `POLL_INTERVAL_SEC` | 30 | Seconds between checks |
-| `COOLDOWN_SEC` | 90 | Minimum gap between scale actions |
-| `EWMA_ALPHA_UP` | 0.5 | EMA weight when CPU is rising |
-| `EWMA_ALPHA_DOWN` | 0.1 | EMA weight when CPU is falling |
+| Variable             | Default  | Description                                   |
+| -------------------- | -------- | --------------------------------------------- |
+| `POLL_INTERVAL_SEC`  | `30`     | Seconds between snapshots                     |
+| `EWMA_ALPHA_UP`      | `0.5`    | EMA weight when CPU is rising                 |
+| `EWMA_ALPHA_DOWN`    | `0.1`    | EMA weight when CPU is falling                |
+| `CPU_GATE_THRESHOLD` | `35`     | CPU % threshold included in snapshot          |
+| `N8N_API_KEY`        | —        | Required for API-based active execution count |
+| `SERVER_ID`          | hostname | Stable server identity shown in dashboard     |
 
 ---
 
