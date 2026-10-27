@@ -32,7 +32,7 @@ services:
       - N8N_DEFAULT_CORS=TRUE
       - N8N_CORS_ALLOW_ORIGIN=*
       - DB_TYPE=${DB_TYPE}
-      - DB_POSTGRESDB_HOST=${DB_POSTGRESDB_HOST}
+      - DB_POSTGRESDB_HOST=${POSTGRES_HOST}
       - DB_POSTGRESDB_PORT=${POSTGRES_PORT}
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
       - DB_POSTGRESDB_USER=${POSTGRES_USER}
@@ -57,6 +57,47 @@ services:
       - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
       - ${HOST_PROJECT_DIR}/sh_files:/sh_files
       - ${HOST_PROJECT_DIR}/n8n-workflows:/home/node/n8n-workflows
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - baota_net
+
+  n8n-worker:
+    image: n8nio/n8n:latest
+    container_name: n8n-worker
+    command: worker
+    restart: unless-stopped
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=${N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS}
+      - N8N_RESTRICT_FILE_ACCESS_TO=
+      - N8N_ALLOWED_READ_PATHS=/home/node/.n8n:/home/node/n8n_files:/sh_files:/tmp
+      - N8N_ALLOWED_WRITE_PATHS=/home/node/.n8n:/home/node/n8n_files:/sh_files:/tmp
+      - DB_TYPE=${DB_TYPE}
+      - DB_POSTGRESDB_HOST=${POSTGRES_HOST}
+      - DB_POSTGRESDB_PORT=${POSTGRES_PORT}
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=${REDIS_HOST}
+      - QUEUE_BULL_REDIS_PORT=${REDIS_PORT}
+      - QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD=${QUEUE_BULL_REDIS_TIMEOUT_THRESHOLD}
+      - QUEUE_BULL_MAX_STALLED_COUNT=${QUEUE_BULL_MAX_STALLED_COUNT}
+      - QUEUE_BULL_STALLED_INTERVAL=${QUEUE_BULL_STALLED_INTERVAL}
+      - EXECUTIONS_TIMEOUT=${EXECUTIONS_TIMEOUT}
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_STORAGE_PATH=/home/node/.n8n/binaryData
+      - NODE_ENV=production
+      - NODE_OPTIONS=${NODE_OPTIONS}
+    volumes:
+      - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
+      - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files
+      - ${HOST_PROJECT_DIR}/sh_files:/sh_files
     depends_on:
       redis:
         condition: service_healthy
