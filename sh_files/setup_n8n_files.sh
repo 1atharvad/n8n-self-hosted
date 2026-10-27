@@ -31,11 +31,15 @@ fi
 mkdir -p ./n8n_files/{audio_files,video_files,pdf_files,ppt_files,ppt_images}
 mkdir -p ./n8n-data
 mkdir -p ./n8n-workflows/workflows
+mkdir -p ./minio-data
 
 # Set ownership and permissions
 echo "Setting ownership to $OWNER and permissions to 775..."
 # chown -R "$OWNER" ./n8n_files ./n8n-data ./n8n-workflows ./sh_files
 chmod -R 775     ./n8n_files ./n8n-data ./n8n-workflows ./sh_files
+
+# RustFS (minio service) runs as non-root uid/gid 10001 — its data dir must be owned accordingly
+chown -R 10001:10001 ./minio-data 2>/dev/null || echo "Warning: could not chown minio-data (run as root to fix RustFS permissions)"
 
 echo "Folders created and permissions updated!"
 

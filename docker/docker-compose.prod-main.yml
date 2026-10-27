@@ -185,14 +185,16 @@ services:
       - baota_net
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: rustfs/rustfs:latest
     container_name: minio
     restart: unless-stopped
-    command: server /data --console-address ":9001"
+    command: ["/data"]
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BROWSER_REDIRECT_URL: ${N8N_EDITOR_BASE_URL}/minio/
+      RUSTFS_ACCESS_KEY: ${MINIO_ROOT_USER}
+      RUSTFS_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
     volumes:
       - ${HOST_PROJECT_DIR}/minio-data:/data
     expose:

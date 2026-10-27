@@ -67,7 +67,7 @@ async def service_health(request: Request, _user=Depends(get_current_user)):
         _http_check("n8n", f"http://n8n:{_N8N_PORT}/healthz"),
         _postgres_check(),
         _redis_check(request),
-        _http_check("MinIO", "http://minio:9000/minio/health/live"),
+        _http_check("MinIO", "http://minio:9000/health"),
         _http_check("media-api", f"{_MEDIA_API_URL}/health", headers={"X-API-Key": _MEDIA_API_KEY}),
         _http_check("nginx", "http://nginx:6060/"),
         _http_check("Loki", "http://loki:3100/ready"),
