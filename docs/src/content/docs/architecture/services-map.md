@@ -88,4 +88,4 @@ graph TD
 | Loki | `loki` | 3100 | internal only |
 | Nginx | `nginx` | 6060 | exposed to host |
 
-> Log viewing and worker metrics are served by `admin-api` through its own `logs/` module — there is no separate logs service.
+> The `logs-api/` directory contains a standalone FastAPI app but is **not deployed** as a separate container. Log viewing and worker metrics are served by `admin-api` through its own `logs/` module.

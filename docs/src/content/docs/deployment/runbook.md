@@ -2,7 +2,7 @@
 title: Incident Runbook
 description: What to do when things break — common incidents, symptoms, diagnosis steps, and fixes.
 sidebar:
-  order: 9
+  order: 6
 ---
 
 Quick reference for diagnosing and recovering from common failures. Start with the [Admin Panel → Infrastructure](/docs/admin-panel/infrastructure/) page before SSHing — it shows container status and lets you restart without leaving the browser.

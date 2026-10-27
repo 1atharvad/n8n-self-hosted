@@ -9,12 +9,12 @@ There are four Docker Compose files in `docker/`. The right one depends on wheth
 
 ## Topology table
 
-| Mode | Compose file | Where it runs |
-|---|---|---|
-| Development | `docker-compose.dev.yml` | Local machine |
-| Production — single server | `docker-compose.prod.yml` | One VPS |
-| Production — main server | `docker-compose.prod-main.yml` | Main VPS in multi-server mode |
-| Production — worker servers | `docker-compose.prod-worker.yml` | Each worker VPS |
+| Mode                        | Compose file                     | Where it runs                 |
+| --------------------------- | -------------------------------- | ----------------------------- |
+| Development                 | `docker-compose.dev.yml`         | Local machine                 |
+| Production — single server  | `docker-compose.prod.yml`        | One VPS                       |
+| Production — main server    | `docker-compose.prod-main.yml`   | Main VPS in multi-server mode |
+| Production — worker servers | `docker-compose.prod-worker.yml` | Each worker VPS               |
 
 ## Development (`docker-compose.dev.yml`)
 
@@ -39,9 +39,10 @@ Split across two types of machines:
 
 ### Main server (`docker-compose.prod-main.yml`)
 
-Runs: `n8n`, `worker-monitor`, `redis`, `postgres`, `nginx`, `minio`, `admin-api`, `frontend`, `docs`, `loki`, `promtail`
+Runs: `n8n`, `n8n-worker`, `worker-monitor`, `redis`, `postgres`, `nginx`, `minio`, `admin-api`, `frontend`, `docs`, `loki`, `promtail`
 
-The main server holds all state (databases, Redis, Loki) and the n8n web UI.
+The main server holds all state (databases, Redis, Loki) and the n8n web UI. It also runs its own
+`n8n-worker`, so it executes jobs from the shared Redis queue rather than only coordinating.
 
 ### Worker servers (`docker-compose.prod-worker.yml`)
 
@@ -53,24 +54,24 @@ Workers do the heavy lifting — media processing and n8n workflow execution. Th
 
 Topology is controlled entirely by the `CONTABO_WORKER_IP` GitHub repository variable — **no code changes needed**:
 
-| `CONTABO_WORKER_IP` | Mode |
-|---|---|
-| empty / unset | Single server — uses `docker-compose.prod.yml` |
-| `"1.2.3.4"` | Multi-server — main uses `prod-main.yml`, that one worker uses `prod-worker.yml` |
-| `"1.2.3.4,5.6.7.8"` | Multi-server — two workers |
+| `CONTABO_WORKER_IP` | Mode                                                                             |
+| ------------------- | -------------------------------------------------------------------------------- |
+| empty / unset       | Single server — uses `docker-compose.prod.yml`                                   |
+| `"1.2.3.4"`         | Multi-server — main uses `prod-main.yml`, that one worker uses `prod-worker.yml` |
+| `"1.2.3.4,5.6.7.8"` | Multi-server — two workers                                                       |
 
 See [Topology](/docs/deployment/topology/) for the full switching guide.
 
 ## Storage volumes
 
-| Path | Purpose | Shared? |
-|---|---|---|
-| `n8n_files/` | Audio, video, PPT, PDF, images | Yes — `n8n` + `media-api` both mount this |
-| `n8n-data/` | n8n internal data | No |
-| `postgres-data/` | PostgreSQL data directory | No |
-| `redis-data/` | Redis persistence | No |
-| `minio-data/` | MinIO object storage | No |
-| `loki-data/` | Loki log storage | No |
-| `tts_cache/` | Cached TTS audio files | No |
-| `assets/` | Static assets for PPT/video workflows | No |
-| `admin-api/data/` | Admin API SQLite database | No |
+| Path              | Purpose                               | Shared?                                   |
+| ----------------- | ------------------------------------- | ----------------------------------------- |
+| `n8n_files/`      | Audio, video, PPT, PDF, images        | Yes — `n8n` + `media-api` both mount this |
+| `n8n-data/`       | n8n internal data                     | No                                        |
+| `postgres-data/`  | PostgreSQL data directory             | No                                        |
+| `redis-data/`     | Redis persistence                     | No                                        |
+| `minio-data/`     | MinIO object storage                  | No                                        |
+| `loki-data/`      | Loki log storage                      | No                                        |
+| `tts_cache/`      | Cached TTS audio files                | No                                        |
+| `assets/`         | Static assets for PPT/video workflows | No                                        |
+| `admin-api/data/` | Admin API SQLite database             | No                                        |

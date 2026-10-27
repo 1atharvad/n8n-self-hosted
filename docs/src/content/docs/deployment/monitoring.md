@@ -2,7 +2,7 @@
 title: Monitoring & Logs
 description: How Loki and Promtail work, useful LogQL queries, and what to watch for in production.
 sidebar:
-  order: 8
+  order: 5.5
 ---
 
 The stack ships with **Promtail + Loki** for log aggregation. Promtail reads every container's stdout/stderr from the Docker socket and ships it to Loki. Logs are then queryable from the [Admin Panel → Logs page](/docs/admin-panel/logs/) or directly via the Loki HTTP API.

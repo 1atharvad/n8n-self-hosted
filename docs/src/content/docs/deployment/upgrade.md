@@ -2,7 +2,7 @@
 title: Upgrade Guide
 description: How to safely upgrade n8n, Python services, and system dependencies without losing data or credentials.
 sidebar:
-  order: 10
+  order: 7
 ---
 
 ## Upgrading n8n

@@ -2,7 +2,7 @@
 title: Manual Operations
 description: SSH shortcuts, targeted container restarts, database migrations, and environment variable changes.
 sidebar:
-  order: 7
+  order: 5
 ---
 
 ## Targeted container restarts
@@ -23,19 +23,19 @@ docker restart <container-name>
 
 ### Common container names
 
-| Container | Service |
-|---|---|
-| `n8n` | n8n main instance |
-| `n8n-worker` | n8n worker (multi-server only) |
-| `media-api` | Media processing FastAPI |
-| `admin-api` | Admin panel |
-| `worker-monitor` | CPU/metrics monitor |
-| `postgres` | PostgreSQL |
-| `redis` | Redis |
-| `nginx` | Nginx reverse proxy |
-| `minio` | MinIO object storage |
-| `loki` | Loki log aggregation |
-| `promtail` | Log shipper |
+| Container        | Service                        |
+| ---------------- | ------------------------------ |
+| `n8n`            | n8n main instance              |
+| `n8n-worker`     | n8n worker (multi-server only) |
+| `media-api`      | Media processing FastAPI       |
+| `admin-api`      | Admin panel                    |
+| `worker-monitor` | CPU/metrics monitor            |
+| `postgres`       | PostgreSQL                     |
+| `redis`          | Redis                          |
+| `nginx`          | Nginx reverse proxy            |
+| `minio`          | MinIO object storage           |
+| `loki`           | Loki log aggregation           |
+| `promtail`       | Log shipper                    |
 
 ---
 

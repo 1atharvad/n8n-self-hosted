@@ -11,11 +11,11 @@ The project uses **PostgreSQL** as the primary database and **SQLite** as a sepa
 
 ## Databases at a glance
 
-| Database | Type | Owner | Purpose |
-|---|---|---|---|
-| `public` schema | PostgreSQL | n8n | n8n's internal tables (workflows, executions, credentials) |
-| `job_listing` schema | PostgreSQL | Media API (`api/`) | Job scraping pipeline data |
-| `admin-api/data/` | SQLite | Admin API | Users, env vars, app config, audit log |
+| Database             | Type       | Owner              | Purpose                                                    |
+| -------------------- | ---------- | ------------------ | ---------------------------------------------------------- |
+| `public` schema      | PostgreSQL | n8n                | n8n's internal tables (workflows, executions, credentials) |
+| `job_listing` schema | PostgreSQL | Media API (`api/`) | Job scraping pipeline data                                 |
+| `admin-api/data/`    | SQLite     | Admin API          | Users, env vars, app config, audit log                     |
 
 ---
 
@@ -23,13 +23,13 @@ The project uses **PostgreSQL** as the primary database and **SQLite** as a sepa
 
 All services connect to the same PostgreSQL container (`postgres:15`).
 
-| Variable | Description |
-|---|---|
-| `POSTGRES_HOST` | `postgres` (Docker container name) |
-| `POSTGRES_PORT` | `5432` |
-| `POSTGRES_DB` | Database name (e.g. `n8n`) |
-| `POSTGRES_USER` | Database user |
-| `POSTGRES_PASSWORD` | Database password |
+| Variable            | Description                        |
+| ------------------- | ---------------------------------- |
+| `POSTGRES_HOST`     | `postgres` (Docker container name) |
+| `POSTGRES_PORT`     | `5432`                             |
+| `POSTGRES_DB`       | Database name (e.g. `n8n`)         |
+| `POSTGRES_USER`     | Database user                      |
+| `POSTGRES_PASSWORD` | Database password                  |
 
 Connect from the server:
 ```bash

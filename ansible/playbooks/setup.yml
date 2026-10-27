@@ -104,6 +104,13 @@
           then re-run: ansible-playbook -i <inventory> ansible/playbooks/setup.yml --tags clone
       when: clone_result is failed
 
+    - name: Run setup script (dirs, assets, custom n8n nodes)
+      shell: sh_files/setup_n8n_files.sh
+      args:
+        chdir: "{{ deploy_path }}"
+        executable: /bin/bash
+      when: clone_result is succeeded
+
     # ── CI public key → authorized_keys ────────────────────────────────────
     - name: Add CI SSH public key to authorized_keys
       authorized_key:

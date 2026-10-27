@@ -7,12 +7,12 @@ sidebar:
 
 ## Prerequisites
 
-| Tool | Minimum version | Notes |
-|---|---|---|
-| Docker Desktop | 24+ | Must be running before `npm run docker:dev` |
-| Node.js | 18+ | Required for custom node builds and npm scripts |
-| npm | 9+ | Bundled with Node.js |
-| Python | 3.11 | Only needed if you're editing `api/` Python code locally |
+| Tool           | Minimum version | Notes                                                    |
+| -------------- | --------------- | -------------------------------------------------------- |
+| Docker Desktop | 24+             | Must be running before `npm run docker:dev`              |
+| Node.js        | 18+             | Required for custom node builds and npm scripts          |
+| npm            | 9+              | Bundled with Node.js                                     |
+| Python         | 3.11            | Only needed if you're editing `api/` Python code locally |
 
 ---
 
@@ -43,25 +43,25 @@ cp .env.example .env
 
 Open `.env` and fill in every value marked `REQUIRED`. Minimum required for local dev:
 
-| Variable | Example / Notes |
-|---|---|
-| `POSTGRES_USER` | `n8nuser` |
-| `POSTGRES_PASSWORD` | any string |
-| `POSTGRES_DB` | `n8n` |
-| `POSTGRES_PORT` | `5432` |
-| `MINIO_ROOT_USER` | `minioadmin` |
-| `MINIO_ROOT_PASSWORD` | any string (min 8 chars) |
-| `MINIO_BUCKET_NAME` | `n8n-files` |
-| `N8N_ENCRYPTION_KEY` | run `openssl rand -hex 32` |
-| `N8N_BASIC_AUTH_USER` | `admin` |
-| `N8N_BASIC_AUTH_PASSWORD` | any string |
-| `API_KEY` | any string — used for the Media API |
-| `ADMIN_SECRET_KEY` | run `openssl rand -hex 32` |
-| `ADMIN_PASSWORD` | any string |
-| `JWT_SECRET` | run `openssl rand -hex 32` |
-| `INTERNAL_SECRET` | any string |
-| `WEBHOOK_TUNNEL_URL` | `http://localhost:5678` |
-| `N8N_EDITOR_BASE_URL` | `http://localhost:5678` |
+| Variable                  | Example / Notes                     |
+| ------------------------- | ----------------------------------- |
+| `POSTGRES_USER`           | `n8nuser`                           |
+| `POSTGRES_PASSWORD`       | any string                          |
+| `POSTGRES_DB`             | `n8n`                               |
+| `POSTGRES_PORT`           | `5432`                              |
+| `MINIO_ROOT_USER`         | `minioadmin`                        |
+| `MINIO_ROOT_PASSWORD`     | any string (min 8 chars)            |
+| `MINIO_BUCKET_NAME`       | `n8n-files`                         |
+| `N8N_ENCRYPTION_KEY`      | run `openssl rand -hex 32`          |
+| `N8N_BASIC_AUTH_USER`     | `admin`                             |
+| `N8N_BASIC_AUTH_PASSWORD` | any string                          |
+| `API_KEY`                 | any string — used for the Media API |
+| `ADMIN_SECRET_KEY`        | run `openssl rand -hex 32`          |
+| `ADMIN_PASSWORD`          | any string                          |
+| `JWT_SECRET`              | run `openssl rand -hex 32`          |
+| `INTERNAL_SECRET`         | any string                          |
+| `WEBHOOK_TUNNEL_URL`      | `http://localhost:5678`             |
+| `N8N_EDITOR_BASE_URL`     | `http://localhost:5678`             |
 
 Optional variables have sensible defaults and can be left as-is for local work.
 
@@ -92,12 +92,12 @@ The first build takes a few minutes while Docker pulls base images and builds th
 
 Open these in a browser once the containers are up:
 
-| Service | URL |
-|---|---|
-| n8n | http://localhost:6060 |
+| Service                  | URL                                 |
+| ------------------------ | ----------------------------------- |
+| n8n                      | http://localhost:6060               |
 | Media API docs (Swagger) | http://localhost:6060/api/core/docs |
-| Admin panel | http://localhost:6060/admin |
-| MinIO console | http://localhost:6060/minio |
+| Admin panel              | http://localhost:6060/admin         |
+| MinIO console            | http://localhost:6060/minio         |
 
 All services are routed through Nginx on port **6060**. See [Nginx Routing](/docs/architecture/nginx-routing/) for the full path map.
 

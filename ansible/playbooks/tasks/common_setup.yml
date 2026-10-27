@@ -138,7 +138,7 @@
 - name: Run setup script (dirs, assets, custom n8n nodes)
   shell: |
     set -euo pipefail
-    sh sh_files/setup_n8n_files.sh
+    sh_files/setup_n8n_files.sh
   args:
     chdir: "{{ deploy_path }}"
     executable: /bin/bash

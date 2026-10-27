@@ -21,18 +21,18 @@ On successful login a JWT is issued and stored in the browser. It expires after 
 
 ## Page map
 
-| Page | Route | What it does |
-|---|---|---|
-| Dashboard | `/admin/` | CPU, active executions, running containers at a glance |
-| [Logs](/docs/admin-panel/logs/) | `/admin/logs` | Live container log viewer with search and filtering |
-| Performance | `/admin/performance` | Time-series charts: CPU (raw + EWMA), executions, containers |
-| [Infrastructure](/docs/admin-panel/infrastructure/) | `/admin/infrastructure` | Per-service health checks + one-click container restart |
-| Workflows | `/admin/workflows` | Read-only view of all n8n workflows and their last execution |
-| [Backups](/docs/admin-panel/backups/) | `/admin/backups` | Git-based workflow backup history + manual trigger |
-| Deployments | `/admin/deployments` | Recent GitHub Actions runs; trigger targeted restarts |
-| [Settings](/docs/admin-panel/settings/) | `/admin/settings` | Env vars, GitHub Secrets sync, user management |
-| Audit Log | `/admin/audit` | Immutable record of all admin actions |
-| Reports | `/admin/reports` | Aggregated pipeline run stats |
+| Page                                                | Route                   | What it does                                                 |
+| --------------------------------------------------- | ----------------------- | ------------------------------------------------------------ |
+| Dashboard                                           | `/admin/`               | CPU, active executions, running containers at a glance       |
+| [Logs](/docs/admin-panel/logs/)                     | `/admin/logs`           | Live container log viewer with search and filtering          |
+| Performance                                         | `/admin/performance`    | Time-series charts: CPU (raw + EWMA), executions, containers |
+| [Infrastructure](/docs/admin-panel/infrastructure/) | `/admin/infrastructure` | Per-service health checks + one-click container restart      |
+| Workflows                                           | `/admin/workflows`      | Read-only view of all n8n workflows and their last execution |
+| [Backups](/docs/admin-panel/backups/)               | `/admin/backups`        | Git-based workflow backup history + manual trigger           |
+| Deployments                                         | `/admin/deployments`    | Recent GitHub Actions runs; trigger targeted restarts        |
+| [Settings](/docs/admin-panel/settings/)             | `/admin/settings`       | Env vars, GitHub Secrets sync, user management               |
+| Audit Log                                           | `/admin/audit`          | Immutable record of all admin actions                        |
+| Reports                                             | `/admin/reports`        | Aggregated pipeline run stats                                |
 
 ---
 

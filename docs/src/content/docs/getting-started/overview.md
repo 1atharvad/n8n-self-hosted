@@ -37,19 +37,19 @@ See [Custom Nodes →](/docs/custom-nodes/json-variables/)
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Workflow automation | n8n (self-hosted) |
-| Media processing API | FastAPI (Python 3.11) |
-| Admin panel | FastAPI + React + TypeScript |
-| Database | PostgreSQL 15 |
-| Cache / pub-sub | Redis |
-| Object storage | MinIO |
-| Log aggregation | Loki + Promtail |
-| Reverse proxy | Nginx (port 6060 in dev) |
-| Container orchestration | Docker Compose |
-| Provisioning & deploy | Ansible + GitHub Actions |
-| Custom n8n nodes | TypeScript |
+| Layer                   | Technology                   |
+| ----------------------- | ---------------------------- |
+| Workflow automation     | n8n (self-hosted)            |
+| Media processing API    | FastAPI (Python 3.11)        |
+| Admin panel             | FastAPI + React + TypeScript |
+| Database                | PostgreSQL 15                |
+| Cache / pub-sub         | Redis                        |
+| Object storage          | MinIO                        |
+| Log aggregation         | Loki + Promtail              |
+| Reverse proxy           | Nginx (port 6060 in dev)     |
+| Container orchestration | Docker Compose               |
+| Provisioning & deploy   | Ansible + GitHub Actions     |
+| Custom n8n nodes        | TypeScript                   |
 
 ## Next steps
 

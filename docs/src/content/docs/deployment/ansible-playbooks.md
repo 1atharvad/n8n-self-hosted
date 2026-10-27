@@ -2,7 +2,7 @@
 title: Ansible Playbooks
 description: Step-by-step breakdown of every Ansible playbook — setup, deploy_main, deploy_workers, and rollback.
 sidebar:
-  order: 6
+  order: 4
 ---
 
 Ansible playbooks live in `ansible/playbooks/`. You can run them locally (requires Ansible installed and SSH key at `~/.ssh/id_ed25519`) or via GitHub Actions (or the optional Bitbucket Pipelines alternative).
@@ -24,21 +24,22 @@ flowchart TD
     F --> G["7. Add github.com\nto known_hosts"]
     G --> H["8. Print deploy public key\nadd to GitHub Deploy Keys"]
     H --> I["9. Clone repo\nto deploy_path"]
-    I --> J["10. Add CI public key\nto authorized_keys"]
+    I --> J["10. Run setup_n8n_files.sh\ncreate dirs + set permissions"]
+    J --> K["11. Add CI public key\nto authorized_keys"]
 
     classDef step fill:#0d9488,color:#fff,stroke:#0f766e
-    class A,B,C,D,E,F,G,H,I,J step
+    class A,B,C,D,E,F,G,H,I,J,K step
 ```
 
 **Variables used:**
 
-| Variable | Description |
-|---|---|
-| `deploy_path` | From `group_vars/all.yml`, read from the `DEPLOY_PATH` env var |
-| `deploy_branch` | Git branch to clone, from the `GIT_BRANCH` env var (default `main`) |
-| `deploy_key_path` | SSH key path on the server (`/root/.ssh/id_ed25519`), from inventory |
-| `GITHUB_REPO` | Env var for the repo slug (`owner/repo`), used to build the `git@github.com:...` clone URL |
-| `CI_SSH_PUBKEY` | Env var containing the CI/local machine's public key |
+| Variable          | Description                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| `deploy_path`     | From `group_vars/all.yml`, read from the `DEPLOY_PATH` env var                             |
+| `deploy_branch`   | Git branch to clone, from the `GIT_BRANCH` env var (default `main`)                        |
+| `deploy_key_path` | SSH key path on the server (`/root/.ssh/id_ed25519`), from inventory                       |
+| `GITHUB_REPO`     | Env var for the repo slug (`owner/repo`), used to build the `git@github.com:...` clone URL |
+| `CI_SSH_PUBKEY`   | Env var containing the CI/local machine's public key                                       |
 
 **After running:** Copy the printed deploy public key and add it to **GitHub → Repository settings → Deploy keys** (read-only access is sufficient).
 

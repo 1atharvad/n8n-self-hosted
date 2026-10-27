@@ -35,18 +35,18 @@ flowchart TD
 
 ## Three ways to deploy
 
-| Method | When to use |
-|---|---|
-| Push to `main` | Normal code changes — auto-triggers the full pipeline |
-| GitHub Actions manual dispatch (`workflow_dispatch`, `services` input) | Restart specific containers without a full deploy |
-| `npm run ansible:deploy:single` (local) | Emergency manual deploy from your machine |
+| Method                                                                 | When to use                                           |
+| ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| Push to `main`                                                         | Normal code changes — auto-triggers the full pipeline |
+| GitHub Actions manual dispatch (`workflow_dispatch`, `services` input) | Restart specific containers without a full deploy     |
+| `npm run ansible:deploy:single` (local)                                | Emergency manual deploy from your machine             |
 
 ## What gets deployed where
 
-| Topology | Main server | Worker servers |
-|---|---|---|
-| Single server | Everything | — |
-| Multi-server | n8n, worker-monitor, redis, postgres, nginx, minio, admin-api, frontend, docs, loki, promtail | n8n-worker, worker-monitor, fastapi, promtail |
+| Topology      | Main server                                                                                   | Worker servers                                |
+| ------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Single server | Everything                                                                                    | —                                             |
+| Multi-server  | n8n, worker-monitor, redis, postgres, nginx, minio, admin-api, frontend, docs, loki, promtail | n8n-worker, worker-monitor, fastapi, promtail |
 
 Topology is controlled by the `CONTABO_WORKER_IP` variable — see [Topology](/docs/deployment/topology/).
 

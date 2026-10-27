@@ -2,7 +2,7 @@
 title: Bitbucket Pipelines
 description: Optional alternate CI — automatic pipeline on push, and custom pipelines for provisioning and targeted deploys.
 sidebar:
-  order: 4
+  order: 3.5
 ---
 
 This repo's own CI runs on [GitHub Actions](/docs/deployment/github-pipeline/). A
@@ -41,10 +41,10 @@ This saves ~5 minutes on every workflow-only commit.
 
 Run these from **Bitbucket → Pipelines → Run pipeline**.
 
-| Pipeline | When to use |
-|---|---|
-| `setup-single` | First-time provision of a single server |
-| `setup-multi` | First-time provision of all multi-server nodes |
+| Pipeline          | When to use                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `setup-single`    | First-time provision of a single server                       |
+| `setup-multi`     | First-time provision of all multi-server nodes                |
 | `deploy-services` | Targeted restart of specific containers without a full deploy |
 
 ### `setup-single` and `setup-multi`
@@ -77,6 +77,9 @@ Pass `all` (or leave blank) to do a full deploy.
 Run linters before pushing to catch failures early:
 
 ```bash
+# Both together
+npm run lint
+
 # Frontend only (ESLint)
 npm run lint:admin
 
@@ -95,15 +98,15 @@ pip install -r requirements.txt
 
 ---
 
-## Bitbucket repository variables used by the pipeline
+## Bitbucket variables used by the pipeline
 
-| Variable | Description |
-|---|---|
-| `CONTABO_SSH_KEY` | Private SSH key for the pipeline to connect to all servers |
-| `CONTABO_MAIN_IP` | Main server IP (read via `lookup('env', ...)` in the Ansible inventory) |
-| `CONTABO_WORKER_IP` | Comma-separated worker IPs. Empty = single-server mode. |
-| `DEPLOY_PATH` | Absolute path on the server (e.g. `/www/wwwroot/n8n.example.com`) |
-| `GITHUB_REPO` | Repo slug used by `setup.yml` to clone the repo over SSH from GitHub |
+| Variable             | Description                                                                 |
+| -------------------- | --------------------------------------------------------------------------- |
+| `CONTABO_SSH_KEY`    | Private SSH key for the pipeline to connect to all servers                  |
+| `CONTABO_MAIN_IP`    | Main server IP (read via `lookup('env', ...)` in the Ansible inventory)     |
+| `CONTABO_WORKER_IP`  | Comma-separated worker IPs. Empty = single-server mode.                     |
+| `DEPLOY_PATH`        | Absolute path on the server (e.g. `/www/wwwroot/n8n.example.com`)           |
+| `GITHUB_REPO`        | Repo slug used by `setup.yml` to clone the repo over SSH from GitHub        |
 | All `.env` variables | Injected into `.env` on the server during deploy (set as Secured variables) |
 
 Mark all secret variables as **Secured** in Bitbucket settings — Secured variables are hidden

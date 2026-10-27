@@ -68,11 +68,11 @@ Manage who can access the admin panel.
 
 ### Fields
 
-| Field | Description |
-|---|---|
-| Username | Login username |
-| Password | Hashed with bcrypt on save — not stored in plaintext |
-| Role | `admin` (full access) or `viewer` (read-only, restricted containers) |
+| Field              | Description                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| Username           | Login username                                                                           |
+| Password           | Hashed with bcrypt on save — not stored in plaintext                                     |
+| Role               | `admin` (full access) or `viewer` (read-only, restricted containers)                     |
 | Allowed containers | JSON array of container names for log access. Leave blank for unrestricted (admin only). |
 
 ### Default admin
@@ -81,12 +81,12 @@ A default admin is seeded from `ADMIN_USERNAME` / `ADMIN_PASSWORD` on first star
 
 ### Role differences
 
-| Feature | Admin | Viewer |
-|---|---|---|
-| View logs | All containers | Only `allowed_containers` |
-| View metrics | Yes | Yes |
-| Restart containers | Yes | No |
-| Manage env vars | Yes | No |
-| Manage users | Yes | No |
-| View audit log | Yes | No |
-| Trigger backups | Yes | No |
+| Feature            | Admin          | Viewer                    |
+| ------------------ | -------------- | ------------------------- |
+| View logs          | All containers | Only `allowed_containers` |
+| View metrics       | Yes            | Yes                       |
+| Restart containers | Yes            | No                        |
+| Manage env vars    | Yes            | No                        |
+| Manage users       | Yes            | No                        |
+| View audit log     | Yes            | No                        |
+| Trigger backups    | Yes            | No                        |
