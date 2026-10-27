@@ -39,7 +39,7 @@
             HOST_PROJECT_DIR=$(pwd) docker compose --env-file .env -f {{ compose_file }} up --build -d
           args:
             executable: /bin/bash
-          async: 600
+          async: 1800
           poll: 30
 
         - name: Wait for all containers to be running
