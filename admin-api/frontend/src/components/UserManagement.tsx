@@ -241,6 +241,7 @@ export const UserManagement = () => {
                     onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
                     placeholder="username"
                     autoFocus
+                    className="font-mono text-xs"
                   />
                 </div>
               )}
@@ -257,6 +258,7 @@ export const UserManagement = () => {
                     modal === 'create' ? 'min 8 characters' : 'Leave blank to keep current'
                   }
                   autoComplete="new-password"
+                  className="font-mono text-xs"
                 />
               </div>
 

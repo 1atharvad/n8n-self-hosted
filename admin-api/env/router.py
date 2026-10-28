@@ -207,6 +207,28 @@ async def save_github_config(
     admin: User = Depends(require_admin),
     session: AsyncSession = Depends(get_session),
 ):
+    # Validate against GitHub before persisting, so a bad/expired token can
+    # never be saved as "Connected" — only check when we're setting/keeping a
+    # non-empty token+repo; clearing either needs no validation.
+    existing_token_enc = await get_app_config(session, "github_token")
+    existing_repo = await get_app_config(session, "github_repo")
+    effective_token = body.token if body.token else (_dec(existing_token_enc) if existing_token_enc else "")
+    effective_repo = body.repo if body.repo else (existing_repo or "")
+    clearing = (body.token is not None and not body.token) or (body.repo is not None and not body.repo)
+
+    if effective_token and effective_repo and not clearing:
+        async with httpx.AsyncClient(timeout=10, headers=_gh_headers(effective_token)) as client:
+            try:
+                resp = await client.get(f"{_GH_BASE}/repos/{effective_repo}")
+            except httpx.RequestError as exc:
+                raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Could not reach GitHub: {exc}") from exc
+        if resp.status_code == 401:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="GitHub rejected the token (invalid or expired)")
+        if resp.status_code == 404:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Token is valid but has no access to repo '{effective_repo}' (check spelling and scope)")
+        if resp.status_code != 200:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"GitHub API returned {resp.status_code} while verifying token/repo")
+
     if body.token is not None:
         if body.token:
             await set_app_config(session, "github_token", _enc(body.token))

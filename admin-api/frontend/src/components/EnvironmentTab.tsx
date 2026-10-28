@@ -331,7 +331,7 @@ export const EnvironmentTab = () => {
                         </>
                       ) : (
                         <>
-                          <span className="font-mono text-xs text-muted-foreground truncate flex-1">
+                          <span className="font-mono text-xs text-muted-foreground flex-1 overflow-x-auto whitespace-nowrap">
                             {showValues.has(v.key) && revealed !== undefined ? revealed : '••••••••••••••••'}
                           </span>
                           <button

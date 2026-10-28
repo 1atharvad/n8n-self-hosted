@@ -19,6 +19,7 @@ export const GitHubConfigSection = ({ config, onSaved }: GitHubConfigSectionProp
   const [revealedToken, setRevealedToken] = useState<string | null>(null);
   const [showToken, setShowToken] = useState(false);
   const [fetchingToken, setFetchingToken] = useState(false);
+  const [showNewToken, setShowNewToken] = useState(false);
 
   useEffect(() => {
     setRepo(config?.repo ?? '');
@@ -139,13 +140,22 @@ export const GitHubConfigSection = ({ config, onSaved }: GitHubConfigSectionProp
           <span className="text-sm text-muted-foreground text-right">
             {config?.token_set ? 'New token' : 'Access token'}
           </span>
-          <Input
-            type="password"
-            placeholder={config?.token_set ? 'Leave blank to keep current' : 'ghp_…'}
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            className="font-mono text-xs"
-          />
+          <div className="relative">
+            <Input
+              type={showNewToken ? 'text' : 'password'}
+              placeholder={config?.token_set ? 'Leave blank to keep current' : 'ghp_…'}
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              className="font-mono text-xs pr-9"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewToken((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            >
+              {showNewToken ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
 
         {error && (

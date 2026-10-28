@@ -103,6 +103,7 @@ export const PersonalTab = () => {
                   autoComplete={autoComplete}
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
+                  className="font-mono text-xs"
                 />
               </div>
             ))}
