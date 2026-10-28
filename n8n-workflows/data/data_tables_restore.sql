@@ -188,9 +188,9 @@ ALTER TABLE public."data_table_user_eVllB3VNGtqbLuF4" ALTER COLUMN id ADD GENERA
 -- Data for Name: data_table; Type: TABLE DATA; Schema: public; Owner: atharvadev
 --
 
-INSERT INTO public.data_table (id, name, "projectId", "createdAt", "updatedAt") VALUES ('AAjYY7y4dc46SIZg', 'Global Variables', 'i6SPWKiaev6Io6So', '2026-05-16 22:51:21.326+00', '2026-06-12 21:33:03.664+00');
-INSERT INTO public.data_table (id, name, "projectId", "createdAt", "updatedAt") VALUES ('3Waxi1c8vq2oiZWC', 'Job Portals', 'i6SPWKiaev6Io6So', '2026-05-16 22:52:19.694+00', '2026-05-16 22:52:19.773+00');
-INSERT INTO public.data_table (id, name, "projectId", "createdAt", "updatedAt") VALUES ('eVllB3VNGtqbLuF4', 'Job Details (Testing)', 'i6SPWKiaev6Io6So', '2026-06-03 20:41:35.395+00', '2026-06-03 20:48:57.91+00');
+INSERT INTO public.data_table (id, name, "projectId", "createdAt", "updatedAt") VALUES ('AAjYY7y4dc46SIZg', 'Global Variables', 'J1fh4o1cDNaclrgK', '2026-05-16 22:51:21.326+00', '2026-06-12 21:33:03.664+00');
+INSERT INTO public.data_table (id, name, "projectId", "createdAt", "updatedAt") VALUES ('3Waxi1c8vq2oiZWC', 'Job Portals', 'J1fh4o1cDNaclrgK', '2026-05-16 22:52:19.694+00', '2026-05-16 22:52:19.773+00');
+INSERT INTO public.data_table (id, name, "projectId", "createdAt", "updatedAt") VALUES ('eVllB3VNGtqbLuF4', 'Job Details (Testing)', 'J1fh4o1cDNaclrgK', '2026-06-03 20:41:35.395+00', '2026-06-03 20:48:57.91+00');
 
 
 --
