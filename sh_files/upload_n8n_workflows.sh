@@ -138,6 +138,7 @@ skipped=0
 moved=0
 created_folders=0
 failed=0
+declare -A ID_MAP  # old workflow id (from filename/export) -> new id assigned on import
 
 for f in "$WORKFLOWS_DIR"/*.json; do
   [ -e "$f" ] || { echo "⚠️  No .json files found in $WORKFLOWS_DIR"; break; }
@@ -168,6 +169,17 @@ for f in "$WORKFLOWS_DIR"/*.json; do
   rm -f "$TMP"
   echo "✅ Imported: $WF_NAME"
   imported=$((imported + 1))
+
+  # On Postgres, n8n assigns a NEW id on import instead of keeping the one from
+  # the file — record old -> new so Execute Workflow references can be fixed up
+  # after every workflow has been imported (see remap phase below).
+  ESCAPED_NAME=$(echo "$WF_NAME" | sed "s/'/''/g")
+  NEW_ID=$(pg_query "SELECT id FROM public.workflow_entity WHERE name = '$ESCAPED_NAME' ORDER BY \"createdAt\" DESC LIMIT 1;" | head -1 | tr -d '[:space:]')
+  if [[ -n "$NEW_ID" ]]; then
+    ID_MAP["$WF_ID"]="$NEW_ID"
+  else
+    echo "   ⚠️  Could not resolve new id for '$WF_NAME' — sub-workflow references to it won't be remapped"
+  fi
 
   # Assign to folder via REST API
   if [[ -n "$PARENT_FOLDER" ]]; then
@@ -206,6 +218,51 @@ done
 
 echo ""
 echo "✅ Done: $imported imported, $skipped skipped (archived), $failed failed, $moved moved to folders, $created_folders folder(s) created"
+
+# ── Remap Execute Workflow (sub-workflow) references to the new ids ───────────
+# Postgres-backed n8n assigns a new id to every imported workflow instead of
+# keeping the one from the export, so any node referencing another workflow by
+# its old id (parameters.workflowId.value) is now pointing at nothing. Rebuild
+# those references using the old->new id map collected during import.
+echo ""
+echo "🔗 Remapping Execute Workflow references..."
+
+MAP_JSON="{}"
+for old_id in "${!ID_MAP[@]}"; do
+  MAP_JSON=$(jq -n --argjson base "$MAP_JSON" --arg k "$old_id" --arg v "${ID_MAP[$old_id]}" '$base + {($k): $v}')
+done
+
+remapped_workflows=0
+remapped_refs=0
+for new_id in $(printf '%s\n' "${ID_MAP[@]}" | sort -u); do
+  WF_JSON=$(n8n_api GET "/workflows/$new_id")
+
+  UPDATED_NODES=$(echo "$WF_JSON" | jq --argjson map "$MAP_JSON" '
+    [.nodes[] |
+      if ($map[(.parameters.workflowId.value // "")] // null) != null
+      then (.parameters.workflowId.value as $old |
+            .parameters.workflowId.value = $map[$old] |
+            .parameters.workflowId.cachedResultUrl = ("/workflow/" + $map[$old]))
+      else .
+      end
+    ]')
+
+  REF_COUNT=$(echo "$WF_JSON" | jq --argjson map "$MAP_JSON" '
+    [.nodes[] | select(($map[(.parameters.workflowId.value // "")] // null) != null)] | length')
+
+  if [[ "$REF_COUNT" -gt 0 ]]; then
+    WF_NAME_FOR_LOG=$(echo "$WF_JSON" | jq -r '.name')
+    BODY=$(echo "$WF_JSON" | jq --argjson nodes "$UPDATED_NODES" '{name, nodes: $nodes, connections, settings, staticData}')
+    if n8n_api PUT "/workflows/$new_id" "$BODY" > /dev/null 2>&1; then
+      echo "✅ Remapped $REF_COUNT reference(s) in: $WF_NAME_FOR_LOG"
+      remapped_workflows=$((remapped_workflows + 1))
+      remapped_refs=$((remapped_refs + REF_COUNT))
+    else
+      echo "⚠️  Failed to push remapped references for: $WF_NAME_FOR_LOG"
+    fi
+  fi
+done
+echo "✅ Remap done: $remapped_refs reference(s) fixed across $remapped_workflows workflow(s)"
 
 # ── Restore data tables ───────────────────────────────────────────────────────
 DATA_DIR="$PROJECT_ROOT/n8n-workflows/data"
