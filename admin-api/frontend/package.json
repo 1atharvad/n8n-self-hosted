@@ -15,10 +15,10 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
     "@tanstack/react-virtual": "^3.13.26",
-    "advi-ui": "^0.1.10",
+    "advi-ui": "^0.9.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.474.0",
+    "lucide-react": "^1.63.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",

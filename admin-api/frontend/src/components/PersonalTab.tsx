@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Button, Input } from 'advi-ui';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon, Monitor, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fetchGitHubConfig } from '@/api/env';
 import type { GitHubConfig } from '@/api/env';
@@ -29,6 +29,16 @@ export const PersonalTab = () => {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+  const [visibleFields, setVisibleFields] = useState<Set<string>>(new Set());
+
+  const toggleFieldVisibility = (label: string) => {
+    setVisibleFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  };
 
   const pwFields = [
     { label: 'Current password', value: oldPw, onChange: setOldPw, autoComplete: 'current-password' },
@@ -97,14 +107,23 @@ export const PersonalTab = () => {
             {pwFields.map(({ label, value, onChange, autoComplete }) => (
               <div key={label} className="grid grid-cols-[11rem_1fr] items-center gap-4">
                 <span className="text-sm text-muted-foreground text-right">{label}</span>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete={autoComplete}
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  className="font-mono text-xs"
-                />
+                <div className="relative">
+                  <Input
+                    type={visibleFields.has(label) ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    autoComplete={autoComplete}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="font-mono text-xs pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleFieldVisibility(label)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  >
+                    {visibleFields.has(label) ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             ))}
 

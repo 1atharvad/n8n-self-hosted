@@ -16,7 +16,7 @@ import {
 } from 'advi-ui'
 import { useLogStore } from '@/store/useLogStore'
 import type { AuthUser } from '@/types'
-import { AlertTriangle, UserPlus, X } from 'lucide-react'
+import { AlertTriangle, Eye, EyeOff, UserPlus, X } from 'lucide-react'
 
 type ModalMode = 'create' | 'edit' | null
 
@@ -48,6 +48,7 @@ export const UserManagement = () => {
   const [form, setForm] = useState<UserForm>(emptyForm())
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -69,6 +70,7 @@ export const UserManagement = () => {
     setForm(emptyForm())
     setEditTarget(null)
     setFormError('')
+    setShowPassword(false)
     setModal('create')
   }
 
@@ -83,6 +85,7 @@ export const UserManagement = () => {
     })
     setEditTarget(user)
     setFormError('')
+    setShowPassword(false)
     setModal('edit')
   }
 
@@ -250,16 +253,25 @@ export const UserManagement = () => {
                 <label className="text-xs text-muted-foreground uppercase tracking-wider">
                   {modal === 'create' ? 'Password' : 'New Password (leave blank to keep)'}
                 </label>
-                <Input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-                  placeholder={
-                    modal === 'create' ? 'min 8 characters' : 'Leave blank to keep current'
-                  }
-                  autoComplete="new-password"
-                  className="font-mono text-xs"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                    placeholder={
+                      modal === 'create' ? 'min 8 characters' : 'Leave blank to keep current'
+                    }
+                    autoComplete="new-password"
+                    className="font-mono text-xs pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  >
+                    {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">
