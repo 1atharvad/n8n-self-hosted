@@ -81,4 +81,6 @@ This is necessary because some n8n workflows (video pipeline, large batch jobs) 
 
 ## MinIO sub-path rewriting
 
-MinIO's web UI (`/minio/`) requires special handling — MinIO generates internal links with absolute paths, so `sub_filter` rewrites response bodies to replace `/` with `/minio/` in href and src attributes. This is why MinIO works correctly when accessed via `http://localhost:6060/minio`.
+The `minio` service now runs [RustFS](https://rustfs.com) instead of MinIO (MinIO's Docker images were pulled from Docker Hub and Quay.io in September 2026 — see the `minio` service's image in `docker-compose.*.yml`). The S3 API itself (what the Media API actually talks to) is unaffected, but this `sub_filter`-based console rewriting below was written for MinIO's web UI specifically, which generates internal links with absolute paths. RustFS's console is a different web app and likely has a different asset path structure — **this hasn't been verified to work post-swap** and may need its own `sub_filter` rules, or may not need rewriting at all.
+
+Original MinIO behavior, for reference: MinIO generates internal links with absolute paths, so `sub_filter` rewrites response bodies to replace `/` with `/minio/` in href and src attributes. This is why MinIO worked correctly when accessed via `http://localhost:6060/minio`.
