@@ -204,7 +204,7 @@ services:
       - baota_net
 
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: postgres
     restart: unless-stopped
     environment:

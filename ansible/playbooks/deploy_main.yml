@@ -15,7 +15,7 @@
             set -euo pipefail
             docker pull n8nio/n8n
             docker pull nginx:alpine
-            docker pull postgres:15
+            docker pull postgres:17
             docker pull redis:7-alpine
             docker pull rustfs/rustfs:latest
             docker pull grafana/loki:latest
