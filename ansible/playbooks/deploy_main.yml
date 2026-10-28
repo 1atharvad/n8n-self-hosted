@@ -20,6 +20,7 @@
             docker pull rustfs/rustfs:latest
             docker pull grafana/loki:latest
             docker pull grafana/promtail:latest
+            docker pull jaegertracing/jaeger:latest
           args:
             executable: /bin/bash
 

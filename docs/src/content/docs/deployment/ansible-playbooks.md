@@ -53,7 +53,7 @@ Targets the `main` inventory group. Imports `tasks/common_setup.yml` first (see 
 
 ```
 1. Pull latest Docker images
-   (n8n, nginx, postgres, redis, minio, loki, promtail — admin-api/frontend/fastapi/docs
+   (n8n, nginx, postgres, redis, minio, loki, promtail, jaeger — admin-api/frontend/fastapi/docs
    are built locally, not pulled)
 2. docker compose down  (also clears loki-data/)
 3. docker compose up --build -d  (async, 600s timeout)

@@ -32,6 +32,8 @@ services:
       - N8N_RUNNERS_TASK_TIMEOUT=300
       - N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=2147483648
       - N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=5000
+      - N8N_OTEL_ENABLED=true
+      - N8N_OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
     volumes:
       - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
       - ${HOST_PROJECT_DIR}/n8n_files:/home/node/n8n_files

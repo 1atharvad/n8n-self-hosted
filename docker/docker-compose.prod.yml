@@ -30,6 +30,8 @@ services:
       - N8N_RUNNERS_TASK_TIMEOUT=300
       - N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=2147483648
       - N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=5000
+      - N8N_OTEL_ENABLED=true
+      - N8N_OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
       - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
       - VUE_APP_URL_BASE_API=${VUE_APP_URL_BASE_API}
       - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
@@ -98,6 +100,8 @@ services:
       - N8N_RUNNERS_TASK_TIMEOUT=300
       - N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=2147483648
       - N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=5000
+      - N8N_OTEL_ENABLED=true
+      - N8N_OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
       - NODE_ENV=production
     volumes:
       - ${HOST_PROJECT_DIR}/n8n-data:/home/node/.n8n
@@ -328,6 +332,18 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${HOST_PROJECT_DIR}/promtail-config.yaml:/etc/promtail/promtail.yaml:ro
     command: -config.file=/etc/promtail/promtail.yaml
+    networks:
+      - baota_net
+
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+    expose:
+      - "4317"
+      - "4318"
     networks:
       - baota_net
 
