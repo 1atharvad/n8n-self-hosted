@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-06-12T20:12:19.979Z",
+  "updatedAt": "2026-10-28T14:29:51.604Z",
   "createdAt": "2026-05-16T22:31:33.458Z",
   "id": "3CV8vOr3daIHXK6X",
   "name": "Script Generator",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -1185,42 +1185,42 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "8bcada37-0465-4744-af56-58caf5831234",
-  "activeVersionId": "8bcada37-0465-4744-af56-58caf5831234",
-  "versionCounter": 304,
+  "versionId": "33696e64-2ef4-4116-9bef-8f9a590d2fd5",
+  "activeVersionId": null,
+  "versionCounter": 305,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [
-    {
-      "updatedAt": "2025-09-26T07:16:33.839Z",
-      "createdAt": "2025-09-26T07:16:33.839Z",
-      "id": "ens6dG0mnb19cVTi",
-      "name": "Sub-Workflow"
-    },
     {
       "updatedAt": "2026-05-16T22:08:55.159Z",
       "createdAt": "2026-05-16T22:08:55.159Z",
       "id": "uRLukwQ6lXVe1ia9",
       "name": "F-JNN"
+    },
+    {
+      "updatedAt": "2025-09-26T07:16:33.839Z",
+      "createdAt": "2025-09-26T07:16:33.839Z",
+      "id": "ens6dG0mnb19cVTi",
+      "name": "Sub-Workflow"
     }
   ],
   "shared": [
     {
-      "updatedAt": "2026-05-16T22:31:33.458Z",
-      "createdAt": "2026-05-16T22:31:33.458Z",
+      "updatedAt": "2026-10-28T14:22:43.676Z",
+      "createdAt": "2026-10-28T14:22:43.676Z",
       "role": "workflow:owner",
       "workflowId": "3CV8vOr3daIHXK6X",
       "projectId": "J1fh4o1cDNaclrgK",
       "project": {
-        "updatedAt": "2026-05-16T22:27:54.117Z",
-        "createdAt": "2026-05-16T22:26:58.253Z",
+        "updatedAt": "2026-10-28T06:20:13.948Z",
+        "createdAt": "2026-10-28T06:17:38.275Z",
         "id": "J1fh4o1cDNaclrgK",
         "name": "Atharva Devasthali <atharvadevasthali22@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null,
         "customTelemetryTags": [],
-        "creatorId": "bbfd9b91-c218-420f-985d-bbb81f401ca4"
+        "creatorId": "6bca910b-9d67-495e-99c5-6472724fe638"
       }
     }
   ],
@@ -1229,5 +1229,5 @@
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
-  "parentFolderId": "yX1BtvrIqWbmETdj"
+  "parentFolderId": "Es3Dj34AL19I62Yh"
 }
