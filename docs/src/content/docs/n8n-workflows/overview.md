@@ -93,13 +93,23 @@ npm run pull-workflows:commit       # pull + auto git commit
 npm run pull-workflows:force-commit # force pull + auto git commit
 ```
 
+Also exports every credential (**encrypted** — see [Credentials](#credentials-backup) below) into `n8n-workflows/credentials/`, and n8n Data Tables into `n8n-workflows/data/`.
+
 ### Push from git to n8n
 
 ```bash
 npm run push-workflows
 ```
 
-Reads local JSON files and upserts them into the running n8n instance via the API. Use this when deploying to a fresh n8n instance or restoring from a backup.
+**This is not an upsert.** It wipes every existing workflow and folder in n8n, then re-imports everything from the local JSON files (plus credentials and Data Tables), reassigns folders, and remaps every stale `Execute Workflow` sub-workflow reference and credential reference by name — since Postgres assigns new ids on import instead of keeping the ones from the export. Use this when deploying to a fresh n8n instance or restoring from a backup.
+
+### Credentials backup
+
+Credentials export/import alongside workflows automatically via `pull-workflows`/`push-workflows` — **encrypted**, never plaintext, so the files are safe to commit but only importable on an instance with the same `N8N_ENCRYPTION_KEY`.
+
+:::caution
+Every credential needs a **unique name**. Restoring matches credentials to their new ids by name, so duplicate names will cause the remap to pick one arbitrarily.
+:::
 
 ### Adding a new workflow
 

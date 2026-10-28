@@ -100,6 +100,48 @@ if [[ -z "$N8N_PROJECT_ID" ]]; then
 fi
 echo "✅ Project ID: $N8N_PROJECT_ID"
 
+# ── Import credentials ──────────────────────────────────────────────────────────
+# Encrypted exports only decrypt correctly if N8N_ENCRYPTION_KEY matches what
+# exported them. On Postgres, n8n assigns each imported credential a new id
+# (same bug as workflow import), so build an old->new map here, matched by
+# name, for the Execute Workflow/credential remap phase below.
+CREDENTIALS_DIR="$PROJECT_ROOT/n8n-workflows/credentials"
+declare -A CRED_ID_MAP  # old credential id -> new id
+
+if [ -d "$CREDENTIALS_DIR" ] && [ -n "$(ls -A "$CREDENTIALS_DIR" 2>/dev/null)" ]; then
+  echo ""
+  echo "🔐 Importing credentials..."
+  cred_imported=0
+  cred_failed=0
+  for cf in "$CREDENTIALS_DIR"/*.json; do
+    [ -e "$cf" ] || break
+
+    OLD_CRED_ID=$(jq -r '.id' "$cf")
+    CRED_NAME=$(jq -r '.name' "$cf")
+
+    if ! docker exec "$N8N_CONTAINER" n8n import:credentials \
+      --input="/home/node/n8n-workflows/credentials/$(basename "$cf")" > /dev/null 2>&1; then
+      echo "⚠️  Failed to import credential: $CRED_NAME"
+      cred_failed=$((cred_failed + 1))
+      continue
+    fi
+    echo "✅ Imported credential: $CRED_NAME"
+    cred_imported=$((cred_imported + 1))
+
+    ESCAPED_CRED_NAME=$(echo "$CRED_NAME" | sed "s/'/''/g")
+    NEW_CRED_ID=$(pg_query "SELECT id FROM public.credentials_entity WHERE name = '$ESCAPED_CRED_NAME' ORDER BY \"createdAt\" DESC LIMIT 1;" | head -1 | tr -d '[:space:]')
+    if [[ -n "$NEW_CRED_ID" ]]; then
+      CRED_ID_MAP["$OLD_CRED_ID"]="$NEW_CRED_ID"
+    else
+      echo "   ⚠️  Could not resolve new id for credential '$CRED_NAME' — references to it won't be remapped"
+    fi
+  done
+  echo "✅ Credentials done: $cred_imported imported, $cred_failed failed"
+else
+  echo ""
+  echo "ℹ️  No credentials found in $CREDENTIALS_DIR — skipping credential import"
+fi
+
 # ── Wipe all existing workflows ───────────────────────────────────────────────
 echo "🗑️  Wiping existing workflows..."
 ALL_WF=$(n8n_api GET "/workflows?limit=250" 2>/dev/null)
@@ -219,17 +261,23 @@ done
 echo ""
 echo "✅ Done: $imported imported, $skipped skipped (archived), $failed failed, $moved moved to folders, $created_folders folder(s) created"
 
-# ── Remap Execute Workflow (sub-workflow) references to the new ids ───────────
-# Postgres-backed n8n assigns a new id to every imported workflow instead of
-# keeping the one from the export, so any node referencing another workflow by
-# its old id (parameters.workflowId.value) is now pointing at nothing. Rebuild
-# those references using the old->new id map collected during import.
+# ── Remap Execute Workflow + credential references to the new ids ────────────
+# Postgres-backed n8n assigns a new id to every imported workflow AND every
+# imported credential instead of keeping the ones from the export, so any node
+# referencing a sub-workflow (parameters.workflowId.value) or a credential
+# (credentials.<type>.id) by its old id is now pointing at nothing. Rebuild
+# both using the old->new maps collected during import.
 echo ""
-echo "🔗 Remapping Execute Workflow references..."
+echo "🔗 Remapping Execute Workflow and credential references..."
 
 MAP_JSON="{}"
 for old_id in "${!ID_MAP[@]}"; do
   MAP_JSON=$(jq -n --argjson base "$MAP_JSON" --arg k "$old_id" --arg v "${ID_MAP[$old_id]}" '$base + {($k): $v}')
+done
+
+CRED_MAP_JSON="{}"
+for old_id in "${!CRED_ID_MAP[@]}"; do
+  CRED_MAP_JSON=$(jq -n --argjson base "$CRED_MAP_JSON" --arg k "$old_id" --arg v "${CRED_ID_MAP[$old_id]}" '$base + {($k): $v}')
 done
 
 remapped_workflows=0
@@ -237,18 +285,27 @@ remapped_refs=0
 for new_id in $(printf '%s\n' "${ID_MAP[@]}" | sort -u); do
   WF_JSON=$(n8n_api GET "/workflows/$new_id")
 
-  UPDATED_NODES=$(echo "$WF_JSON" | jq --argjson map "$MAP_JSON" '
+  UPDATED_NODES=$(echo "$WF_JSON" | jq --argjson map "$MAP_JSON" --argjson credMap "$CRED_MAP_JSON" '
     [.nodes[] |
-      if ($map[(.parameters.workflowId.value // "")] // null) != null
-      then (.parameters.workflowId.value as $old |
-            .parameters.workflowId.value = $map[$old] |
-            .parameters.workflowId.cachedResultUrl = ("/workflow/" + $map[$old]))
-      else .
-      end
+      (if ($map[(.parameters.workflowId.value // "")] // null) != null
+       then (.parameters.workflowId.value as $old |
+             .parameters.workflowId.value = $map[$old] |
+             .parameters.workflowId.cachedResultUrl = ("/workflow/" + $map[$old]))
+       else . end) |
+      (if (.credentials? != null)
+       then .credentials |= with_entries(
+              if ($credMap[(.value.id // "")] // null) != null
+              then .value.id = $credMap[.value.id]
+              else . end
+            )
+       else . end)
     ]')
 
-  REF_COUNT=$(echo "$WF_JSON" | jq --argjson map "$MAP_JSON" '
-    [.nodes[] | select(($map[(.parameters.workflowId.value // "")] // null) != null)] | length')
+  REF_COUNT=$(echo "$WF_JSON" | jq --argjson map "$MAP_JSON" --argjson credMap "$CRED_MAP_JSON" '
+    [.nodes[] | select(
+      (($map[(.parameters.workflowId.value // "")] // null) != null) or
+      ((.credentials? // {}) | to_entries | any(($credMap[(.value.id // "")] // null) != null))
+    )] | length')
 
   if [[ "$REF_COUNT" -gt 0 ]]; then
     WF_NAME_FOR_LOG=$(echo "$WF_JSON" | jq -r '.name')

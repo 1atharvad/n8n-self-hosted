@@ -122,6 +122,23 @@ else
   echo "⚠️  Could not read workflow data from postgres — skipping manifest and folder injection"
 fi
 
+# ── Export credentials ──────────────────────────────────────────────────────────
+# Encrypted export (no --decrypted) — safe to commit since it's unreadable without
+# this instance's N8N_ENCRYPTION_KEY, which stays stable in .env across deploys.
+# NEVER add --decrypted here: that writes plaintext API keys/passwords to a
+# git-tracked file.
+echo ""
+echo "🔐 Exporting credentials (encrypted)..."
+CREDENTIALS_DIR="$PROJECT_ROOT/n8n-workflows/credentials"
+mkdir -p "$CREDENTIALS_DIR"
+chmod 777 "$CREDENTIALS_DIR"
+rm -f "$CREDENTIALS_DIR"/*.json
+
+docker exec "$N8N_CONTAINER" n8n export:credentials --all --pretty --separate \
+  --output=/home/node/n8n-workflows/credentials
+cred_count=$(find "$CREDENTIALS_DIR" -name "*.json" 2>/dev/null | wc -l | tr -d '[:space:]')
+echo "✅ Exported $cred_count credential(s) (encrypted — requires this instance's N8N_ENCRYPTION_KEY to import)"
+
 # ── Export data tables ────────────────────────────────────────────────────────
 echo ""
 echo "📦 Exporting data tables..."
