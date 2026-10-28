@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Check, Github, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Check, Trash2, Eye, EyeOff } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa6';
 import { Button, Input } from 'advi-ui';
 import { saveGitHubConfig, fetchGitHubToken } from '@/api/env';
 import type { GitHubConfig } from '@/api/env';
@@ -83,7 +84,7 @@ export const GitHubConfigSection = ({ config, onSaved }: GitHubConfigSectionProp
     <section className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-6 py-5 border-b border-border">
         <div className="flex items-center gap-2">
-          <Github className="h-4 w-4 text-muted-foreground" />
+          <FaGithub className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-base font-semibold text-foreground">GitHub Connection</h2>
           {isConfigured ? (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-green-500/15 text-green-400 border-green-500/30">

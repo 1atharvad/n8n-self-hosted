@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Github } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa6';
 import { Header } from '@/components/Header';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useNavSections } from '@/hooks/useNavSections';
@@ -98,7 +98,7 @@ const DeploymentsPage = () => {
             </section>
           ) : !isConfigured ? (
             <section className="bg-card border border-border rounded-xl px-6 py-14 flex flex-col items-center gap-3">
-              <Github className="h-8 w-8 text-muted-foreground/20" />
+              <FaGithub className="h-8 w-8 text-muted-foreground/20" />
               <p className="text-sm font-medium text-foreground">GitHub not configured</p>
               <p className="text-xs text-muted-foreground text-center max-w-xs">
                 Add your GitHub token and repository in{' '}
