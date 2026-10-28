@@ -46,7 +46,7 @@ flowchart TD
 | Topology      | Main server                                                                                   | Worker servers                                |
 | ------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | Single server | Everything                                                                                    | —                                             |
-| Multi-server  | n8n, worker-monitor, redis, postgres, nginx, minio, admin-api, frontend, docs, loki, promtail | n8n-worker, worker-monitor, fastapi, promtail |
+| Multi-server  | n8n, worker-monitor, redis, postgres, nginx, rustfs, admin-api, frontend, docs, loki, promtail | n8n-worker, worker-monitor, fastapi, promtail |
 
 Topology is controlled by the `CONTABO_WORKER_IP` variable — see [Topology](/docs/deployment/topology/).
 

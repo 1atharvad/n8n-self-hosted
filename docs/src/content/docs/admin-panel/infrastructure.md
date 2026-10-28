@@ -20,7 +20,7 @@ The page runs a health check against all 8 services in parallel (3-second timeou
 | n8n | `GET http://n8n:5678/healthz` |
 | PostgreSQL | TCP connection + simple query |
 | Redis | `PING` command |
-| MinIO | `GET http://minio:9000/health` |
+| RustFS | `GET http://rustfs:9000/health` |
 | media-api | `GET <media-api-url>/health` with `X-API-Key` header |
 | nginx | `GET http://nginx:6060/` |
 | Loki | `GET http://loki:3100/ready` |

@@ -197,7 +197,7 @@ services:
       - /proc:/host/proc:ro
     depends_on:
       - postgres
-      - minio
+      - rustfs
     networks:
       - baota_net
 
@@ -221,9 +221,9 @@ services:
     networks:
       - baota_net
 
-  minio:
+  rustfs:
     image: rustfs/rustfs:latest
-    container_name: minio
+    container_name: rustfs
     restart: unless-stopped
     command: ["/data"]
     environment:
@@ -301,7 +301,7 @@ services:
     depends_on:
       - n8n
       - fastapi
-      - minio
+      - rustfs
       - admin-api
       - frontend
       - docs

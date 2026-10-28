@@ -97,7 +97,7 @@ Open these in a browser once the containers are up:
 | n8n                      | http://localhost:6060               |
 | Media API docs (Swagger) | http://localhost:6060/api/core/docs |
 | Admin panel              | http://localhost:6060/admin         |
-| MinIO console            | http://localhost:6060/minio         |
+| RustFS console           | http://localhost:6060/rustfs        |
 
 All services are routed through Nginx on port **6060**. See [Nginx Routing](/docs/architecture/nginx-routing/) for the full path map.
 

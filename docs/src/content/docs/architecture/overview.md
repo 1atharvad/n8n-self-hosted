@@ -73,7 +73,7 @@ graph TD
 | **Worker Monitor** | `worker-monitor` | Polls CPU/containers/executions; writes snapshots to Redis. |
 | **PostgreSQL** | `postgres` | Primary database for n8n and Media API. |
 | **Redis** | `redis` | n8n job queue (multi-server) + worker-monitor snapshots. |
-| **MinIO** | `minio` | Object storage for video files. |
+| **RustFS** | `rustfs` | Object storage for video files. |
 | **Loki** | `loki` | Log aggregation backend. |
 | **Promtail** | `promtail` | Log shipper: reads container stdout → pushes to Loki. |
 | **Nginx** | `nginx` | Reverse proxy. Single entry point for all traffic. |

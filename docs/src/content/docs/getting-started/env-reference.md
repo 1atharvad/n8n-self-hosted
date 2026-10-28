@@ -41,16 +41,18 @@ All configuration lives in a single `.env` file at the project root. Docker Comp
 
 ---
 
-## MinIO (object storage)
+## Object storage (RustFS)
+
+The service is RustFS (not MinIO — MinIO's Docker images were pulled from Docker Hub/Quay.io in Sept 2026), but the env var names below are unchanged since RustFS is S3-API-compatible and the app code never needed to change.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `MINIO_ROOT_USER` | REQUIRED | — | MinIO admin username (acts as access key). |
-| `MINIO_ROOT_PASSWORD` | REQUIRED | — | MinIO admin password (acts as secret key). Minimum 8 characters. |
+| `MINIO_ROOT_USER` | REQUIRED | — | RustFS access key. |
+| `MINIO_ROOT_PASSWORD` | REQUIRED | — | RustFS secret key. Minimum 8 characters. |
 | `MINIO_BUCKET_NAME` | REQUIRED | — | Name of the bucket used for video file storage. |
-| `MINIO_ENDPOINT` | AUTO | `http://minio:9000` | Internal endpoint used by the Media API to connect to MinIO. |
+| `MINIO_ENDPOINT` | AUTO | `http://rustfs:9000` | Internal endpoint used by the Media API to connect to RustFS. |
 
-**Used by:** `minio`, `media-api`
+**Used by:** `rustfs`, `media-api`
 
 ---
 

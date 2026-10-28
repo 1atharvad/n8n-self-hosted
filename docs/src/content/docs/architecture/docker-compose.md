@@ -39,7 +39,7 @@ Split across two types of machines:
 
 ### Main server (`docker-compose.prod-main.yml`)
 
-Runs: `n8n`, `n8n-worker`, `worker-monitor`, `redis`, `postgres`, `nginx`, `minio`, `admin-api`, `frontend`, `docs`, `loki`, `promtail`
+Runs: `n8n`, `n8n-worker`, `worker-monitor`, `redis`, `postgres`, `nginx`, `rustfs`, `admin-api`, `frontend`, `docs`, `loki`, `promtail`
 
 The main server holds all state (databases, Redis, Loki) and the n8n web UI. It also runs its own
 `n8n-worker`, so it executes jobs from the shared Redis queue rather than only coordinating.

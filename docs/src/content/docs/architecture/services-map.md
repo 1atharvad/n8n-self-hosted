@@ -16,7 +16,7 @@ graph TD
     Nginx -->|"/api/core/"| MediaAPI["Media API  :9374"]
     Nginx -->|"/api/admin/"| AdminAPI["Admin API  :8080"]
     Nginx -->|"/admin/"| Frontend["Frontend  :5173"]
-    Nginx -->|"/minio/"| MinIO[("MinIO  :9001")]
+    Nginx -->|"/rustfs/"| RustFS[("RustFS  :9001")]
 
     subgraph Workers["Worker Servers"]
         N8NWorker["n8n Worker"]
@@ -31,7 +31,7 @@ graph TD
     classDef proxy fill:#1e1b4b,color:#5eead4,stroke:#4338ca
 
     class n8n,MediaAPI,AdminAPI,Frontend svc
-    class MinIO store
+    class RustFS store
     class Browser ext
     class N8NWorker,MediaAPIW mon
     class Nginx proxy
@@ -46,7 +46,7 @@ graph TD
     n8n --> SharedVol[("n8n_files/\nshared volume")]
 
     MediaAPI["Media API"] --> PG
-    MediaAPI --> MinIO[("MinIO  :9001")]
+    MediaAPI --> RustFS[("RustFS  :9001")]
     MediaAPI --> SharedVol
 
     AdminAPI["Admin API"] --> PG
@@ -70,7 +70,7 @@ graph TD
 
     class n8n,MediaAPI,AdminAPI svc
     class PG,Redis,Loki,SQLite db
-    class MinIO,SharedVol store
+    class RustFS,SharedVol store
     class WorkerMon,Promtail,N8NWorker,PromtailW,WorkerMonW mon
 ```
 
@@ -82,7 +82,7 @@ graph TD
 | Media API | `media-api` | 9374 | `/api/core/` |
 | Admin API | `admin-api` | 8080 | `/api/admin/` |
 | Admin frontend | `frontend` | 5173 (dev) | `/admin/` |
-| MinIO console | `minio` | 9001 | `/minio/` |
+| RustFS console | `rustfs` | 9001 | `/rustfs/` |
 | PostgreSQL | `postgres` | 5432 | internal only |
 | Redis | `redis` | 6379 | internal only |
 | Loki | `loki` | 3100 | internal only |

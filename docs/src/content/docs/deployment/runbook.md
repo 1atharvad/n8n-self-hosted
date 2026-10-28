@@ -146,7 +146,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:6060/api/core/health
 | Container OOM-killed (heavy video processing) | `docker restart media-api` |
 | A long-running job blocked the event loop | `docker restart media-api` — running jobs will need to be re-triggered |
 | Wrong `API_KEY` in request | Check the `API_KEY` in `.env` matches what n8n credentials have configured |
-| MinIO unreachable | `docker restart minio && docker restart media-api` |
+| RustFS unreachable | `docker restart rustfs && docker restart media-api` |
 
 ---
 

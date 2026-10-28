@@ -22,12 +22,12 @@ Topology is determined entirely by the `CONTABO_WORKER_IP` GitHub repository var
 Everything runs on one machine:
 - n8n (UI + execution), n8n-worker
 - fastapi (media-api)
-- postgres, redis, minio, loki
+- postgres, redis, rustfs, loki
 - nginx, docs, admin-api, frontend, worker-monitor, promtail
 
 ### Multi-server — main server
 
-Runs: `n8n`, `worker-monitor`, `redis`, `postgres`, `nginx`, `minio`, `admin-api`, `frontend`, `docs`, `loki`, `promtail`
+Runs: `n8n`, `worker-monitor`, `redis`, `postgres`, `nginx`, `rustfs`, `admin-api`, `frontend`, `docs`, `loki`, `promtail`
 
 The main server holds all state. The n8n web UI is on the main server.
 

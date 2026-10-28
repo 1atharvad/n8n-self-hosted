@@ -187,16 +187,16 @@ services:
       - ${HOST_PROJECT_DIR}/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - n8n
-      - minio
+      - rustfs
       - admin-api
       - frontend
       - docs
     networks:
       - baota_net
 
-  minio:
+  rustfs:
     image: rustfs/rustfs:latest
-    container_name: minio
+    container_name: rustfs
     restart: unless-stopped
     command: ["/data"]
     environment:

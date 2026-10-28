@@ -100,15 +100,15 @@ See [Google OAuth2 & API Keys](/docs/credentials/google-oauth/) for full setup �
 
 ---
 
-## MinIO / S3
+## RustFS / S3
 
-MinIO is accessed by the Media API directly via environment variables — no n8n credential is needed for the current workflows.
+RustFS (the `rustfs` service — an S3-API-compatible object storage backend, formerly MinIO) is accessed by the Media API directly via environment variables — no n8n credential is needed for the current workflows.
 
-If you add a workflow node that reads from MinIO directly, use the **AWS S3** credential type:
+If you add a workflow node that reads from RustFS directly, use the **AWS S3** credential type:
 
 | Field | Value |
 |---|---|
 | Access Key ID | Value of `MINIO_ROOT_USER` |
 | Secret Access Key | Value of `MINIO_ROOT_PASSWORD` |
-| Region | `us-east-1` (any value works for MinIO) |
-| Endpoint | `http://minio:9000` (internal Docker network) |
+| Region | `us-east-1` (any value works for RustFS) |
+| Endpoint | `http://rustfs:9000` (internal Docker network) |

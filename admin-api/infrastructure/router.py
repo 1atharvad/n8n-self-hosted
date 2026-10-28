@@ -76,7 +76,7 @@ async def server_health(
 ):
     """
     Full 8-service health check for any server.
-    All workers share the same postgres/redis/n8n/minio/nginx/loki/promtail stack;
+    All workers share the same postgres/redis/n8n/rustfs/nginx/loki/promtail stack;
     only media-api differs per server (uses that server's URL).
     """
     media_url = await _get_server_url(request, server)
@@ -86,7 +86,7 @@ async def server_health(
         _http_check("n8n", f"http://n8n:{n8n_port}/healthz"),
         _postgres_check(),
         _redis_check(request),
-        _http_check("MinIO", "http://minio:9000/health"),
+        _http_check("RustFS", "http://rustfs:9000/health"),
         _http_check("media-api", f"{media_url}/health", headers={"X-API-Key": _API_KEY}),
         _http_check("nginx", "http://nginx:6060/"),
         _http_check("Loki", "http://loki:3100/ready"),

@@ -33,7 +33,7 @@ docker restart <container-name>
 | `postgres`       | PostgreSQL                     |
 | `redis`          | Redis                          |
 | `nginx`          | Nginx reverse proxy            |
-| `minio`          | MinIO object storage           |
+| `rustfs`         | RustFS object storage           |
 | `loki`           | Loki log aggregation           |
 | `promtail`       | Log shipper                    |
 

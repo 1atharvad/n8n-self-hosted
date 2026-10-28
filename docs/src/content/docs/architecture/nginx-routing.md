@@ -22,7 +22,7 @@ flowchart TD
     subgraph Static["Static & Storage"]
         Frontend["Frontend  :5173\n /admin/"]
         Docs["Docs  :4321\n /docs/"]
-        MinIO["MinIO Console  :9001\n /minio/"]
+        RustFS["RustFS Console  :9001\n /rustfs/"]
     end
 
     Nginx --> APIs
@@ -36,7 +36,7 @@ flowchart TD
     class n8n,MediaAPI,AdminAPI,Frontend,Docs svc
     class Nginx proxy
     class Client ext
-    class MinIO store
+    class RustFS store
 ```
 
 | External path | Upstream | Notes |
@@ -45,7 +45,7 @@ flowchart TD
 | `/api/core/` | `media-api:9374` | WebSocket upgrade enabled (for `/ws/voice-chat`) |
 | `/api/admin/` | `admin-api:8080` | Standard HTTP proxy; trailing slash stripped |
 | `/admin/` | `frontend:5173` (dev) | Vite HMR in dev; static build in prod served by admin-api |
-| `/minio/` | `minio:9001` | Path rewriting with `sub_filter` so MinIO's UI works under a subpath |
+| `/rustfs/` | `rustfs:9001` | No rewriting — the MinIO-specific `sub_filter` rules were removed since they don't apply to RustFS's console (unverified whether the console needs any rewriting at all) |
 
 ## Headers forwarded to all upstreams
 
@@ -79,8 +79,8 @@ proxy_send_timeout 7200s;
 
 This is necessary because some n8n workflows (video pipeline, large batch jobs) run for extended periods and the connection must stay open while the client watches execution progress.
 
-## MinIO sub-path rewriting
+## RustFS console routing
 
-The `minio` service now runs [RustFS](https://rustfs.com) instead of MinIO (MinIO's Docker images were pulled from Docker Hub and Quay.io in September 2026 — see the `minio` service's image in `docker-compose.*.yml`). The S3 API itself (what the Media API actually talks to) is unaffected, but this `sub_filter`-based console rewriting below was written for MinIO's web UI specifically, which generates internal links with absolute paths. RustFS's console is a different web app and likely has a different asset path structure — **this hasn't been verified to work post-swap** and may need its own `sub_filter` rules, or may not need rewriting at all.
+The service (compose name `rustfs`, proxied at `/rustfs/`) runs [RustFS](https://rustfs.com), not MinIO — MinIO's Docker images were pulled from both Docker Hub and Quay.io in September 2026, so the stack was migrated to RustFS as a drop-in S3-API-compatible replacement. The S3 API itself (what the Media API actually talks to) is unaffected by this.
 
-Original MinIO behavior, for reference: MinIO generates internal links with absolute paths, so `sub_filter` rewrites response bodies to replace `/` with `/minio/` in href and src attributes. This is why MinIO worked correctly when accessed via `http://localhost:6060/minio`.
+The old MinIO console had a `sub_filter`-based rewriting block here (MinIO's web UI generates internal links with absolute paths, so responses had `/` rewritten to `/minio/` in href/src attributes). That rewriting was specific to MinIO's web app and doesn't apply to RustFS's console, so it's been removed rather than carried over unverified. Whether RustFS's console needs its own rewriting (or none at all) under a subpath hasn't been tested — check `http://localhost:6060/rustfs` directly before relying on it.
