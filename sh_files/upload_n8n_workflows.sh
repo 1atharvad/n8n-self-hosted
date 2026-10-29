@@ -184,7 +184,7 @@ FOLDERS_JSON='{"data":[]}'
 ARCHIVED_IDS=""
 if [[ -f "$MANIFEST" ]]; then
   ARCHIVED_IDS=$(jq -r '.workflows[] | select(.isArchived == true) | .id' "$MANIFEST" 2>/dev/null)
-  archived_count=$(echo "$ARCHIVED_IDS" | grep -c .)
+  archived_count=$(echo "$ARCHIVED_IDS" | grep -c . || true)
   echo "📋 Manifest loaded ($archived_count archived workflow(s) will be skipped)"
 else
   echo "⚠️  No manifest.json found — archived workflows will not be skipped"
