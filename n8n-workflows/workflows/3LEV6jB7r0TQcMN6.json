@@ -213,7 +213,7 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "e2d0c6b4-9cbe-4806-906a-4bcba54825c1",
+  "versionId": "b331ab88-5bd1-478b-8279-36aecfe972fa",
   "activeVersionId": null,
   "versionCounter": 61,
   "triggerCount": 0,
@@ -234,8 +234,8 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-10-28T14:23:03.283Z",
-      "createdAt": "2026-10-28T14:23:03.283Z",
+      "updatedAt": "2026-10-29T03:22:06.284Z",
+      "createdAt": "2026-10-29T03:22:06.284Z",
       "role": "workflow:owner",
       "workflowId": "3LEV6jB7r0TQcMN6",
       "projectId": "J1fh4o1cDNaclrgK",
@@ -257,5 +257,5 @@
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
-  "parentFolderId": "Es3Dj34AL19I62Yh"
+  "parentFolderId": "heihEI9mnxouftJ0"
 }

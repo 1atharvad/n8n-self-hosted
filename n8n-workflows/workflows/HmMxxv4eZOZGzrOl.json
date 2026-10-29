@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T14:29:57.919Z",
+  "updatedAt": "2026-10-29T03:30:05.984Z",
   "createdAt": "2026-05-16T22:33:14.416Z",
   "id": "HmMxxv4eZOZGzrOl",
   "name": "Video Creation",
@@ -1125,9 +1125,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "4a6ecf4b-c6a8-46bf-9fb1-6d40ffe8c570",
+  "versionId": "0b373eea-6785-4573-b615-1155756aac9b",
   "activeVersionId": null,
-  "versionCounter": 205,
+  "versionCounter": 206,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [
@@ -1146,8 +1146,8 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-10-28T14:25:51.831Z",
-      "createdAt": "2026-10-28T14:25:51.831Z",
+      "updatedAt": "2026-10-29T03:25:12.682Z",
+      "createdAt": "2026-10-29T03:25:12.682Z",
       "role": "workflow:owner",
       "workflowId": "HmMxxv4eZOZGzrOl",
       "projectId": "J1fh4o1cDNaclrgK",
@@ -1169,5 +1169,5 @@
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
-  "parentFolderId": "Es3Dj34AL19I62Yh"
+  "parentFolderId": "heihEI9mnxouftJ0"
 }

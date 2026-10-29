@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T14:29:49.942Z",
+  "updatedAt": "2026-10-29T03:29:55.296Z",
   "createdAt": "2026-05-16T22:31:04.307Z",
   "id": "2Kbv7D61qx6QiovN",
   "name": "Job Scrapper",
@@ -1573,9 +1573,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "7dba5aca-41a2-4504-ba74-b1a668712300",
+  "versionId": "9db87381-d1a0-4e58-b62c-01d2c3b7a1c1",
   "activeVersionId": null,
-  "versionCounter": 287,
+  "versionCounter": 288,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [
@@ -1594,8 +1594,8 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-10-28T14:22:00.470Z",
-      "createdAt": "2026-10-28T14:22:00.470Z",
+      "updatedAt": "2026-10-29T03:20:44.499Z",
+      "createdAt": "2026-10-29T03:20:44.499Z",
       "role": "workflow:owner",
       "workflowId": "2Kbv7D61qx6QiovN",
       "projectId": "J1fh4o1cDNaclrgK",
@@ -1617,5 +1617,5 @@
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
-  "parentFolderId": "Es3Dj34AL19I62Yh"
+  "parentFolderId": "heihEI9mnxouftJ0"
 }

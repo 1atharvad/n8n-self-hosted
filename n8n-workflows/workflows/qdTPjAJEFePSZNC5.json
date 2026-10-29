@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T14:30:06.436Z",
+  "updatedAt": "2026-10-29T03:30:12.195Z",
   "createdAt": "2026-05-16T22:34:38.277Z",
   "id": "qdTPjAJEFePSZNC5",
   "name": "Youtube Video Upload",
@@ -2102,9 +2102,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "0013bc21-801b-4bc9-91cc-90f7796339ab",
+  "versionId": "5e9bbce5-4c22-4c95-9e60-2cb415723a2c",
   "activeVersionId": null,
-  "versionCounter": 576,
+  "versionCounter": 577,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "tags": [
@@ -2123,8 +2123,8 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-10-28T14:29:27.183Z",
-      "createdAt": "2026-10-28T14:29:27.183Z",
+      "updatedAt": "2026-10-29T03:29:27.490Z",
+      "createdAt": "2026-10-29T03:29:27.490Z",
       "role": "workflow:owner",
       "workflowId": "qdTPjAJEFePSZNC5",
       "projectId": "J1fh4o1cDNaclrgK",
@@ -2146,5 +2146,5 @@
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
-  "parentFolderId": "Es3Dj34AL19I62Yh"
+  "parentFolderId": "heihEI9mnxouftJ0"
 }

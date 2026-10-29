@@ -276,7 +276,7 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "29b8db62-e34e-43f6-910d-e25f21620845",
+  "versionId": "4bdbf30c-aa85-492a-a1d9-fdf32e2cb2ad",
   "activeVersionId": null,
   "versionCounter": 67,
   "triggerCount": 2,
@@ -291,8 +291,8 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-10-28T14:27:32.776Z",
-      "createdAt": "2026-10-28T14:27:32.776Z",
+      "updatedAt": "2026-10-29T03:27:13.992Z",
+      "createdAt": "2026-10-29T03:27:13.992Z",
       "role": "workflow:owner",
       "workflowId": "dkQ7Ndwg01g2Pg6R",
       "projectId": "J1fh4o1cDNaclrgK",
@@ -314,5 +314,5 @@
     "description": ""
   },
   "parentFolder": "Blog AI Agent",
-  "parentFolderId": "R5RHBUWgLPyeCQ4r"
+  "parentFolderId": "Yr4qCOLlIRU7Nngj"
 }

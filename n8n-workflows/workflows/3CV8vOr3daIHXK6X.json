@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T14:29:51.604Z",
+  "updatedAt": "2026-10-29T03:29:58.887Z",
   "createdAt": "2026-05-16T22:31:33.458Z",
   "id": "3CV8vOr3daIHXK6X",
   "name": "Script Generator",
@@ -1185,9 +1185,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "33696e64-2ef4-4116-9bef-8f9a590d2fd5",
+  "versionId": "b8aa6c4c-7e6e-415e-8262-3c8a670125f3",
   "activeVersionId": null,
-  "versionCounter": 305,
+  "versionCounter": 306,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [
@@ -1206,8 +1206,8 @@
   ],
   "shared": [
     {
-      "updatedAt": "2026-10-28T14:22:43.676Z",
-      "createdAt": "2026-10-28T14:22:43.676Z",
+      "updatedAt": "2026-10-29T03:21:42.582Z",
+      "createdAt": "2026-10-29T03:21:42.582Z",
       "role": "workflow:owner",
       "workflowId": "3CV8vOr3daIHXK6X",
       "projectId": "J1fh4o1cDNaclrgK",
@@ -1229,5 +1229,5 @@
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",
-  "parentFolderId": "Es3Dj34AL19I62Yh"
+  "parentFolderId": "heihEI9mnxouftJ0"
 }
