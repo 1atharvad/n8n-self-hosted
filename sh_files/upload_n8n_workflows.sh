@@ -70,6 +70,10 @@ if [ ! -d "$WORKFLOWS_DIR" ] || [ -z "$(ls -A "$WORKFLOWS_DIR" 2>/dev/null)" ]; 
   exit 1
 fi
 
+# Starts here, not above the confirmation prompt, so time spent waiting on the
+# user's y/N reply isn't counted toward the run.
+SECONDS=0
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 pg_query() {
   echo "$1" | docker exec -i "$POSTGRES_CONTAINER" bash -c \
@@ -112,12 +116,24 @@ if [ -d "$CREDENTIALS_DIR" ] && [ -n "$(ls -A "$CREDENTIALS_DIR" 2>/dev/null)" ]
   echo ""
   echo "🔐 Importing credentials..."
   cred_imported=0
+  cred_skipped=0
   cred_failed=0
   for cf in "$CREDENTIALS_DIR"/*.json; do
     [ -e "$cf" ] || break
 
     OLD_CRED_ID=$(jq -r '.id' "$cf")
     CRED_NAME=$(jq -r '.name' "$cf")
+
+    # Skip credentials that already exist (by id) instead of reimporting —
+    # reimporting would regenerate a new id, breaking every workflow node that
+    # references the existing one, and risks clobbering a credential value
+    # that's since been rotated/edited live with a stale one from the backup.
+    EXISTING=$(pg_query "SELECT id FROM public.credentials_entity WHERE id = '$OLD_CRED_ID';" | head -1 | tr -d '[:space:]')
+    if [[ -n "$EXISTING" ]]; then
+      echo "⏭️  Skipped (already exists): $CRED_NAME"
+      cred_skipped=$((cred_skipped + 1))
+      continue
+    fi
 
     if ! docker exec "$N8N_CONTAINER" n8n import:credentials \
       --input="/home/node/n8n-workflows/credentials/$(basename "$cf")" > /dev/null 2>&1; then
@@ -136,7 +152,7 @@ if [ -d "$CREDENTIALS_DIR" ] && [ -n "$(ls -A "$CREDENTIALS_DIR" 2>/dev/null)" ]
       echo "   ⚠️  Could not resolve new id for credential '$CRED_NAME' — references to it won't be remapped"
     fi
   done
-  echo "✅ Credentials done: $cred_imported imported, $cred_failed failed"
+  echo "✅ Credentials done: $cred_imported imported, $cred_skipped skipped (already exist), $cred_failed failed"
 else
   echo ""
   echo "ℹ️  No credentials found in $CREDENTIALS_DIR — skipping credential import"
@@ -168,7 +184,7 @@ FOLDERS_JSON='{"data":[]}'
 ARCHIVED_IDS=""
 if [[ -f "$MANIFEST" ]]; then
   ARCHIVED_IDS=$(jq -r '.workflows[] | select(.isArchived == true) | .id' "$MANIFEST" 2>/dev/null)
-  archived_count=$(echo "$ARCHIVED_IDS" | grep -c . 2>/dev/null || echo 0)
+  archived_count=$(echo "$ARCHIVED_IDS" | grep -c .)
   echo "📋 Manifest loaded ($archived_count archived workflow(s) will be skipped)"
 else
   echo "⚠️  No manifest.json found — archived workflows will not be skipped"
@@ -321,6 +337,35 @@ for new_id in $(printf '%s\n' "${ID_MAP[@]}" | sort -u); do
 done
 echo "✅ Remap done: $remapped_refs reference(s) fixed across $remapped_workflows workflow(s)"
 
+# ── Re-activate workflows that were active before export ─────────────────────
+# n8n's CLI import always leaves workflows inactive regardless of the "active"
+# field in the file, so schedule/webhook triggers and sub-workflow calls that
+# require an active workflow would silently stop working after every push
+# unless we flip them back on here.
+echo ""
+echo "⚡ Re-activating workflows..."
+activated=0
+activate_failed=0
+for f in "$WORKFLOWS_DIR"/*.json; do
+  [ -e "$f" ] || break
+  WAS_ACTIVE=$(jq -r '.active' "$f")
+  [[ "$WAS_ACTIVE" != "true" ]] && continue
+
+  OLD_ID=$(jq -r '.id' "$f")
+  NEW_ID="${ID_MAP[$OLD_ID]:-}"
+  [[ -z "$NEW_ID" ]] && continue
+
+  WF_NAME=$(jq -r '.name' "$f")
+  if n8n_api POST "/workflows/$NEW_ID/activate" > /dev/null 2>&1; then
+    echo "✅ Activated: $WF_NAME"
+    activated=$((activated + 1))
+  else
+    echo "⚠️  Failed to activate: $WF_NAME"
+    activate_failed=$((activate_failed + 1))
+  fi
+done
+echo "✅ Activation done: $activated activated, $activate_failed failed"
+
 # ── Restore data tables ───────────────────────────────────────────────────────
 DATA_DIR="$PROJECT_ROOT/n8n-workflows/data"
 if [ -f "$DATA_DIR/data_tables_restore.sql" ]; then
@@ -331,8 +376,13 @@ if [ -f "$DATA_DIR/data_tables_restore.sql" ]; then
     sed "s/__PROJECT_ID__/$N8N_PROJECT_ID/g" | \
     docker exec -i "$POSTGRES_CONTAINER" bash -c \
       'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1' > /dev/null
-  echo "✅ Data tables restored: $TABLES"
+  echo "✅ Data tables restored:"
+  echo "$TABLES" | tr ' ' '\n' | sed '/^$/d' | sed 's/^/   - /'
 else
   echo ""
   echo "ℹ️  No data_tables_restore.sql found — skipping data table restore"
 fi
+
+ELAPSED=$SECONDS
+echo ""
+printf "⏱️  Finished in %02d:%02d:%02d\n" $((ELAPSED / 3600)) $((ELAPSED % 3600 / 60)) $((ELAPSED % 60))
