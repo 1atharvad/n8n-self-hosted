@@ -1087,8 +1087,8 @@
       "name": "Save Video Details",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1110,8 +1110,8 @@
       "name": "Set Video Created",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1258,8 +1258,8 @@
       "name": "Update Video Details",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1295,8 +1295,8 @@
       "name": "Get current epoch",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1320,8 +1320,8 @@
       "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1378,8 +1378,8 @@
       "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1561,8 +1561,8 @@
       "name": "Fail old unsuccessful runs",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -1581,7 +1581,7 @@
       "name": "Redis Trigger",
       "credentials": {
         "redis": {
-          "id": "rllwig8hhSor55Ls",
+          "id": "MvrA3niKGMm8zmlB",
           "name": "Redis account"
         }
       }

@@ -148,7 +148,7 @@
       "name": "Update Latest Question Summary",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -218,7 +218,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -294,7 +294,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -459,7 +459,7 @@
       "name": "Add New User",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }

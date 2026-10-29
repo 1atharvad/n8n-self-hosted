@@ -87,7 +87,7 @@
       "name": "Transcribe a recording",
       "credentials": {
         "googlePalmApi": {
-          "id": "lNYUNbpUefVcNyks",
+          "id": "5YA6HdvYqOcLNzv4",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -398,7 +398,7 @@
       "name": "Retrieve User Information",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -498,7 +498,7 @@
       "name": "OpenRouter Chat Model7",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -905,7 +905,7 @@
       "name": "Log Actions Performed",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -925,7 +925,7 @@
       "name": "Deepseek Model (Free)",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -945,7 +945,7 @@
       "name": "OpenAI Model (Paid)",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -965,7 +965,7 @@
       "name": "Deepseek Model (Free)1",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -985,7 +985,7 @@
       "name": "OpenAI Model (Paid)1",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -1005,7 +1005,7 @@
       "name": "Deepseek Model (Free)2",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -1025,7 +1025,7 @@
       "name": "OpenAI Model (Paid)2",
       "credentials": {
         "openRouterApi": {
-          "id": "dDI8yv8WTuoF2LZH",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }

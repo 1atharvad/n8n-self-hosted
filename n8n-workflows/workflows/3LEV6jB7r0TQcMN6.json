@@ -105,7 +105,7 @@
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "b7nDnWwy7OrWzTgu",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }
@@ -128,8 +128,8 @@
       "name": "Update status to failed",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     }

@@ -50,7 +50,7 @@
       "name": "Compile Final Video",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -72,7 +72,7 @@
       "name": "Status Video Check",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -185,7 +185,7 @@
       "name": "Get Final Video",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -348,7 +348,7 @@
       "name": "MP4 to MP4 conversion",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -574,7 +574,7 @@
       "name": "Remote Execute",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -593,7 +593,7 @@
       "name": "Copy Videos to Combine",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }

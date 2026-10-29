@@ -40,7 +40,7 @@
       "executeOnce": false,
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -76,7 +76,7 @@
       "name": "Status Check",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -189,7 +189,7 @@
       "name": "Get audio file",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }

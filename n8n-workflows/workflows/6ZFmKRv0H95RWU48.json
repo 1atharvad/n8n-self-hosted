@@ -381,7 +381,7 @@
       "name": "Get User Data",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -448,7 +448,7 @@
       "name": "Get Shift Details",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -596,7 +596,7 @@
       "name": "Update Question Summary for Shift",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -744,7 +744,7 @@
       "name": "Update Question Summary for End of Sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -884,7 +884,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }
@@ -930,7 +930,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "AEguwTTY1RKTQyzO",
+          "id": "IUrSft0xvBok0hRn",
           "name": "Google Sheets account"
         }
       }

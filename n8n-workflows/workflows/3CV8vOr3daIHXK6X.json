@@ -336,8 +336,8 @@
       "name": "Extract Job Openings",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -541,8 +541,8 @@
       "name": "Add Script",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -746,8 +746,8 @@
       "name": "Add Audio File",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -845,7 +845,7 @@
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
-          "id": "b7nDnWwy7OrWzTgu",
+          "id": "TzBu68z0vxXyw4q7",
           "name": "OpenRouter account"
         }
       }

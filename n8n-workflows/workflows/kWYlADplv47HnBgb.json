@@ -148,7 +148,7 @@
       "name": "Redis",
       "credentials": {
         "redis": {
-          "id": "rllwig8hhSor55Ls",
+          "id": "MvrA3niKGMm8zmlB",
           "name": "Redis account"
         }
       }
@@ -204,7 +204,7 @@
       "name": "Check CPU Load",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }

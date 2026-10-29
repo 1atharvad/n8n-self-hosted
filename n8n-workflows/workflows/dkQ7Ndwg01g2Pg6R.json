@@ -68,7 +68,7 @@
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "kra2Ub4btsOqN3b8",
+          "id": "5YA6HdvYqOcLNzv4",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -169,7 +169,7 @@
       "name": "Embeddings Google Gemini",
       "credentials": {
         "googlePalmApi": {
-          "id": "kra2Ub4btsOqN3b8",
+          "id": "5YA6HdvYqOcLNzv4",
           "name": "Google Gemini(PaLM) Api account"
         }
       }

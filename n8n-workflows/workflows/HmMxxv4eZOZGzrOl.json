@@ -73,7 +73,7 @@
       "name": "Get images",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -99,7 +99,7 @@
       "name": "Create PPT",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -151,7 +151,7 @@
       "name": "Extract Images",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -260,7 +260,7 @@
       "retryOnFail": false,
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -282,7 +282,7 @@
       "name": "Status Image Check",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -395,7 +395,7 @@
       "name": "Status MP4 conversion Check",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
@@ -769,7 +769,7 @@
       "alwaysOutputData": false,
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       },

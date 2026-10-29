@@ -34,8 +34,8 @@
       "name": "Delete from JobLinks",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -55,8 +55,8 @@
       "name": "Delete from Mp4List",
       "credentials": {
         "postgres": {
-          "id": "yc7NiS95ggUrE59j",
-          "name": "Postgres account (Server)"
+          "id": "36DJq1MVUbnEhxx5",
+          "name": "Postgres account"
         }
       }
     },
@@ -91,7 +91,7 @@
       "name": "Folder files cleanup",
       "credentials": {
         "fastApiServerApi": {
-          "id": "md7HjwFndkcEuAZi",
+          "id": "wOpANBUkIgku89J7",
           "name": "FastAPI Server account"
         }
       }
