@@ -4,7 +4,7 @@
   "id": "66MHT0z3zhiYgblm",
   "name": "Combine Videos",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -841,7 +841,7 @@
   "nodeGroups": [],
   "pinData": {},
   "versionId": "33fa8290-f4a4-434d-b1e3-8ce6df79d41a",
-  "activeVersionId": null,
+  "activeVersionId": "33fa8290-f4a4-434d-b1e3-8ce6df79d41a",
   "versionCounter": 185,
   "triggerCount": 0,
   "sourceWorkflowId": null,

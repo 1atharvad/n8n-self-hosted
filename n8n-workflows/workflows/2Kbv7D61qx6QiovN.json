@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-10-29T03:29:55.296Z",
+  "updatedAt": "2026-10-29T19:49:25.107Z",
   "createdAt": "2026-05-16T22:31:04.307Z",
   "id": "2Kbv7D61qx6QiovN",
   "name": "Job Scrapper",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -12,41 +12,41 @@
         "fieldToSplitOut": "items",
         "options": {}
       },
+      "id": "eec928a2-2179-4bbb-865c-733676e61208",
+      "name": "Split Out",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
+      "alwaysOutputData": true,
       "position": [
         -1392,
         688
-      ],
-      "id": "eec928a2-2179-4bbb-865c-733676e61208",
-      "name": "Split Out",
-      "alwaysOutputData": true
+      ]
     },
     {
       "parameters": {
         "jsCode": "const maxPages = $input.first().json.maxPages;\nconst pages_scrapped = $('Save Variables').first().json.pages_scrapped;\n\nreturn [...Array(maxPages).keys()].map(x => {\n  return {\n    json: {\n      start: (pages_scrapped + x) * 10,\n      query: $input.first().json.query,\n      before: $input.first().json.before,\n      after: $input.first().json.after\n    }\n  }\n});"
       },
+      "id": "57cb66f3-2e48-47dc-b204-a795ef166165",
+      "name": "Code1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -2032,
         688
-      ],
-      "id": "57cb66f3-2e48-47dc-b204-a795ef166165",
-      "name": "Code1"
+      ]
     },
     {
       "parameters": {
         "options": {}
       },
+      "id": "350dab67-521b-458e-8255-9004ee261517",
+      "name": "Loop Over Items",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
         -1824,
         688
-      ],
-      "id": "350dab67-521b-458e-8255-9004ee261517",
-      "name": "Loop Over Items"
+      ]
     },
     {
       "parameters": {
@@ -78,40 +78,40 @@
         },
         "options": {}
       },
+      "id": "3c2c88eb-3b89-4cd1-8348-c36ac3cf81e0",
+      "name": "Google Search",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         -1600,
         688
-      ],
-      "id": "3c2c88eb-3b89-4cd1-8348-c36ac3cf81e0",
-      "name": "Google Search"
+      ]
     },
     {
       "parameters": {
         "jsCode": "const substrings = [\"hiring\", \"in\", \"|\"];\n\nreturn $input.all()\n  .filter(item => {\n    const title = item.json.pagemap?.metatags?.[0]?.['twitter:title'] || '';\n    return substrings.every(sub => title.includes(sub));\n  })\n  .map(item => {\n    const title = item.json.pagemap.metatags[0]['twitter:title'];\n    const titleParts = title.split(' hiring ');\n    const company_name = titleParts[0] || '';\n\n    let position = '';\n    let location = '';\n    if (titleParts[1]) {\n      const titleSubParts = titleParts[1].split(' |')[0].split(' in ');\n      position = titleSubParts[0] || '';\n      location = titleSubParts[1] || '';\n    }\n\n    return {\n      json: {\n        title: title,\n        company_name: company_name,\n        position: position,\n        location: location,\n        link: item.json.link\n      }\n    };\n  });"
       },
+      "id": "3eb55112-6c6c-40be-b2bc-6b9525873ade",
+      "name": "Extract Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -960,
         688
-      ],
-      "id": "3eb55112-6c6c-40be-b2bc-6b9525873ade",
-      "name": "Extract Data"
+      ]
     },
     {
       "parameters": {
         "jsCode": "return $input.all().map(item => {\n  const title = item.json.pagemap?.metatags?.[0]?.['twitter:title']\n      || item.json.pagemap?.metatags?.[0]?.['og:title']\n      || item.json.title;\n  return {\n    json: {\n      title: title,\n      link: item.json.link\n    }\n  }\n});"
       },
+      "id": "6d970c24-1d39-42df-ac30-fd8f9ec239b9",
+      "name": "Extract Data1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -960,
         336
-      ],
-      "id": "6d970c24-1d39-42df-ac30-fd8f9ec239b9",
-      "name": "Extract Data1"
+      ]
     },
     {
       "parameters": {
@@ -119,27 +119,27 @@
         "combineBy": "combineByPosition",
         "options": {}
       },
+      "id": "650e8484-16ba-42a0-b8e6-ba3c65622943",
+      "name": "Merge",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
         192,
         176
-      ],
-      "id": "650e8484-16ba-42a0-b8e6-ba3c65622943",
-      "name": "Merge"
+      ]
     },
     {
       "parameters": {
         "jsCode": "let jobPortal;\n\nif ($input.first().json.scrape_by_weekday) {\n  const dayOfWeek = $input.first().json.weekday;\n  \n  switch (dayOfWeek) {\n    case \"Monday\":\n      jobPortal = \"Foundit\";\n      break;\n    case \"Tuesday\":\n      jobPortal = \"Naukri\";\n      break;\n    case \"Wednesday\":\n      jobPortal = \"Internshala\";\n      break;\n    case \"Thursday\":\n      jobPortal = \"FresherWorld\";\n      break;\n    case \"Friday\":\n      jobPortal = \"Foundit\";\n      break;\n    case \"Saturday\":\n      jobPortal = \"LinkedIn\";\n      break;\n    case \"Sunday\":\n      jobPortal = \"LinkedIn\";\n      break;\n    default:\n      jobPortal = \"\";\n      break;\n  }\n} else {\n  jobPortal = $input.first().json.job_portal;\n}\n\nreturn {\n  json: {\n    job_portal: jobPortal,\n    maxPages: Math.ceil($input.first().json.num_of_jobs / 10)\n  }\n};"
       },
+      "id": "2dc243c8-bf0e-4f08-8cfb-befbdb34ef67",
+      "name": "Job Portal Schedule",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -2032,
         448
-      ],
-      "id": "2dc243c8-bf0e-4f08-8cfb-befbdb34ef67",
-      "name": "Job Portal Schedule"
+      ]
     },
     {
       "parameters": {
@@ -224,14 +224,14 @@
         },
         "options": {}
       },
+      "id": "8060b9e5-6615-4a8b-bf05-baac6a7f29ed",
+      "name": "Switch1",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
         -1184,
         672
-      ],
-      "id": "8060b9e5-6615-4a8b-bf05-baac6a7f29ed",
-      "name": "Switch1"
+      ]
     },
     {
       "parameters": {
@@ -239,42 +239,42 @@
         "combineBy": "combineByPosition",
         "options": {}
       },
+      "id": "ee16a973-bde9-4abb-8f73-134f09ff703d",
+      "name": "Merge1",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
         192,
         576
-      ],
-      "id": "ee16a973-bde9-4abb-8f73-134f09ff703d",
-      "name": "Merge1"
+      ]
     },
     {
       "parameters": {
         "schemaType": "manual",
         "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"JobPosting\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"company_name\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Name of the company offering the job\"\n    },\n    \"position\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Job position or title\"\n    },\n    \"location\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Location where the job is based\"\n    },\n    \"experience_required\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Experience required for the job\"\n    },\n    \"skills_required\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Skills required to perform the job\"\n    },\n    \"job_type\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Type of job (e.g., Full-time, Part-time, Internship)\"\n    }\n  },\n  \"required\": [],\n  \"additionalProperties\": false\n}\n"
       },
+      "id": "1c38716b-5205-44b9-964b-25caac81bd9b",
+      "name": "Structured Output Parser1",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
         32,
         400
-      ],
-      "id": "1c38716b-5205-44b9-964b-25caac81bd9b",
-      "name": "Structured Output Parser1"
+      ]
     },
     {
       "parameters": {
         "schemaType": "manual",
         "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"JobPosting\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"experience_required\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Experience required for the job\"\n    },\n    \"skills_required\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Skills required to perform the job\"\n    },\n    \"job_type\": {\n      \"type\": \"string\",\n      \"default\": \"\",\n      \"description\": \"Type of job (e.g., Full-time, Part-time, Internship)\"\n    }\n  },\n  \"required\": [],\n  \"additionalProperties\": false\n}\n"
       },
+      "id": "7984f821-b95b-4beb-96b8-f1c322b3d678",
+      "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
         32,
         800
-      ],
-      "id": "7984f821-b95b-4beb-96b8-f1c322b3d678",
-      "name": "Structured Output Parser"
+      ]
     },
     {
       "parameters": {
@@ -308,14 +308,14 @@
           ]
         }
       },
+      "id": "c4b38e85-a4a6-4b3c-a88d-9db012a29888",
+      "name": "When Executed by Another Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
         -2240,
         448
-      ],
-      "id": "c4b38e85-a4a6-4b3c-a88d-9db012a29888",
-      "name": "When Executed by Another Workflow"
+      ]
     },
     {
       "parameters": {
@@ -342,27 +342,27 @@
         },
         "options": {}
       },
+      "id": "3ed76451-0afe-4e6d-a2dc-c3b052929bcf",
+      "name": "If",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         -736,
         992
-      ],
-      "id": "3ed76451-0afe-4e6d-a2dc-c3b052929bcf",
-      "name": "If"
+      ]
     },
     {
       "parameters": {
         "maxItems": "={{ $('When Executed by Another Workflow').first().json.num_of_jobs }}"
       },
+      "id": "180dbce0-502b-4842-9d2b-49a84efd0613",
+      "name": "Limit",
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
         -1600,
         992
-      ],
-      "id": "180dbce0-502b-4842-9d2b-49a84efd0613",
-      "name": "Limit"
+      ]
     },
     {
       "parameters": {
@@ -390,14 +390,14 @@
         },
         "options": {}
       },
+      "id": "50711867-30e9-4e21-a86f-4c0a3c8b03b4",
+      "name": "Output",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -512,
         992
-      ],
-      "id": "50711867-30e9-4e21-a86f-4c0a3c8b03b4",
-      "name": "Output"
+      ]
     },
     {
       "parameters": {
@@ -431,14 +431,14 @@
         },
         "options": {}
       },
+      "id": "967df18a-f8ca-46c5-bfe7-692d59543c85",
+      "name": "Save Variables",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -1824,
         448
-      ],
-      "id": "967df18a-f8ca-46c5-bfe7-692d59543c85",
-      "name": "Save Variables"
+      ]
     },
     {
       "parameters": {
@@ -538,14 +538,14 @@
         },
         "options": {}
       },
+      "id": "207b173b-d9d7-44a1-8f9b-68179fd4185a",
+      "name": "Call 'Job Scrapper'",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
         -512,
         1216
-      ],
-      "id": "207b173b-d9d7-44a1-8f9b-68179fd4185a",
-      "name": "Call 'Job Scrapper'"
+      ]
     },
     {
       "parameters": {
@@ -573,14 +573,14 @@
         },
         "options": {}
       },
+      "id": "47a65e63-5743-4d72-bafc-c6c179aab3b0",
+      "name": "Output1",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -304,
         1216
-      ],
-      "id": "47a65e63-5743-4d72-bafc-c6c179aab3b0",
-      "name": "Output1"
+      ]
     },
     {
       "parameters": {
@@ -589,14 +589,14 @@
         "hasOutputParser": true,
         "options": {}
       },
+      "id": "bdb701aa-1a23-4b9c-bf2c-8ca079753b1b",
+      "name": "Extract details for Intershala, Foundit",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
         -144,
         176
-      ],
-      "id": "bdb701aa-1a23-4b9c-bf2c-8ca079753b1b",
-      "name": "Extract details for Intershala, Foundit"
+      ]
     },
     {
       "parameters": {
@@ -605,14 +605,14 @@
         "hasOutputParser": true,
         "options": {}
       },
+      "id": "66101c6a-47c0-4fcc-9514-82cdc75162a6",
+      "name": "Extract details for LinkedIn",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
         -144,
         576
       ],
-      "id": "66101c6a-47c0-4fcc-9514-82cdc75162a6",
-      "name": "Extract details for LinkedIn",
       "onError": "continueRegularOutput"
     },
     {
@@ -634,54 +634,54 @@
           ]
         }
       },
+      "id": "c2c2d57c-afcd-47c8-b3ab-011470fa2557",
+      "name": "Get row(s)",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
         -1600,
         448
-      ],
-      "id": "c2c2d57c-afcd-47c8-b3ab-011470fa2557",
-      "name": "Get row(s)"
+      ]
     },
     {
       "parameters": {
         "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  const site = item.json.site;\n  const inurl = item.json.inurl;\n  const keywords = item.json.keywords;\n  \n  item.json.query = `\n    ${site ? `site:${item.json.site}` : ''}\n    ${inurl ? ` inurl:${inurl}` : ''}\n    ${keywords ? ` ${keywords}` : ''}\n  `.replace(/\\n/g, '').replace(/\\s{2,}/g, ' ');\n}\n\nreturn $input.all();"
       },
+      "id": "e54bf761-6c53-41b5-8a61-05d305bdb368",
+      "name": "Code in JavaScript",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -1392,
         448
-      ],
-      "id": "e54bf761-6c53-41b5-8a61-05d305bdb368",
-      "name": "Code in JavaScript"
+      ]
     },
     {
       "parameters": {
         "errorMessage": "=No Output, try changing keywords in data table \"Job Portals\" in row for \"{{ $('Get row(s)').item.json.name }}\" job portal"
       },
+      "id": "e36cea8c-eb4b-48dc-90f8-d325ba814cab",
+      "name": "Stop and Error",
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
         192,
         384
-      ],
-      "id": "e36cea8c-eb4b-48dc-90f8-d325ba814cab",
-      "name": "Stop and Error"
+      ]
     },
     {
       "parameters": {
         "model": "openai/gpt-4.1-nano",
         "options": {}
       },
+      "id": "be4beee7-184f-4697-aa86-d511d080fc94",
+      "name": "OpenRouter Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
         -144,
         800
       ],
-      "id": "be4beee7-184f-4697-aa86-d511d080fc94",
-      "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
           "id": "TzBu68z0vxXyw4q7",
@@ -694,14 +694,14 @@
         "model": "openai/gpt-4.1-nano",
         "options": {}
       },
+      "id": "ab1ccb7f-4575-48f1-95c4-0b9fc6544ecb",
+      "name": "OpenRouter Chat Model1",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
         -144,
         400
       ],
-      "id": "ab1ccb7f-4575-48f1-95c4-0b9fc6544ecb",
-      "name": "OpenRouter Chat Model1",
       "credentials": {
         "openRouterApi": {
           "id": "TzBu68z0vxXyw4q7",
@@ -899,18 +899,18 @@
         },
         "options": {}
       },
+      "id": "1af85f14-212b-4760-8aa4-5958d8e4ba71",
+      "name": "Save Job Listings",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
         -1392,
         992
       ],
-      "id": "1af85f14-212b-4760-8aa4-5958d8e4ba71",
-      "name": "Save Job Listings",
       "credentials": {
         "postgres": {
           "id": "36DJq1MVUbnEhxx5",
-          "name": "Postgres account"
+          "name": "Postgres account (Server)"
         }
       }
     },
@@ -918,14 +918,14 @@
       "parameters": {
         "jsCode": "const total_jobs_scrapped = $input.all().length;\nconst total_jobs = $('When Executed by Another Workflow').first().json.num_of_jobs;\nconst remaining_job_count = total_jobs - total_jobs_scrapped;\nconst pages_scrapped = $('Job Portal Schedule').first().json.maxPages + $('Save Variables').first().json.pages_scrapped;\n\nreturn {\n  json: {\n    total_jobs_scrapped: total_jobs_scrapped,\n    pages_scrapped: pages_scrapped,\n    remaining_job_count: remaining_job_count,\n    all_jobs_scrapped: total_jobs_scrapped === total_jobs\n  }\n}"
       },
+      "id": "396fbae3-c122-4279-b0a0-30c582755167",
+      "name": "Total Job Scrapped",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -1184,
         992
-      ],
-      "id": "396fbae3-c122-4279-b0a0-30c582755167",
-      "name": "Total Job Scrapped"
+      ]
     },
     {
       "parameters": {
@@ -1088,18 +1088,18 @@
         },
         "options": {}
       },
+      "id": "5a987072-531c-4d70-a9fd-c61f43372a18",
+      "name": "Update Pages Scrapped Count",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
         -960,
         992
       ],
-      "id": "5a987072-531c-4d70-a9fd-c61f43372a18",
-      "name": "Update Pages Scrapped Count",
       "credentials": {
         "postgres": {
           "id": "36DJq1MVUbnEhxx5",
-          "name": "Postgres account"
+          "name": "Postgres account (Server)"
         }
       }
     },
@@ -1108,14 +1108,14 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const html = $json.data || \"\";\n\nlet jd = html.match(/<div[^>]*class=\"[^\"]*description__text[^\"]*\"[^>]*>(.*?)<\\/div>/is)?.[1] || '';\n\njd = jd.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\\s+/g, ' ').trim();\n\nreturn {\n  job_description: jd,\n  jd_success: jd.length > 200\n};"
       },
+      "id": "19cc3b8e-ee45-4174-8e38-f15176fda4b9",
+      "name": "Extract JD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -560,
         768
-      ],
-      "id": "19cc3b8e-ee45-4174-8e38-f15176fda4b9",
-      "name": "Extract JD"
+      ]
     },
     {
       "parameters": {
@@ -1143,14 +1143,14 @@
         },
         "options": {}
       },
+      "id": "8797c14f-33dc-4b09-a590-af6b4036c38e",
+      "name": "Get Job Details",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
         -768,
         768
       ],
-      "id": "8797c14f-33dc-4b09-a590-af6b4036c38e",
-      "name": "Get Job Details",
       "onError": "continueRegularOutput"
     },
     {
@@ -1159,27 +1159,27 @@
         "combineBy": "combineByPosition",
         "options": {}
       },
+      "id": "5bfc1405-e908-4b10-b5c8-c5ada3dc6ccd",
+      "name": "Merge2",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
         -352,
         672
-      ],
-      "id": "5bfc1405-e908-4b10-b5c8-c5ada3dc6ccd",
-      "name": "Merge2"
+      ]
     },
     {
       "parameters": {
         "jsCode": "return $input.all()\n  .map(item => {\n    const { output, ...rest } = item.json;\n    return {\n      json: {\n        ...rest,\n        ...output\n      }\n    };\n  })\n  .filter(item =>\n    item.json.company_name !== \"Not specified\"\n      && item.json.position !== \"Not specified\"\n  );"
       },
+      "id": "582bb56a-6e3f-498c-a995-2472a0bb2a9f",
+      "name": "Flatten JSON Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         640,
         768
-      ],
-      "id": "582bb56a-6e3f-498c-a995-2472a0bb2a9f",
-      "name": "Flatten JSON Output"
+      ]
     }
   ],
   "connections": {
@@ -1299,7 +1299,7 @@
         ],
         [
           {
-            "node": "Extract Data",
+            "node": "Extract Data1",
             "type": "main",
             "index": 0
           }
@@ -1573,9 +1573,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "9db87381-d1a0-4e58-b62c-01d2c3b7a1c1",
-  "activeVersionId": null,
-  "versionCounter": 288,
+  "versionId": "9be9fff0-a194-44f5-9392-6af4970e3b01",
+  "activeVersionId": "9be9fff0-a194-44f5-9392-6af4970e3b01",
+  "versionCounter": 289,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [
@@ -1613,7 +1613,7 @@
     }
   ],
   "versionMetadata": {
-    "name": "Version 12166ce2",
+    "name": "Version 9be9fff0",
     "description": ""
   },
   "parentFolder": "Youtube Stream (JNN)",

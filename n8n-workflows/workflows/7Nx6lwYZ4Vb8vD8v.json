@@ -4,7 +4,7 @@
   "id": "7Nx6lwYZ4Vb8vD8v",
   "name": "Text to Voice Converter",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -367,7 +367,7 @@
   "nodeGroups": [],
   "pinData": {},
   "versionId": "491b0c54-4ebe-4c3d-a133-c766afc6b691",
-  "activeVersionId": null,
+  "activeVersionId": "491b0c54-4ebe-4c3d-a133-c766afc6b691",
   "versionCounter": 80,
   "triggerCount": 0,
   "sourceWorkflowId": null,

@@ -4,7 +4,7 @@
   "id": "3LEV6jB7r0TQcMN6",
   "name": "Job Video Error Handling",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -214,7 +214,7 @@
   "nodeGroups": [],
   "pinData": {},
   "versionId": "b331ab88-5bd1-478b-8279-36aecfe972fa",
-  "activeVersionId": null,
+  "activeVersionId": "b331ab88-5bd1-478b-8279-36aecfe972fa",
   "versionCounter": 61,
   "triggerCount": 0,
   "sourceWorkflowId": null,

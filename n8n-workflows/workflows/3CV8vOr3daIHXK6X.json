@@ -4,7 +4,7 @@
   "id": "3CV8vOr3daIHXK6X",
   "name": "Script Generator",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -1186,7 +1186,7 @@
   "nodeGroups": [],
   "pinData": {},
   "versionId": "b8aa6c4c-7e6e-415e-8262-3c8a670125f3",
-  "activeVersionId": null,
+  "activeVersionId": "b8aa6c4c-7e6e-415e-8262-3c8a670125f3",
   "versionCounter": 306,
   "triggerCount": 0,
   "sourceWorkflowId": null,

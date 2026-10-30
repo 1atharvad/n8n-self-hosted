@@ -4,7 +4,7 @@
   "id": "HmMxxv4eZOZGzrOl",
   "name": "Video Creation",
   "description": null,
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -1126,7 +1126,7 @@
   "nodeGroups": [],
   "pinData": {},
   "versionId": "0b373eea-6785-4573-b615-1155756aac9b",
-  "activeVersionId": null,
+  "activeVersionId": "0b373eea-6785-4573-b615-1155756aac9b",
   "versionCounter": 206,
   "triggerCount": 0,
   "sourceWorkflowId": null,
